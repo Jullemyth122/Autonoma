@@ -1,4 +1,4 @@
-<!-- Time log (10 Oct 2026): created 2:05 AM by Claude Code · last changed 2:05 AM -->
+<!-- Time log (10 Oct 2026): created 2:05 AM by Claude Code · last changed 3:02 AM, 10 Oct (screenshots) -->
 # Submission: Autonoma (+ Expresso)
 
 One page for the judges. Each answer links to the details.
@@ -22,7 +22,7 @@ One page for the judges. Each answer links to the details.
 | | |
 | --- | --- |
 | **Demo video (~1 min)** | ✏️ *link* |
-| **Screenshots** | Autonoma: [Workspace + side panel](docs/screenshots/workspace-profile.png), [themes](docs/screenshots/workspace-appearance.png). Expresso: [Record tab](https://github.com/Jullemyth122/Expresso/blob/main/docs/screenshots/expresso-record.jpg). |
+| **Screenshots** | Autonoma: [Google Form filled](docs/screenshots/google-form-filled.png), [voice: one field](docs/screenshots/voice-targeted-fill.png), [Sign mode filling a phone number](docs/screenshots/sign-mode-fill.png), [Local AI settings](docs/screenshots/workspace-local-ai.png), [Workspace + side panel](docs/screenshots/workspace-profile.png), [themes](docs/screenshots/workspace-appearance.png). Expresso: [Record tab](https://github.com/Jullemyth122/Expresso/blob/main/docs/screenshots/expresso-record.jpg), [live recognition](https://github.com/Jullemyth122/Expresso/blob/main/docs/screenshots/expresso-test-live.png). |
 | **X / LinkedIn video URL** | ✏️ *link* (tag Devin / Cognition, include #AppBuildersPH) |
 | **What runs locally** | **Everything that touches your data.** Form reading and filling, matching rules, qwen3 1.7B (Ollama on `127.0.0.1`), Whisper tiny speech-to-text (in the extension, on the GPU or CPU), the voice replies (Windows' built-in voices), hand and pose tracking (MediaPipe, in the extension), your sign model (ONNX, in the extension), and sign training (PyTorch on your CPU, in Expresso). Your profile, files, voice, camera video and sign recordings never leave the computer. |
 | **What requires internet** | Only one-time setup downloads: `npm install`, `ollama pull qwen3:1.7b` (~1.4 GB), the Whisper model on first 🎤 use (~40 MB from Hugging Face, then cached), and for Expresso `npm run setup:ml` (PyTorch, ~1 GB). After that it works **offline**, except for the web forms you choose to fill. |

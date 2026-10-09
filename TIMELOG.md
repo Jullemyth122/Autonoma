@@ -32,6 +32,7 @@ Autonoma, built on 9 October 2026 and finished in the early hours of 10 October.
 - **1:33 AM (10 Oct):** low-memory fixes. The speech model now falls back to the CPU when the GPU can't load it ("createBuffer failed"), and a crash in the 3D orb shows the flat orb instead of a blank panel.
 - **1:40–1:45 AM (10 Oct):** clearer camera errors (it asks for permission only when it's really not granted), and the 3D orb stops retrying after 3 tries when the browser has graphics switched off.
 - **2:05 AM (10 Oct):** Expresso became its own repository ([Jullemyth122/Expresso](https://github.com/Jullemyth122/Expresso)), linked from here; both time logs completed; [SUBMISSION.md](SUBMISSION.md) written for the judges.
+- **3:01 AM (10 Oct):** real screenshots from the laptop added to the README and SUBMISSION.md: a Google Form filled, a voice fill, Sign mode filling a phone number, and the Local AI settings.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
@@ -110,3 +111,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/SignSetup.tsx` | 11:43 PM | 11:57 PM | Claude Code | Workspace → Signs: allow camera, model info, self-test, recognition settings, credits |
 | `src/ui/ErrorBoundary.tsx` | 1:34 AM (10 Oct) | 1:45 AM (10 Oct) | Claude Code | Keeps a crash (e.g. the GPU dropping the 3D orb) from blanking the panel |
 | `SUBMISSION.md` | 2:05 AM (10 Oct) | — | Claude Code | Hackathon submission sheet: project, proof, disclosures, why local AI |
+| `docs/screenshots/google-form-filled.png` | 3:01 AM (10 Oct) | — | Developer (screenshot) | README screenshot: a real Google Form filled (1 rule, 7 local AI) |
+| `docs/screenshots/voice-targeted-fill.png` | 3:01 AM (10 Oct) | — | Developer (screenshot) | README screenshot: voice command fills only the first name |
+| `docs/screenshots/sign-mode-fill.png` | 3:01 AM (10 Oct) | — | Developer (screenshot) | README screenshot: Sign mode reads FILL THIS PHONE NUMBER and fills it |
+| `docs/screenshots/workspace-local-ai.png` | 3:01 AM (10 Oct) | — | Developer (screenshot) | README screenshot: Workspace → Local AI |
