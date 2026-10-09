@@ -77,6 +77,7 @@ A computer voice reading Tagalog with an American accent is harder to understand
 - **A copy of the developer's own profile**, rebuilt from screenshots and an exported JSON file: name, email, phone, birthday, address, and the quiz-answer fields. It was used only in local test scripts to reproduce bugs reported from real forms. It is **not** in the repository.
 - **A dummy résumé file** named like the developer's own résumé (69 bytes, no real content), used to test file matching.
 - The developer's **real résumé was never read or copied**.
+- **README screenshots** (`docs/screenshots/`) were taken by the developer and show their own Profile page, including real contact details. They were published as-is by the developer's choice; they were not used for testing or training.
 
 **Form questions used in tests:**
 

@@ -1,4 +1,4 @@
-<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 10:36 PM (full update before push) -->
+<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 10:48 PM (screenshots added) -->
 # Autonoma
 
 **A Chrome extension that fills web forms for you, by click or by voice, using small AI models that run entirely on your own computer.**
@@ -18,8 +18,21 @@ Everything runs on your machine: no account, no API key, no subscription, and no
 
 ---
 
+## Screenshots
+
+**Workspace: Profile.** Saved facts, one compact row each (here with quiz answers), next to the side panel with the 3D agent orb, the command dock and the system card.
+
+![Autonoma Workspace, Profile page, with the side panel open](docs/screenshots/workspace-profile.png)
+
+**Workspace: Appearance.** 8 colour themes; the orb, side panel and workspace change together (Sunset shown).
+
+![Autonoma Workspace, Appearance page with the 8 themes, and the side panel in the Sunset theme](docs/screenshots/workspace-appearance.png)
+
+---
+
 ## Contents
 
+- [Screenshots](#screenshots)
 - [What it can do](#what-it-can-do)
 - [How it works](#how-it-works)
 - [Setup](#setup)
@@ -416,6 +429,7 @@ Autonoma/
 │   │   └── *.module.scss, styles/global.scss   Styles
 │   └── main.tsx                 Starts the panel or the workspace
 ├── demo/                        index.html (registration), index2.html (job application), index3.html (PSA request)
+├── docs/screenshots/            README screenshots
 ├── scripts/
 │   ├── build.mjs                Builds pages + content script + service worker; ships the speech runtime
 │   ├── serve-demo.mjs           Serves the demo on 127.0.0.1:5500
@@ -487,6 +501,7 @@ Built on **9 October 2026** (times are local, UTC+8):
 | 10:15 PM | **"Fill this" for any question**, including radios and checkboxes; looser quiz-option check. |
 | 10:25–10:30 PM | **Several fields per command, even when misheard** ("feel first name and last name"). |
 | 10:36–10:38 PM | This README update and [CHANGELOG.md](CHANGELOG.md). |
+| 10:47 PM | Screenshots of the Workspace (Profile, Appearance) with the side panel. |
 
 Every code file starts with a one-line time-log comment, and **[TIMELOG.md](TIMELOG.md)** lists every file with its creation time, last change and purpose.
 

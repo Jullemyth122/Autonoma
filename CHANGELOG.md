@@ -39,6 +39,8 @@ Everything added since the last version on GitHub (pull request #1, *"Added Voic
 
 **Tested:** all controls change the real settings (Submit, Agree, Tagalog, Talk back), Links opens the link box, and Autofill runs. No sideways overflow at 360 px wide; checked in the Sunset and Aurora themes.
 
+![Workspace Profile page with the redesigned side panel](docs/screenshots/workspace-profile.png)
+
 **Files:** `Panel.tsx`, `Panel.module.scss`, `Report.tsx`, `Report.module.scss`, `orb/Orb.tsx`, `orb/Orb.module.scss`, `ThemePicker.*`, `Workspace.module.scss`.
 
 ## 2. App themes
@@ -46,6 +48,8 @@ Everything added since the last version on GitHub (pull request #1, *"Added Voic
 **What changed:** 8 themes (Solar, Aurora, Mint, Sunset, Nebula, Glacier, Voltage, Ember) recolour the orb, the panel and the Workspace together. *Built in a ChatGPT session at 8:50 PM; Claude Code added the compact 🎨 popover.*
 
 **How to use:** 🎨 on the orb, or Workspace → **Appearance**.
+
+![Appearance page with the 8 themes; side panel in Sunset](docs/screenshots/workspace-appearance.png)
 
 **Files:** `theme.ts`, `orb/themes.ts`, `ThemePicker.tsx`, `ThemePicker.module.scss`.
 
@@ -157,7 +161,7 @@ Measured in Chromium with Chrome's performance counters:
 
 - **[DATA_AND_MODELS.md](DATA_AND_MODELS.md):** every model used (pretrained, **none trained**), every hand-written rule list, every test recording and profile, and what goes over the network.
 - **[TIMELOG.md](TIMELOG.md):** every file with its creation and last-change time, refreshed from the real edit history.
-- **[README.md](README.md):** fully updated for everything above.
+- **[README.md](README.md):** fully updated for everything above, with screenshots (`docs/screenshots/`).
 
 ---
 

@@ -17,6 +17,7 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **10:15 PM:** "fill this" works for any question, including radio and checkbox questions on Google Forms: it uses the question you last clicked (text, card, option or box), or the one mid-screen if you've scrolled since. Quiz options count as backed by saved answers when most of their words match.
 - **10:25 PM:** several fields per command, even when misheard: a sentence starting with "feel/phil" is a fill, "1st name" means first name, and the local-model fallback can return several fields ("fill first name and last name" fills both).
 - **10:36–10:38 PM:** notes brought up to date before pushing: README rewritten for everything above, new CHANGELOG.md, DATA_AND_MODELS.md and PROJECT_SETUP.md extended.
+- **10:47 PM:** screenshots of the Workspace (Profile, Appearance) with the side panel added for the README (`docs/screenshots/`).
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
@@ -67,19 +68,21 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/orb/hud.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/sfx.ts` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
-| `README.md` | 6:22 PM | 10:36 PM | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
+| `README.md` | 6:22 PM | 10:48 PM | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
 | `src/ui/voice/speak.ts` | 6:40 PM | 9:22 PM | Claude Code | Agent's voice: offline system voices, speaking state for the orb |
 | `src/ui/voice/phrases.ts` | 6:40 PM | 9:22 PM | Claude Code | What the agent says, in English and Tagalog |
 | `src/ui/voice/commands.ts` | 6:55 PM | 10:30 PM | Claude Code | Spoken commands (EN + TL) matched by rules, forgiving mishearings |
 | `src/ui/voice/listen.ts` | 6:55 PM | 9:57 PM | Claude Code | Records one command from the mic; stops on a pause |
 | `src/ui/voice/recognizer.ts` | 6:55 PM | 7:41 PM | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
 | `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:41 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
-| `DATA_AND_MODELS.md` | 7:58 PM | 10:38 PM | Claude Code | Disclosure: models used (not trained), hand-written rules, test samples, network use |
-| `TIMELOG.md` | 6:15 PM | 10:38 PM | Claude Code | This time log |
+| `DATA_AND_MODELS.md` | 7:58 PM | 10:48 PM | Claude Code | Disclosure: models used (not trained), hand-written rules, test samples, network use |
+| `TIMELOG.md` | 6:15 PM | 10:48 PM | Claude Code | This time log |
 | `demo/index2.html` | 6:41 PM | 6:41 PM | Added outside this Claude Code session | Demo form: Application for Senior Product Engineer — Acme Labs |
 | `demo/index3.html` | 6:45 PM | 6:45 PM | Added outside this Claude Code session | Demo form: PSA Birth Certificate Online Request |
 | `src/ui/theme.ts` | 8:39 PM | — | Added outside this Claude Code session (ChatGPT UI work) | App theme state shared by all extension pages |
 | `src/ui/orb/themes.ts` | 8:28 PM | — | Added outside this Claude Code session (ChatGPT UI work) | The 8 colour themes (Solar, Aurora, Mint, Sunset, Nebula, Glacier, Voltage, Ember) |
 | `src/ui/ThemePicker.tsx` | 8:39 PM | 9:00 PM | Added outside this Claude Code session (ChatGPT UI work); compact mode by Claude Code | Theme picker (compact dots on the orb; full list in Workspace → Appearance) |
 | `src/ui/ThemePicker.module.scss` | 8:39 PM | 9:00 PM | Added outside this Claude Code session (ChatGPT UI work); compact mode by Claude Code | Theme picker styles |
-| `CHANGELOG.md` | 10:37 PM | — | Claude Code | What's new since the last GitHub version, how to apply it, and what could come next |
+| `CHANGELOG.md` | 10:37 PM | 10:48 PM | Claude Code | What's new since the last GitHub version, how to apply it, and what could come next |
+| `docs/screenshots/workspace-profile.png` | 10:47 PM | — | Developer (screenshot) | README screenshot: Workspace Profile page with the side panel |
+| `docs/screenshots/workspace-appearance.png` | 10:47 PM | — | Developer (screenshot) | README screenshot: Appearance page with the 8 themes, side panel in Sunset |
