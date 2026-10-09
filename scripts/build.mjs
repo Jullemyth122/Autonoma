@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 7:40 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 11:41 PM (sign mode by Claude Code)
 import { build } from 'vite';
 import { copyFileSync, mkdirSync, readdirSync, renameSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -30,3 +30,9 @@ for (const file of readdirSync('dist/assets').filter(name => /^ort-wasm.*\.wasm$
   renameSync(join('dist/assets', file), join('dist/ort', plain));
   copyFileSync(join(ortDist, plain.replace(/\.wasm$/, '.mjs')), join('dist/ort', plain.replace(/\.wasm$/, '.mjs')));
 }
+
+// Sign mode's hand and pose tracker: copy MediaPipe's module-worker runtime from the installed package,
+// so the JavaScript and its WebAssembly always come from the same version.
+const visionWasm = join(dirname(createRequire(import.meta.url).resolve('@mediapipe/tasks-vision')), 'wasm');
+mkdirSync('dist/mediapipe/wasm', { recursive: true });
+for (const file of ['vision_wasm_module_internal.js', 'vision_wasm_module_internal.wasm']) copyFileSync(join(visionWasm, file), join('dist/mediapipe/wasm', file));

@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 7:41 PM
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 1:33 AM, 10 Oct (CPU fallback when loading fails, by Claude Code)
 // Talks to the Whisper worker: loads the model once, then turns recorded audio into text.
 import { useEffect, useState } from 'react';
 import type { VoiceLanguage } from '../../types/index.ts';
@@ -47,25 +47,40 @@ function post(message: Record<string, unknown>, transfer: Transferable[] = []): 
   });
 }
 
+let loading: Promise<void> | null = null;
 /** Downloads (first time only) and loads the speech model. */
 export function loadSpeechModel(): Promise<void> {
   if (status.state === 'ready') return Promise.resolve();
+  if (loading) return loading;
   setStatus({ state: 'loading', error: undefined });
-  return post({ type: 'load' }).then(() => undefined);
+  loading = post({ type: 'load' }).then(() => undefined).catch(error => {
+    if (cpuOnly) throw error;
+    // The GPU couldn't load it (often out of memory, e.g. "createBuffer failed"): start over on the CPU once.
+    restartOnCpu();
+    return post({ type: 'load' }).then(() => undefined);
+  }).finally(() => { loading = null; });
+  return loading;
+}
+
+function restartOnCpu() {
+  cpuOnly = true;
+  worker?.terminate();
+  worker = null;
+  pending.forEach(job => job.reject(new Error('Restarting the speech model on the CPU')));
+  pending.clear();
+  setStatus({ state: 'loading', percent: 0, device: undefined, error: undefined });
 }
 
 export async function transcribe(audio: Float32Array, language: VoiceLanguage): Promise<string> {
+  // If the model is still loading (or restarting on the CPU), wait, so this isn't sent to a worker that's going away.
+  if (loading) await loading.catch(() => undefined);
   if (status.state !== 'ready') setStatus({ state: 'loading' });
   try {
     return await post({ type: 'transcribe', audio: audio.slice(), language });
   } catch (error) {
     if (cpuOnly || status.device !== 'webgpu') throw error;
     // The GPU path failed while running; start over on the CPU once.
-    cpuOnly = true;
-    worker?.terminate();
-    worker = null;
-    pending.clear();
-    setStatus({ state: 'loading', percent: 0, device: undefined });
+    restartOnCpu();
     return post({ type: 'transcribe', audio, language }, [audio.buffer]);
   }
 }

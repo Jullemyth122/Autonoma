@@ -1,20 +1,23 @@
-<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 10:48 PM (screenshots added) -->
+<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 2:05 AM, 10 Oct (Expresso repository, submission sheet) -->
 # Autonoma
 
-**A Chrome extension that fills web forms for you, by click or by voice, using small AI models that run entirely on your own computer.**
+**A Chrome extension that fills web forms for you, by click, by voice or by sign language, using small AI models that run entirely on your own computer.**
 
 You save your details once: your profile, a few facts about yourself, your résumé. Autonoma then fills forms on any website, including Google Forms and multi-page applications.
 
 - Exact matches are filled instantly by rules.
 - Harder questions go to a local AI model through [Ollama](https://ollama.com).
 - You can also just **talk to it**, in English or Tagalog: *"fill the email"*, *"fill this"*, *"punan mo ang form"*.
+- Or **sign to it** with your own signs (shoulders, arms and hands, like FSL). You record and train them in **[Expresso](https://github.com/Jullemyth122/Expresso)**, a small companion web app (its own repository), and Autonoma only recognises them.
 
 Everything runs on your machine: no account, no API key, no subscription, and nothing is sent to the cloud.
 
 > Built in one day for a hackathon (9 October 2026).
 > - [TIMELOG.md](TIMELOG.md): when each file was made.
-> - [DATA_AND_MODELS.md](DATA_AND_MODELS.md): every model, rule and test sample used. **No model was trained.**
+> - [DATA_AND_MODELS.md](DATA_AND_MODELS.md): every model, rule and test sample used. **Autonoma trains nothing.** The only trained model is the sign model *you* train on your own signs in Expresso.
 > - [CHANGELOG.md](CHANGELOG.md): what's new in this update.
+> - **[SUBMISSION.md](SUBMISSION.md): the hackathon submission sheet** (models, technologies, what runs locally, why local AI).
+> - **Two repositories:** this one (the extension) and **[Expresso](https://github.com/Jullemyth122/Expresso)** (record and train your signs). Clone them side by side: `Hackathon/Autonoma` and `Hackathon/Expresso`.
 
 ---
 
@@ -39,6 +42,7 @@ Everything runs on your machine: no account, no API key, no subscription, and no
 - [The side panel](#the-side-panel)
 - [Try the demo](#try-the-demo)
 - [Voice](#voice)
+- [Sign mode](#sign-mode)
 - [Using it on real forms](#using-it-on-real-forms)
 - [Choosing the AI model](#choosing-the-ai-model)
 - [Performance](#performance)
@@ -57,6 +61,7 @@ Everything runs on your machine: no account, no API key, no subscription, and no
 | **Rules first** | Clear matches ("First name", "Email", "Country") are filled instantly from your profile, marked with a green **Filled** badge. |
 | **Local AI for the rest** | Questions the rules can't answer go to `qwen3:1.7b` on your own computer and are marked with a purple **AI** badge. Examples: "Full name (Surname, First Name M.I.)", "Are you a student?", "Why do you want to join?", and quiz questions answered from your saved notes. |
 | **Calculated facts** | The AI gets your **age** and **next birthday**, worked out from your saved birthday, plus **today's date**, so "How old are you?", "Age group: 18-25" and "When is your next birthday?" are always right. |
+| **Sign mode** | Turn on the camera and sign a command: *FILL THIS PAGE*, *FILL THIS PHONE NUMBER*, *WHAT IS MISSING*, *NEXT*. Signs are your own, trained in Expresso, and read through the same rules as voice. **SUBMIT** waits for a **YES** sign. |
 | **Targeted fills** | Fill just one thing, or a few: *"fill the email"*, *"fill the name and the phone"*, or *"fill this"* for the question you last clicked or the one in the middle of the screen. It works for text boxes, dropdowns, radio buttons and checkboxes. The targeted field glows while it's filled. |
 | **Voice commands** | Tap the 🎤 on the orb and speak, in English or simple Tagalog. Speech is turned into text **on your computer** (Whisper tiny). No training needed. |
 | **Live conversation** *(optional)* | One tap keeps the agent listening for command after command, until you say *"stop listening"* or *"tama na"*. |
@@ -309,6 +314,51 @@ Sentences the rules don't recognise go to qwen, which can also return several fi
 
 ---
 
+## Sign mode
+
+Command Autonoma with **your own signs**: real movements of the shoulders, arms and hands, like Filipino Sign Language, not just hand shapes. The work is split in two so the extension stays light:
+
+| | **[Expresso](https://github.com/Jullemyth122/Expresso)** (a local web app; clone it next to this folder) | **Autonoma** (this extension) |
+| --- | --- | --- |
+| Does | Records your signs with the webcam, **trains** a small model on your CPU, lets you test it live, exports it | Only **recognises** signs and runs the matching command |
+| Runs | `npm run dev` → http://127.0.0.1:5180 (Record · Train · Test · Export) | A switch in the side panel; the camera is on only while Sign mode is on |
+| Heavy parts | PyTorch for training (in its own `ml/venv`) | Nothing heavy: MediaPipe hand + pose tracking and a ~0.9 MB ONNX model, all in a **background worker** |
+
+**How to set it up:**
+1. In Expresso, **Record** each sign about 15 times: raise your hands, sign, drop your hands. Also record `_none` (random movements such as scratching or reaching for the mouse) so ordinary movement isn't mistaken for a command.
+2. **Train**, check the per-sign accuracy, then **Test** it live.
+3. **Export → Copy and rebuild Autonoma**, then reload the extension in `chrome://extensions`.
+4. In Autonoma's Workspace → **Signs**, click **Allow camera** once (the side panel can't show Chrome's prompt). **Run self-test** checks that the extension gives the same answers as the trainer.
+5. Switch on **Sign mode** in the side panel's system card.
+
+**Signs are commands by name.** A sign's name is read as if you'd said it and goes through the same rules as voice. That's why *FILL THIS EMAIL* fills the email, and why you can add, remove or rename signs in Expresso without changing any code:
+
+| Sign | Does |
+| --- | --- |
+| FILL THIS PAGE · FILL THIS FORM | Fills the page |
+| FILL THIS | Fills the question you last clicked, or the one mid-screen |
+| FILL THIS FULL NAME · FILL THIS EMAIL · FILL THIS PHONE NUMBER · FILL THIS *anything* | Fills only that question |
+| FILL ALL PAGES · NEXT · STOP | As with voice |
+| WHAT IS MISSING | Reads out what's still empty |
+| SUBMIT | Asks first; it submits only after a **YES** sign within 15 s (**NO** cancels) |
+| `_none` | Never acted on |
+
+**The camera is hidden by default.** It keeps running, and the **orb** is your feedback: *Reading your sign…* while your hands are up, then *Signed “FILL THIS PAGE” · 92%* or *Not sure… sign it again*. A small camera button above the orb's 🎤 (a red dot means the camera is on) shows or hides the preview.
+
+**Rules that keep it safe and smooth:**
+- A sign is acted on only when the model is at least **60% sure** (adjustable in Workspace → Signs). Below that, the chip shows the guess greyed out and nothing happens.
+- The same sign caught twice within 1.5 s counts once. While one sign's fill runs, other signs wait; **STOP** always goes through.
+- The camera pauses while Whisper is turning speech into text, so the two models never compete for the CPU.
+- Turning Sign mode off stops the camera and ends the worker, which frees all its memory.
+
+**Under the hood:**
+- **Camera and worker.** The camera runs in the side panel. Each frame is shrunk to 640 px and handed to a worker; a frame that arrives while the worker is busy is skipped, never queued.
+- **Tracking.** The worker runs MediaPipe hand and pose landmarks (GPU, or CPU if the GPU fails) and turns each frame into 142 numbers: shoulders, elbows, wrists and 21 points per hand, normalised to your shoulder width.
+- **Cutting signs.** It cuts out a sign when you drop your hands or hold still, resamples it to 32 frames and classifies it with your ONNX model.
+- **Same code as Expresso.** It uses the feature and segmenter code from Expresso, and the same ONNX Runtime the speech model already ships (no second 21 MB runtime).
+
+---
+
 ## Using it on real forms
 
 ### Your data (⚙ Workspace)
@@ -361,7 +411,18 @@ Measured in Chromium with Chrome's performance counters:
 
 The heavy parts load only in the side panel, and only when needed:
 - the 3D orb: 910 KB;
-- the speech engine: 866 KB plus a 21 MB runtime, loaded on first 🎤 use.
+- the speech engine: 866 KB plus a 21 MB runtime, loaded on first 🎤 use;
+- Sign mode: a 540 KB worker plus MediaPipe (13 MB of wasm and 13 MB of tracking models), loaded only while Sign mode is on. It shares the speech runtime.
+
+**Sign mode cost** (measured in headless Chromium with software graphics, with a real FSL clip as the fake camera):
+
+| What | Result |
+| --- | --- |
+| Frame timing on the form page while signing | p50 **16.7 ms**, p95 **17.2 ms**, the same as with Sign mode off (60 fps) |
+| Side panel main thread | 1 long task (92 ms) in the whole run: the start-up. Tracking and the model run in the worker. |
+| Start-up (camera + MediaPipe + model) | ~2.7 s |
+| Tracking speed | 13 fps on software graphics; expect more on a real GPU. Signs are resampled, so speed doesn't change the answer. |
+| Self-test (5 clips) | ~0.8 s, all 5 identical to the Python trainer |
 
 The test browser drew the orb in software; on a real GPU its CPU use is lower.
 
@@ -390,7 +451,8 @@ These were checked in a real Chromium browser with the extension loaded:
 - voice commands from recorded speech, in English and Tagalog;
 - a live conversation with three commands;
 - interrupting the agent;
-- background chatter ignored in live mode.
+- background chatter ignored in live mode;
+- **Sign mode:** a real FSL-105 clip played as a fake camera through the real extension. The worker tracks the signer, cuts out the sign and classifies it; *FILL THIS PAGE* filled the demo form (5 by rules, 2 by AI). The self-test matched the trainer 5/5, and turning Sign mode off removed the camera. These ran with a synthetic test model; your real model comes from Expresso.
 
 [DATA_AND_MODELS.md](DATA_AND_MODELS.md) lists every recording and result.
 
@@ -402,6 +464,8 @@ These were checked in a real Chromium browser with the extension loaded:
 Autonoma/
 ├── public/
 │   ├── manifest.json            Chrome extension manifest (MV3)
+│   ├── mediapipe/               Hand and pose tracking models for Sign mode (the wasm is copied from node_modules at build)
+│   ├── sign/                    Your sign model, exported by Expresso (git-ignored: it's learnt from your body)
 │   └── sounds/orb-startup.mp3   Orb startup sound
 ├── src/
 │   ├── background/
@@ -418,12 +482,14 @@ Autonoma/
 │   ├── types/                   Shared types and defaults (default model: qwen3:1.7b)
 │   ├── ui/
 │   │   ├── Panel.tsx            Side panel: command dock, system card, voice and live sessions
-│   │   ├── Workspace.tsx        Profile, Memory, Files, Local AI, Appearance, Import & export
+│   │   ├── Workspace.tsx        Profile, Memory, Files, Local AI, Signs, Appearance, Import & export
+│   │   ├── SignSetup.tsx        Workspace → Signs: camera permission, model info, self-test, settings
 │   │   ├── Report.tsx           Fill report (stat bar, "Needs you")
 │   │   ├── ThemePicker.tsx      Theme dots (orb popover) and list (Appearance)
 │   │   ├── theme.ts             Shared theme state
 │   │   ├── orb/                 3D agent orb (three.js / react-three-fiber), 8 themes, sound
 │   │   ├── voice/               Talking back, microphone, Whisper worker, command rules (EN + TL)
+│   │   ├── sign/                Sign mode: camera hook, worker (MediaPipe → segmenter → ONNX), features shared with Expresso
 │   │   ├── api.ts               Messages to the background; state hooks
 │   │   ├── sample.ts            Demo profile ("Maria Santos")
 │   │   └── *.module.scss, styles/global.scss   Styles
@@ -436,6 +502,7 @@ Autonoma/
 │   ├── match-check.mjs          Matching checks
 │   └── match-cases.json         Test cases
 ├── CHANGELOG.md                 What's new in this update
+├── SUBMISSION.md                Hackathon submission sheet
 ├── DATA_AND_MODELS.md           Models used (not trained), rules, test samples
 ├── PROJECT_SETUP.md             Original plan, design decisions, what changed
 ├── TIMELOG.md                   When each file was created and changed
@@ -447,6 +514,7 @@ Autonoma/
 - **Extension:** Chrome Manifest V3.
 - **Form AI:** Ollama (`/api/chat` with JSON-schema output and streaming).
 - **Speech:** transformers.js 3.8.1 + ONNX Runtime Web (Whisper tiny).
+- **Signs:** MediaPipe Tasks Vision 1.1.0 (hand + pose landmarks) + ONNX Runtime Web; trained in Expresso with PyTorch.
 
 ---
 
@@ -462,6 +530,9 @@ Autonoma/
 | **Refresh this webpage after loading the extension** | Refresh the form tab. Browser pages such as `chrome://` can't be filled. |
 | **Stopped: "…" is required and needs your answer** | Working as intended: nothing you saved answers that question. Answer it yourself, or add a field, memory or file for it. |
 | **"Fill this" fills the wrong question** | Click the question's text (not an empty part of the page) right before speaking, or scroll it to the middle of the screen. |
+| **No sign model yet** | Train in Expresso, press **Export**, rebuild Autonoma (Expresso can do it), then reload the extension. |
+| **Sign mode: camera blocked** | Autonoma opens Workspace → Signs: click **Allow camera**, then switch Sign mode on again. |
+| **Signs are missed or mixed up** | Record more of the confused signs (Expresso's Train tab lists the mix-ups) and add `_none` recordings. Sit so your shoulders and both hands are in view, in good light. Lowering the confidence in Workspace → Signs accepts more, but makes more mistakes. |
 | **The agent keeps talking** | Tap the orb or the 🎤, or press **Esc**. |
 | Changes don't show up | Reload Autonoma in `chrome://extensions` and check the build time in the panel footer. |
 | The demo page doesn't fill | Open it at `http://127.0.0.1:5500` (`npm run demo`), not as a file. |
@@ -476,13 +547,15 @@ Autonoma/
 - Whisper tiny sometimes mishears short commands. Common slips are corrected, but a clear, steady voice works best. A real Filipino speaker is understood better than the computer voice used in testing.
 - In live mode, anything you say **while the agent is talking or filling** is ignored, so it can't hear itself. Tap or press Esc to cut it short.
 - Data is stored **unencrypted** in the browser's extension storage, readable only by Autonoma's own pages. JSON exports aren't encrypted either.
+- **Sign mode knows one signer.** A model trained only on you works less well for other people, other cameras or other lighting. Signs mostly below the chest are treated as "hands down", and crossing your hands can swap left and right. Phrases such as FILL THIS PHONE NUMBER are learnt as one whole sign, not word by word.
+- Sign mode wasn't tried with a person signing live: the tests used a recorded FSL clip and a synthetic model. The accuracy you get depends on your recordings.
 - **Agree** ticks whatever terms a form shows. Keep it off for real applications unless you've read them.
 
 ---
 
 ## Time log
 
-Built on **9 October 2026** (times are local, UTC+8):
+Built on **9 October 2026**, finishing just after midnight (times are local, UTC+8):
 
 | Time | What |
 | --- | --- |
@@ -502,9 +575,17 @@ Built on **9 October 2026** (times are local, UTC+8):
 | 10:25–10:30 PM | **Several fields per command, even when misheard** ("feel first name and last name"). |
 | 10:36–10:38 PM | This README update and [CHANGELOG.md](CHANGELOG.md). |
 | 10:47 PM | Screenshots of the Workspace (Profile, Appearance) with the side panel. |
+| 11:23–11:37 PM | **Expresso** (new app next to Autonoma): record your own signs, train on your CPU, test live, export. |
+| 11:38–11:59 PM | **Sign mode** in Autonoma: camera + worker recognition, Workspace → Signs, self-test, SUBMIT needs YES. |
+| 12:00–12:15 AM (10 Oct) | Sign mode docs (this README, CHANGELOG, DATA_AND_MODELS, TIMELOG). |
+| 12:30–1:09 AM | The developer recorded 12 signs (187 takes) in Expresso and trained the first real model (100% held-out), then exported it: self-test 12/12 in Autonoma. |
+| 1:24 AM | Camera hidden by default in Sign mode; the orb shows what it reads; camera button by the mic. |
+| 1:31–1:48 AM | **ChatGPT Codex** redesigned Expresso's UI (app shell, themes, icons, Inter font). |
+| 1:33–1:45 AM | Low-memory fixes: the speech model falls back to the CPU when the GPU can't load it; a 3D-orb crash shows the flat orb instead of a blank panel; clearer camera errors. |
+| 2:05 AM | Expresso made its own repository, both time logs completed, [SUBMISSION.md](SUBMISSION.md) written. |
 
 Every code file starts with a one-line time-log comment, and **[TIMELOG.md](TIMELOG.md)** lists every file with its creation time, last change and purpose.
 
 ---
 
-**Team:** [Jullemyth122](https://github.com/Jullemyth122) (Xenex Ashura) · built with help from Codex, ChatGPT and Claude Code.
+**Team:** [Jullemyth122](https://github.com/Jullemyth122) (Xenex Ashura) · built with help from Codex, ChatGPT and Claude Code. · Companion repository: **[Expresso](https://github.com/Jullemyth122/Expresso)**.

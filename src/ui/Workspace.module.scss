@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created outside this Claude Code session · last changed 9:04 PM (premium compact redesign by Claude Code)
+// Time log (9 Oct 2026): created outside this Claude Code session · last changed 11:57 PM (sign mode by Claude Code)
 .workspace {
   display: grid;
   grid-template-columns: 238px minmax(0, 1fr);
@@ -199,3 +199,11 @@
   &:hover input:not([type='checkbox']) { border-color: var(--line); background: var(--input); }
   input:not([type='checkbox']):focus { border-color: var(--accent); background: var(--input); box-shadow: 0 0 0 3px var(--accent-soft); }
 }
+
+.signList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  span { padding: 4px 10px; border: 1px solid var(--line); border-radius: 99px; font: 600 11px/1.4 var(--mono); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+}
+.range { width: 100%; padding: 0; accent-color: var(--accent); }

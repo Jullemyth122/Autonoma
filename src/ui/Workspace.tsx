@@ -1,7 +1,7 @@
-// Time log (9 Oct 2026): created 3:22 PM by Claude Code · last changed 6:59 PM
+// Time log (9 Oct 2026): created 3:22 PM by Claude Code · last changed 11:43 PM (sign mode by Claude Code)
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
-import { BookOpen, Check, Copy, Cpu, Download, Palette, Paperclip, Plus, RefreshCw, RotateCcw, Sparkles, Trash2, Upload, User } from 'lucide-react';
+import { BookOpen, Check, Copy, Cpu, Download, Hand, Palette, Paperclip, Plus, RefreshCw, RotateCcw, Sparkles, Trash2, Upload, User } from 'lucide-react';
 import type { AppState, CM, Memory, Profile, Settings, VaultData } from '../types/index.ts';
 import { newField } from '../types/defaults.ts';
 import { parseVault } from '../services/vault.ts';
@@ -10,15 +10,17 @@ import { sampleProfile } from './sample.ts';
 import { requestMicrophone } from './voice/listen.ts';
 import { loadSpeechModel, useModelStatus } from './voice/recognizer.ts';
 import { ThemePicker } from './ThemePicker.tsx';
+import { SignSetup } from './SignSetup.tsx';
 import ui from './ui.module.scss';
 import styles from './Workspace.module.scss';
 
-type Section = 'profile' | 'memory' | 'files' | 'ai' | 'appearance' | 'backup';
+type Section = 'profile' | 'memory' | 'files' | 'ai' | 'signs' | 'appearance' | 'backup';
 const SECTIONS: { id: Section; label: string; icon: ReactNode }[] = [
   { id: 'profile', label: 'Profile', icon: <User size={16} /> },
   { id: 'memory', label: 'Memory', icon: <BookOpen size={16} /> },
   { id: 'files', label: 'Files', icon: <Paperclip size={16} /> },
   { id: 'ai', label: 'Local AI', icon: <Cpu size={16} /> },
+  { id: 'signs', label: 'Signs', icon: <Hand size={16} /> },
   { id: 'appearance', label: 'Appearance', icon: <Palette size={16} /> },
   { id: 'backup', label: 'Import & export', icon: <Download size={16} /> },
 ];
@@ -26,8 +28,8 @@ const SECTIONS: { id: Section; label: string; icon: ReactNode }[] = [
 /** Options page: profiles, memory, files, and settings. Edits save automatically. */
 export function Workspace() {
   const { state, setState, error } = useAppState();
-  // The side panel opens options.html#voice when it needs microphone permission.
-  const [section, setSection] = useState<Section>(location.hash === '#voice' ? 'ai' : 'profile');
+  // The side panel opens options.html#voice or #signs when it needs microphone or camera permission.
+  const [section, setSection] = useState<Section>(location.hash === '#voice' ? 'ai' : location.hash === '#signs' ? 'signs' : 'profile');
   return (
     <div className={styles.workspace}>
       <aside className={styles.nav}>
@@ -83,6 +85,10 @@ function Editor({ data, section, onState }: { data: VaultData; section: Section;
       {section === 'memory' && <MemorySection memories={draft.memories} setMemories={memories => update(current => ({ ...current, memories }))} />}
       {section === 'files' && <FilesSection profile={profile} setProfile={setProfile} />}
       {section === 'ai' && <AISection settings={draft.settings} setSettings={setSettings} />}
+      {section === 'signs' && <>
+        <Heading title="Signs">Command Autonoma with your own signs, the way you sign them. Train them in Expresso, export, then switch on Sign mode in the side panel.</Heading>
+        <SignSetup settings={draft.settings} setSettings={setSettings} />
+      </>}
       {section === 'appearance' && <>
         <Heading title="Make it yours">Pick a palette for your visualizer, side panel, and workspace. Your choice stays in sync across all open Autonoma pages.</Heading>
         <ThemePicker expanded />

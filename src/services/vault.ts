@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 1:24 AM, 10 Oct (hidden camera by Claude Code)
 import type { VaultData } from '../types/index.ts';
 import { normalizeVault } from '../types/defaults.ts';
 
@@ -25,6 +25,10 @@ export function parseVault(value: unknown): VaultData {
   data.settings.voiceReplies = data.settings.voiceReplies !== false;
   data.settings.voiceLanguage = data.settings.voiceLanguage === 'tl' ? 'tl' : 'en';
   data.settings.voiceLive = data.settings.voiceLive === true;
+  data.settings.signMode = data.settings.signMode === true;
+  data.settings.signPreview = data.settings.signPreview === true;
+  data.settings.signThreshold = Math.max(0.3, Math.min(0.95, Number(data.settings.signThreshold) || 0.6));
+  data.settings.signStillMs = Math.max(300, Math.min(1500, Number(data.settings.signStillMs) || 700));
   data.settings.useAI = data.settings.useAI !== false;
   return normalizeVault(data);
 }
