@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 11:41 PM by Claude Code · last changed 1:24 AM, 10 Oct
+// Time log (9 Oct 2026): created 11:41 PM by Claude Code · last changed 1:40 AM, 10 Oct
 // Sign mode in the side panel: owns the camera, sends frames to the sign worker one at a time (never a backlog),
 // draws the tracked skeleton, and hands each confident sign to the panel. Turning it off frees the camera and the worker.
 import { useEffect, useRef, useState } from 'react';
@@ -106,7 +106,15 @@ export function useSign(enabled: boolean, options: { threshold: number; stillMs:
     void (async () => {
       try {
         try { stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 30 } }, audio: false }); }
-        catch (caught) { throw caught instanceof DOMException && caught.name === 'NotAllowedError' ? new CameraBlockedError('Camera blocked') : caught; }
+        catch (caught) {
+          // Only a real "not allowed" sends you to the Allow page. If permission is already granted, the camera is
+          // busy or the browser refused for another reason: show that instead of asking for permission again.
+          const granted = await navigator.permissions?.query({ name: 'camera' as PermissionName }).then(result => result.state === 'granted').catch(() => false);
+          if (caught instanceof DOMException && caught.name === 'NotAllowedError' && !granted) throw new CameraBlockedError('Camera blocked');
+          const name = caught instanceof DOMException ? caught.name : '';
+          throw new Error(name === 'NotReadableError' ? 'The camera is busy: close other apps or tabs using it (e.g. Expresso), then switch Sign mode on again.'
+            : `The camera didn't start (${name || 'error'}: ${caught instanceof Error ? caught.message : String(caught)}). Fully restart the browser and try again.`, { cause: caught });
+        }
         if (stopped) return stream.getTracks().forEach(track => track.stop());
         const video = videoRef.current!;
         video.srcObject = stream;
