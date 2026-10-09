@@ -11,7 +11,7 @@ export function newVault(): VaultData {
     activeProfileId: id,
     profiles: [{ id, name: 'My profile', fields: [newField('First Name'), newField('Last Name'), newField('Email'), newField('Phone')], files: [] }],
     memories: [],
-    settings: { model: DEFAULT_MODEL, useAI: true, typingDelay: 0, autoSubmit: false, autoConsent: false },
+    settings: { model: DEFAULT_MODEL, useAI: true, typingDelay: 0, autoSubmit: false, autoConsent: false, voiceReplies: true, voiceLanguage: 'en' },
   };
 }
 

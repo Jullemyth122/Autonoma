@@ -1,11 +1,13 @@
 // Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 6:05 PM
-import { useEffect, useState } from 'react';
-import { Cpu, Link, Play, Power, RefreshCw, Settings as SettingsIcon, Square } from 'lucide-react';
-import type { AppState, FillReport, JobStatus, Settings, VaultData } from '../types/index.ts';
+import { useEffect, useRef, useState } from 'react';
+import { Cpu, Link, Play, Power, RefreshCw, Settings as SettingsIcon, Square, Volume2 } from 'lucide-react';
+import type { AppState, FillReport, JobStatus, Settings, VaultData, VoiceLanguage } from '../types/index.ts';
 import { AI_LABELS, errorText, send, useAppState, useLocalAI, type AIPhase } from './api.ts';
 import { Orb } from './orb/Orb.tsx';
 import type { OrbState } from './orb/parts.tsx';
 import { Report } from './Report.tsx';
+import { say } from './voice/phrases.ts';
+import { speak, useSpeech } from './voice/speak.ts';
 import ui from './ui.module.scss';
 import styles from './Panel.module.scss';
 
@@ -39,10 +41,23 @@ function Controls({ data, job, onState }: { data: VaultData; job: JobStatus | nu
   }
   const save = (next: VaultData) => run(async () => onState(await send<AppState>({ type: 'SAVE_DATA', data: next })));
   const setSettings = (patch: Partial<Settings>) => save({ ...data, settings: { ...data.settings, ...patch } });
-  const start = (urls?: string[]) => run(() => send({ type: 'START_FILL', paginate, urls }));
+  const language: VoiceLanguage = data.settings.voiceLanguage;
+  const talk = (text: string) => { if (data.settings.voiceReplies) void speak(text, language); };
+  const start = (urls?: string[]) => run(async () => {
+    await send({ type: 'START_FILL', paginate, urls });
+    talk(urls?.length ? say.startingLinks(urls.length, language) : say.starting(language));
+  });
   const urls = links.split(/\s+/).map(link => link.trim()).filter(Boolean);
   const models = ai.status.models.includes(data.settings.model) ? ai.status.models : [data.settings.model, ...ai.status.models];
-  const agent = useAgent(running, job?.report, ai.phase);
+  const speech = useSpeech();
+  const agent = useAgent(running, job?.report, ai.phase, speech);
+
+  // When a fill ends, say what happened: how much was filled and which questions need you.
+  const wasRunning = useRef(running);
+  useEffect(() => {
+    if (wasRunning.current && !running && job?.report) talk(say.finished(job.report, language));
+    wasRunning.current = running;
+  });
 
   return (
     <>
@@ -63,6 +78,25 @@ function Controls({ data, job, onState }: { data: VaultData; job: JobStatus | nu
         <label className={ui.toggle}>
           <input type="checkbox" checked={data.settings.useAI} disabled={running} onChange={event => void setSettings({ useAI: event.target.checked })} />
           Use local AI for questions rules can't answer
+        </label>
+      </section>
+
+      <section className={ui.card}>
+        <h2 className={ui.cardTitle}><Volume2 size={16} />Voice</h2>
+        <label className={ui.toggle}>
+          <input type="checkbox" checked={data.settings.voiceReplies} onChange={event => void setSettings({ voiceReplies: event.target.checked })} />
+          Talk back: the agent says what it did
+        </label>
+        <label className={ui.field}>
+          <span>Language</span>
+          <select value={language} onChange={event => {
+            const next = event.target.value as VoiceLanguage;
+            void setSettings({ voiceLanguage: next });
+            if (data.settings.voiceReplies) void speak(next === 'tl' ? 'Sige, Tagalog na tayo.' : "Okay, I'll speak English.", next);
+          }}>
+            <option value="en">English</option>
+            <option value="tl">Tagalog</option>
+          </select>
         </label>
       </section>
 
@@ -114,7 +148,7 @@ const fields = (count: number) => `${count} field${count === 1 ? '' : 's'}`;
  * What the orb shows: thinking while a fill runs, a short "speaking" pulse when it
  * finishes, and "listening" for a while when fields are left for you.
  */
-function useAgent(running: boolean, report: FillReport | undefined, aiPhase: AIPhase): { state: OrbState; caption: string } {
+function useAgent(running: boolean, report: FillReport | undefined, aiPhase: AIPhase, speech: { speaking: boolean; text: string }): { state: OrbState; caption: string } {
   const [wasRunning, setWasRunning] = useState(running);
   const [finish, setFinish] = useState<{ state: OrbState; caption: string } | null>(null);
   if (running !== wasRunning) {
@@ -131,6 +165,7 @@ function useAgent(running: boolean, report: FillReport | undefined, aiPhase: AIP
   }, [finish]);
 
   if (running) return { state: 'thinking', caption: '' };
+  if (speech.speaking) return { state: 'speaking', caption: speech.text };
   if (finish) return finish;
   if (aiPhase === 'checking' || aiPhase === 'loading') return { state: 'transcribing', caption: AI_LABELS[aiPhase] };
   return { state: 'idle', caption: aiPhase === 'ready' ? 'Click the orb to autofill this page' : AI_LABELS[aiPhase] };

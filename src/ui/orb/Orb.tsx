@@ -3,6 +3,7 @@ import { Suspense, lazy, useRef, useState, type PointerEvent } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import type { OrbPointer, OrbState, OrbTone } from './parts.tsx';
 import { isOrbSoundMuted, setOrbSoundMuted } from './sfx.ts';
+import { stopSpeaking } from '../voice/speak.ts';
 import styles from './Orb.module.scss';
 
 const OrbCanvas = lazy(() => import('./OrbCanvas.tsx'));
@@ -26,6 +27,7 @@ export function Orb({ state, tone = 'cyan', caption, disabled, onActivate }: { s
     pointerRef.current = { x: ((event.clientX - box.left) / box.width) * 2 - 1, y: ((event.clientY - box.top) / box.height) * 2 - 1, hover: 1 };
   }
   function toggleSound() {
+    if (!muted) stopSpeaking();
     setOrbSoundMuted(!muted);
     setMuted(!muted);
   }

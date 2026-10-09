@@ -39,6 +39,7 @@ function emptyReport(url: string): FillReport {
 function addReport(target: FillReport, report: FillReport): void {
   for (const key of ['rules', 'ai', 'fixed', 'skipped', 'failed', 'tokens'] as const) target[key] += report[key];
   if (report.notice) target.notice = report.notice;
+  if (report.left?.length) target.left = [...new Set([...(target.left ?? []), ...report.left])].slice(0, 12);
 }
 async function storeJob(status: JobStatus): Promise<void> { await chrome.storage.session.set({ job: status }); }
 
