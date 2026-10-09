@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:40 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:24 PM
 import type { CM, Question, SavedFile } from '../types/index.ts';
 
 export function normalize(value: string): string {
@@ -43,6 +43,36 @@ export function matchQuestion(question: Question, fields: CM[]): Match | null {
 }
 
 /** Splits a multi-choice answer such as "TypeScript, React" or "Typescript | Javascript | Rust". */
+// Words that point at the same kind of question ("fill the birthday" should find "Date of birth").
+const TARGET_SYNONYMS: Record<string, string[]> = {
+  birthday: ['birth', 'dob', 'born'], birth: ['birthday', 'dob', 'born'], dob: ['birth', 'birthday'],
+  phone: ['mobile', 'contact', 'cell'], number: ['phone', 'no'], contact: ['phone', 'mobile'],
+  address: ['location', 'street', 'residence'], location: ['address', 'city'], city: ['address', 'location'],
+  school: ['university', 'college'], university: ['school', 'college'], college: ['university', 'school'],
+  resume: ['cv'], cv: ['resume'], job: ['position', 'role'], position: ['job', 'role'],
+};
+/**
+ * Which questions a spoken target such as "email", "first name" or "birthday" points at: questions containing every
+ * target word (or a synonym), preferring the shortest labels so "first name" doesn't also pick a long certificate-name
+ * question. Falls back to the single closest question when none contains them all.
+ */
+export function selectTargets(target: string, questions: string[]): number[] {
+  const wanted = words(target);
+  if (!wanted.length) return [];
+  const scored = questions.map((question, index) => {
+    const have = new Set(words(question));
+    const hits = wanted.filter(word => have.has(word) || (TARGET_SYNONYMS[word] ?? []).some(alt => have.has(alt))).length;
+    return { index, score: hits / wanted.length, length: have.size };
+  });
+  const full = scored.filter(item => item.score === 1);
+  if (full.length) {
+    const shortest = Math.min(...full.map(item => item.length));
+    return full.filter(item => item.length <= shortest + 2).map(item => item.index);
+  }
+  const best = scored.sort((a, b) => b.score - a.score || a.length - b.length)[0];
+  return best && best.score > 0.5 ? [best.index] : [];
+}
+
 export const splitChoices = (value: string) => value.split(/\s*[,;|\n•]\s*/).map(part => part.trim()).filter(Boolean);
 
 export function matchOption(value: string, options: string[]): string | null {

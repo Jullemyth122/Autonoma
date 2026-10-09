@@ -1,8 +1,9 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 8:28 PM
 import type { RefObject } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { HudScene } from './hud.tsx';
-import type { OrbPointer, OrbState, OrbTone } from './parts.tsx';
+import type { OrbPointer, OrbState } from './parts.tsx';
+import type { OrbTheme } from './themes.ts';
 import styles from './Orb.module.scss';
 
 // Autonoma has no microphone or voice, so the "voice level" the rings react to
@@ -18,10 +19,10 @@ function Level({ state, levelRef }: { state: OrbState; levelRef: RefObject<numbe
 }
 
 /** The three.js scene; loaded on demand so the panel's controls appear first. */
-export default function OrbCanvas({ state, tone, levelRef, pointerRef }: { state: OrbState; tone: OrbTone; levelRef: RefObject<number>; pointerRef: RefObject<OrbPointer> }) {
+export default function OrbCanvas({ state, theme, levelRef, pointerRef }: { state: OrbState; theme: OrbTheme; levelRef: RefObject<number>; pointerRef: RefObject<OrbPointer> }) {
   return <Canvas className={styles.scene} camera={{ position: [0, 0, 4.8], fov: 43 }} dpr={[1, 1.5]}
     gl={{ alpha: true, antialias: true, powerPreference: 'low-power' }} fallback={<span className={styles.backup} />}>
     <Level state={state} levelRef={levelRef} />
-    <HudScene state={state} levelRef={levelRef} pointerRef={pointerRef} tone={tone} />
+      <HudScene state={state} levelRef={levelRef} pointerRef={pointerRef} theme={theme} />
   </Canvas>;
 }

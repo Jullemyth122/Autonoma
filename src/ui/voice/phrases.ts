@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:40 PM by Claude Code · last changed 6:58 PM
+// Time log (9 Oct 2026): created 6:40 PM by Claude Code · last changed 8:26 PM
 // What the agent says, in English and simple Tagalog.
 import type { AdvanceResult, FillReport, VoiceLanguage } from '../../types/index.ts';
 
@@ -18,6 +18,9 @@ function list(items: string[], language: VoiceLanguage) {
 
 export const say = {
   starting: (language: VoiceLanguage) => pick(language, 'On it. Filling this page.', 'Sige, pinupunan ko na ang form.'),
+  startingTarget: (target: string, language: VoiceLanguage) => target === 'this field'
+    ? pick(language, 'Filling this field.', 'Pupunan ko ang field na ito.')
+    : pick(language, `Filling the ${target}.`, `Pupunan ko ang ${target}.`),
   startingLinks: (count: number, language: VoiceLanguage) => pick(language, `On it. Filling ${plural(count, 'form')}.`, `Sige, pupunan ko ang ${count} na form.`),
 
   // Voice commands.
@@ -27,8 +30,8 @@ export const say = {
   heardNothing: (language: VoiceLanguage) => pick(language, "I didn't hear anything.", 'Wala akong narinig.'),
   notUnderstood: (language: VoiceLanguage) => pick(language, 'Sorry, I didn\'t catch that. Say "help" to hear what I can do.', 'Pasensya, hindi ko naintindihan. Sabihin ang "tulong" para malaman ang kaya ko.'),
   help: (language: VoiceLanguage) => pick(language,
-    "You can say: fill this form, fill all pages, next, submit, stop, what's left, speak Tagalog, or use, then a profile name.",
-    'Puwede mong sabihin: punan ang form, punan lahat, susunod, ipasa, itigil, ano pa ang kulang, mag-English, o gamitin, tapos ang pangalan ng profile.'),
+    "You can say: fill this form, fill the email or any field, fill this for the field you clicked, fill all pages, next, submit, stop, what's left, speak Tagalog, or use, then a profile name.",
+    'Puwede mong sabihin: punan ang form, punan ang email o kahit anong field, punan mo ito para sa field na pinindot mo, punan lahat, susunod, ipasa, itigil, ano pa ang kulang, mag-English, o gamitin, tapos ang pangalan ng profile.'),
   left: (left: string[], language: VoiceLanguage) => left.length
     ? pick(language, `${left.length === 1 ? 'One question needs' : `${left.length} questions need`} you: ${list(left, language)}.`, `May ${left.length} na tanong na kailangan ng sagot mo: ${list(left, language)}.`)
     : pick(language, 'Nothing is left from the last fill.', 'Wala nang kulang sa huling pinunan ko.'),
@@ -55,6 +58,14 @@ export const say = {
     if (/no supported form fields/i.test(notice)) return pick(language, "I couldn't find a form on this page.", 'Wala akong makitang form sa pahinang ito.');
     if (/refresh this webpage/i.test(notice)) return pick(language, 'Please refresh the page, then ask me again.', 'Pakirefresh ang page, tapos subukan ulit.');
 
+    if (report.target) {
+      const named = report.target === 'this field' ? pick(language, 'this field', 'ang field na ito') : `"${report.target}"`;
+      if (!report.matched) return report.target === 'this field'
+        ? pick(language, 'Click a field on the page first, then say "fill this".', 'Pumindot muna ng field sa page, tapos sabihin ang "punan mo ito".')
+        : pick(language, `I couldn't find a field called ${named} on this page.`, `Wala akong makitang field na ${named} sa page na ito.`);
+      if (report.filled?.length) return pick(language, `Filled ${list(report.filled, language)}.`, `Napunan ko ang ${list(report.filled, language)}.`);
+      return pick(language, `I found ${named}, but I don't have an answer saved for it.`, `Nakita ko ang ${named}, pero wala akong naka-save na sagot para dito.`);
+    }
     const filled = report.rules + report.ai + report.fixed;
     const parts = [filled
       ? pick(language, `Done. I filled ${plural(filled, 'field')}${report.ai ? `, ${report.ai} with local AI` : ''}.`,

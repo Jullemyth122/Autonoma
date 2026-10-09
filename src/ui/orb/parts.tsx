@@ -1,44 +1,12 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 8:29 PM
 import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, ShaderMaterial, type Group, type Points } from 'three';
+import { ORB_THEMES, type OrbTheme } from './themes.ts';
 
 export type OrbState = 'idle' | 'listening' | 'speaking' | 'thinking' | 'transcribing';
 export type OrbTone = 'cyan' | 'azure' | 'emerald' | 'ember';
 export interface OrbPointer { x: number; y: number; hover: number }
-
-type Palette = Record<OrbState, [string, string, string]>;
-// [base, hot, accent] per state.
-const PALETTES: Record<OrbTone, Palette> = {
-  azure: {
-    idle: ['#2f73f0', '#b5e9ff', '#63d4ff'],
-    listening: ['#1d94dc', '#c8f8ff', '#6ff3ff'],
-    speaking: ['#3d86ff', '#e4f8ff', '#92dcff'],
-    thinking: ['#4d55e8', '#bccaff', '#a08fff'],
-    transcribing: ['#3d66ea', '#accfff', '#8fa8ff'],
-  },
-  cyan: {
-    idle: ['#18a6f2', '#c4f4ff', '#55e6ff'],
-    listening: ['#10c4ea', '#d6fbff', '#6ff7ff'],
-    speaking: ['#22b2ff', '#e8fbff', '#8ae6ff'],
-    thinking: ['#3d7bff', '#c4dcff', '#7fb2ff'],
-    transcribing: ['#2a95f5', '#bfe6ff', '#77ccff'],
-  },
-  emerald: {
-    idle: ['#1fcf5a', '#c9ffd4', '#7dff9a'],
-    listening: ['#16d97a', '#d8ffe6', '#8dffc0'],
-    speaking: ['#2fe060', '#ecffe9', '#a6ff9e'],
-    thinking: ['#14b88f', '#bff7e6', '#62f2c5'],
-    transcribing: ['#1fc46e', '#c7ffdd', '#80ffb4'],
-  },
-  ember: {
-    idle: ['#e0560f', '#ffd596', '#ff9440'],
-    listening: ['#ef6a10', '#ffe6ad', '#ffbe55'],
-    speaking: ['#fb7a12', '#fff2cc', '#ffc985'],
-    thinking: ['#d6382c', '#ffb7a0', '#ff7350'],
-    transcribing: ['#df5016', '#ffcba3', '#ff9362'],
-  },
-};
 
 export const clamp01 = (v: number) => Math.max(0, Math.min(1, v || 0));
 
@@ -50,7 +18,7 @@ export class OrbDrive {
   private targets = [new Color(), new Color(), new Color()];
   readonly uniforms;
   constructor(reduced: boolean) {
-    const [base, hot, accent] = PALETTES.cyan.idle;
+    const { base, hot, accent } = ORB_THEMES[0];
     this.reduced = reduced;
     this.uniforms = {
       uTime: { value: 0 }, uEnergy: { value: 0 }, uBusy: { value: 0 }, uBurst: { value: reduced ? 0 : 1 }, uPx: { value: 100 },
@@ -60,7 +28,7 @@ export class OrbDrive {
   get time() { return this.uniforms.uTime.value; }
   get energy() { return this.uniforms.uEnergy.value; }
   get busy() { return this.uniforms.uBusy.value; }
-  update(state: OrbState, level: number, tone: OrbTone, pixels: number, dt: number) {
+  update(state: OrbState, level: number, theme: OrbTheme, pixels: number, dt: number) {
     const u = this.uniforms, delta = Math.min(dt, 0.05) * (this.reduced ? 0.35 : 1);
     if (this.state !== state) {
       if (this.state && !this.reduced) u.uBurst.value = Math.max(u.uBurst.value, 0.32);
@@ -76,15 +44,15 @@ export class OrbDrive {
     u.uTime.value += delta * (0.7 + u.uBusy.value * 0.9 + e.value * 1.4);
     u.uPx.value = pixels;
     this.step = delta;
-    const palette = PALETTES[tone][state];
+    const palette = [theme.base, theme.hot, theme.accent];
     const ease = 1 - Math.exp(-delta * 3);
     [u.uBase, u.uHot, u.uAccent].forEach((slot, i) => slot.value.lerp(this.targets[i].set(palette[i]), ease));
   }
 }
 
-export function useDrive(state: OrbState, levelRef: RefObject<number>, tone: OrbTone) {
+export function useDrive(state: OrbState, levelRef: RefObject<number>, theme: OrbTheme) {
   const drive = useMemo(() => new OrbDrive(window.matchMedia('(prefers-reduced-motion: reduce)').matches), []);
-  useFrame(({ viewport }, dt) => drive.update(state, levelRef.current, tone, viewport.factor * viewport.dpr, dt));
+  useFrame(({ viewport }, dt) => drive.update(state, levelRef.current, theme, viewport.factor * viewport.dpr, dt));
   return drive;
 }
 

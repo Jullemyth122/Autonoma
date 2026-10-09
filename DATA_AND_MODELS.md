@@ -34,6 +34,7 @@
 
 | What | Where | What it contains |
 | --- | --- | --- |
+| Targeted fills | `src/ui/voice/commands.ts`, `src/content/matching.ts` | “fill the …” parsing; Tagalog question words (*pangalan → name, apelyido → last name, kaarawan → birthday, edad → age, telepono → phone, tirahan → address, bansa → country, paaralan → school*); synonyms for finding the question (*birthday ↔ date of birth, phone ↔ mobile, school ↔ university, résumé ↔ CV*). |
 | Voice command phrases | `src/ui/voice/commands.ts` | English and Tagalog phrase patterns for each command, e.g. *fill / punan / sagutan*, *next / susunod / tuloy*, *submit / ipasa / isumite*, *stop / itigil / tama na*, *what's left / ano pa ang kulang*. Also fixes for common mishearings: "feel/phil this form" → fill, "panan/punnan" → punan. |
 | What the agent says | `src/ui/voice/phrases.ts` | Every spoken reply, in English and simple Tagalog, written by hand. |
 | Form matching | `src/content/matching.ts` | Word lists (filler words like *which, do, you*; synonyms like *surname → last name*), date formats, age-group ranges, option matching. |
@@ -52,6 +53,8 @@ None of these are in the repository unless marked; they were kept in a temporary
 | `left-en.wav` | "What's left?" | "What's left?" | Answered ✅ |
 | `fill-tl.wav` | "Punan mo ang form." | "Panan Mmo Inform" | Understood as *punan* after the mishearing fix ✅ |
 | `left-tl.wav` | "Ano pa ang kulang?" | "Ano pa ang koolang." | Answered in Tagalog ✅ |
+
+Two more recordings tested targeted fills: `email-en.wav` ("Fill the email.") was heard correctly and filled only the email. `name-tl.wav` ("Punan ang pangalan.") was heard as "Panan ng Ping Ellen": the American computer voice can't pronounce *pangalan* clearly enough for Whisper tiny, so that one wasn't understood.
 
 A computer voice reading Tagalog with an American accent is harder to understand than a real Filipino speaker, so these are a tough test. No real person's voice was recorded.
 
@@ -97,3 +100,4 @@ A computer voice reading Tagalog with an American accent is harder to understand
 | 7:00 PM | Four test recordings made with Microsoft David |
 | ~7:40 PM | Switched to transformers.js 3.8.1, with GPU → CPU fallback; all four voice tests pass |
 | 7:58 PM | This document |
+| 8:20–8:40 PM | Targeted fills: rules and Tagalog question words added; two more test recordings (`email-en.wav`, `name-tl.wav`) |

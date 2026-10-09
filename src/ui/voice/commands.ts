@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 8:15 PM
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 8:26 PM
 // Spoken commands in English and simple Tagalog, matched by plain rules. Sentences the rules don't
 // recognise go to the local model (PARSE_COMMAND) to work out the intent.
 import type { Profile, VoiceCommand, VoiceIntent } from '../../types/index.ts';
@@ -18,6 +18,31 @@ const RULES: [VoiceIntent, RegExp][] = [
   ['fill', /\b(fill|autofill|auto fill|punan|punuin|pakipunan|sagutan|pakisagutan|answer|complete)\b|\bi ?fill\b/],
   ['next', /\b(next|continue|go on|susunod|sunod|kasunod|tuloy|ituloy)\b/],
 ];
+// "fill the email", "punan mo ang pangalan", "fill this": a fill verb followed by what to fill.
+const FILL_WHAT = /^(?:(?:please|paki|pakisuyo) )?(?:fill|autofill|answer|complete|punan|punuin|pakipunan|sagutan|pakisagutan)(?: (?:in|out|up|mo|na|nga|po|naman))*(?: (?:the|my|ang|yung|iyong|aking|ko|sa))*\s+(.+)$/;
+const WHOLE_FORM = /^(?:(?:this|the|ang|yung) )?(?:form|page|forms?|pages?|everything|all|lahat|it|whole form|entire form|buong form)(?: (?:na ito|ito|please|po|for me))?$/;
+const THIS_FIELD = /^(?:this|that|this one|that one|this field|that field|this box|that box|this thing|that thing|here|ito|iyan|yan|yun|dito|ito na|itong field|field na ito)$/;
+// Tagalog words for common questions, so "punan ang pangalan" finds "First name" / "Last name".
+const TAGALOG_TARGETS: Record<string, string> = {
+  pangalan: 'name', apelyido: 'last name', kaarawan: 'birthday', 'petsa ng kapanganakan': 'date of birth', edad: 'age',
+  telepono: 'phone', numero: 'number', cellphone: 'phone', tirahan: 'address', bansa: 'country', lungsod: 'city',
+  paaralan: 'school', eskwelahan: 'school', unibersidad: 'university', trabaho: 'job', kurso: 'course',
+};
+function englishTarget(target: string): string {
+  let out = ` ${target} `;
+  for (const [tagalog, english] of Object.entries(TAGALOG_TARGETS)) out = out.replace(new RegExp(` ${tagalog} `, 'g'), ` ${english} `);
+  return out.replace(/\b(please|po|naman|for me|now|na|ko|mo|ninyo|natin|namin)\b/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function fillWhat(said: string): VoiceCommand | null {
+  const match = said.match(FILL_WHAT);
+  if (!match) return null;
+  const what = match[1].replace(/\b(please|po|naman|for me)\b/g, '').replace(/\s+/g, ' ').trim();
+  // Anything mentioning the form or page means the whole form, even when misheard ("mmo inform").
+  if (!what || WHOLE_FORM.test(what) || /\b(?:in)?forms?\b|\bpages?\b/.test(what)) return null;
+  if (THIS_FIELD.test(what)) return { intent: 'fill_focused' };
+  return { intent: 'fill_field', target: englishTarget(what) };
+}
+
 const PROFILE = /\b(?:use|switch to|change to|gamitin(?: mo)?(?: ang)?|lumipat sa|lipat sa)\s+(?:my\s+|the\s+)?(.+?)(?:\s+profile)?$/;
 
 /** The profile whose name best matches what was said, if most of its words were heard. */
@@ -44,6 +69,10 @@ export function matchCommand(text: string, profiles: Profile[]): VoiceCommand | 
     const profile = findProfile(asked[1], profiles);
     if (profile) return { intent: 'profile', profileId: profile.id };
   }
-  for (const [intent, pattern] of RULES) if (pattern.test(said)) return { intent };
+  for (const [intent, pattern] of RULES) {
+    // Before a plain "fill", check whether a particular question was named.
+    if (intent === 'fill') { const targeted = fillWhat(said); if (targeted) return targeted; }
+    if (pattern.test(said)) return { intent };
+  }
   return null;
 }

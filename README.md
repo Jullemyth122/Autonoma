@@ -41,7 +41,7 @@ You save your details once: your profile, a few facts about yourself, your résu
 | **Fill report** | After each run: fields filled by rules, by AI, and repaired, plus questions left for you, time taken, and tokens used. |
 | **Copy-paste backup** | All your data as editable JSON: copy it, paste it back, or download it as a file. |
 | **Talks back** | The agent says what it did: how many fields it filled and which questions are left for you, by name, in **English or Tagalog**. It uses the voices already installed on your computer, so it needs nothing extra and works offline. |
-| **Voice commands** | Click the 🎤 on the orb and speak, in English or simple Tagalog: *“fill this form”*, *“punan mo ang form”*, *“next”*, *“ipasa”*, *“what's left?”*… Speech is turned into text **on your computer** (Whisper tiny). No training is needed. |
+| **Voice commands** | Click the 🎤 on the orb and speak, in English or simple Tagalog: *“fill this form”*, *“fill the email”*, *“fill this”* (the field you clicked), *“punan mo ang form”*, *“next”*, *“ipasa”*, *“what's left?”*… Speech is turned into text **on your computer** (Whisper tiny). No training is needed. |
 | **Agent orb** | An animated 3D orb in the side panel shows what the agent is doing (Ready → Working → Done / Waiting on you). Click it to start. |
 
 ### Built-in safeguards
@@ -193,6 +193,8 @@ The repo includes a two-page registration form with every kind of question Auton
 | English | Tagalog | Does |
 | --- | --- | --- |
 | fill this form / autofill | punan mo ang form / sagutan | Fills the page |
+| fill the email / fill my first name / fill the birthday | punan ang email / punan ang pangalan / punan mo ang kaarawan ko | Fills **only** that question. Synonyms count: birthday ↔ date of birth, phone ↔ mobile, pangalan → name, apelyido → last name. The field glows while it's filled. |
+| fill this / fill that one | punan mo ito | Fills the field you last clicked on the page |
 | fill all pages | punan lahat | Fills and clicks Next through the form |
 | next | susunod / tuloy | Clicks Next |
 | submit | ipasa / isumite | Clicks Submit, then checks it went through |
@@ -364,6 +366,7 @@ Built on **9 October 2026** (times are local, UTC+8):
 | 6:22 PM | This README. |
 | 6:40–7:50 PM | **Voice:** the agent talks back (English/Tagalog), then push-to-talk voice commands with Whisper tiny, running locally. |
 | 7:58 PM | **DATA_AND_MODELS.md**: disclosure of models, rules and test samples. |
+| 8:20–8:40 PM | **Targeted voice fills:** “fill the email”, “fill the name”, “fill this” (the clicked field), in English and Tagalog; the targeted field glows. |
 
 Every code file starts with a one-line time-log comment, and **[TIMELOG.md](TIMELOG.md)** lists every file with its creation time, last change and purpose.
 

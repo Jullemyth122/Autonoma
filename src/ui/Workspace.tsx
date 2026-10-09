@@ -1,7 +1,7 @@
 // Time log (9 Oct 2026): created 3:22 PM by Claude Code · last changed 6:59 PM
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
-import { BookOpen, Check, Copy, Cpu, Download, Paperclip, Plus, RefreshCw, RotateCcw, Sparkles, Trash2, Upload, User } from 'lucide-react';
+import { BookOpen, Check, Copy, Cpu, Download, Palette, Paperclip, Plus, RefreshCw, RotateCcw, Sparkles, Trash2, Upload, User } from 'lucide-react';
 import type { AppState, CM, Memory, Profile, Settings, VaultData } from '../types/index.ts';
 import { newField } from '../types/defaults.ts';
 import { parseVault } from '../services/vault.ts';
@@ -9,15 +9,17 @@ import { AI_LABELS, errorText, send, useAppState, useLocalAI } from './api.ts';
 import { sampleProfile } from './sample.ts';
 import { requestMicrophone } from './voice/listen.ts';
 import { loadSpeechModel, useModelStatus } from './voice/recognizer.ts';
+import { ThemePicker } from './ThemePicker.tsx';
 import ui from './ui.module.scss';
 import styles from './Workspace.module.scss';
 
-type Section = 'profile' | 'memory' | 'files' | 'ai' | 'backup';
+type Section = 'profile' | 'memory' | 'files' | 'ai' | 'appearance' | 'backup';
 const SECTIONS: { id: Section; label: string; icon: ReactNode }[] = [
   { id: 'profile', label: 'Profile', icon: <User size={16} /> },
   { id: 'memory', label: 'Memory', icon: <BookOpen size={16} /> },
   { id: 'files', label: 'Files', icon: <Paperclip size={16} /> },
   { id: 'ai', label: 'Local AI', icon: <Cpu size={16} /> },
+  { id: 'appearance', label: 'Appearance', icon: <Palette size={16} /> },
   { id: 'backup', label: 'Import & export', icon: <Download size={16} /> },
 ];
 
@@ -29,10 +31,14 @@ export function Workspace() {
   return (
     <div className={styles.workspace}>
       <aside className={styles.nav}>
-        <span className={styles.logo}>Autonoma</span>
+        <div className={styles.brand}><span className={styles.brandMark}><Sparkles size={20} /></span><span className={styles.logo}>Autonoma<small>Your local assistant</small></span></div>
+        <p className={styles.navLabel}>Workspace</p>
+        <nav className={styles.navItems} aria-label="Workspace sections">
         {state && SECTIONS.map(item => (
           <button key={item.id} className={styles.navItem} aria-current={section === item.id ? 'page' : undefined} onClick={() => setSection(item.id)}>{item.icon}{item.label}</button>
         ))}
+        </nav>
+        <div className={styles.navFooter}><span />Local by design<small>Your profiles. Your device.</small></div>
       </aside>
       <main className={styles.main}>
         {!state ? <p className={ui.muted}>{error || 'Loading…'}</p>
@@ -77,6 +83,11 @@ function Editor({ data, section, onState }: { data: VaultData; section: Section;
       {section === 'memory' && <MemorySection memories={draft.memories} setMemories={memories => update(current => ({ ...current, memories }))} />}
       {section === 'files' && <FilesSection profile={profile} setProfile={setProfile} />}
       {section === 'ai' && <AISection settings={draft.settings} setSettings={setSettings} />}
+      {section === 'appearance' && <>
+        <Heading title="Make it yours">Pick a palette for your visualizer, side panel, and workspace. Your choice stays in sync across all open Autonoma pages.</Heading>
+        <ThemePicker expanded />
+        <p className={ui.muted}>Theme changes save automatically on this device.</p>
+      </>}
       {section === 'backup' && <BackupSection draft={draft} update={update} />}
     </>
   );

@@ -1,5 +1,5 @@
 // Time log (9 Oct 2026): created 3:23 PM by Claude Code
-.headline { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.headline { font-size: 26px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.3; }
 
 .sources {
   display: flex;
@@ -8,7 +8,7 @@
   gap: 6px;
   font-size: 12px;
 
-  > span:not(:last-child) { padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+  > span:not(:last-child) { padding: 4px 9px; border: 1px solid currentColor; border-radius: 6px; font-size: 10px; font-weight: 500; }
 }
 
 // The same three colors as the badges written next to fields on the page.
@@ -18,7 +18,7 @@
 
 .meta {
   overflow: hidden;
-  font-size: 12px;
+  font-size: 10px;
   color: var(--muted);
   text-overflow: ellipsis;
   white-space: nowrap;

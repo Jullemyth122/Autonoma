@@ -1,75 +1,75 @@
-// Time log (9 Oct 2026): created 3:23 PM by Claude Code
+// One palette drives every extension surface. Status colors remain recognizable.
 :root {
-  color-scheme: light;
-  --bg: #f6f5f0;
-  --surface: #ffffff;
-  --surface-2: #efede6;
-  --ink: #1f1e1b;
-  --muted: #66645d;
-  --line: #e1ded5;
-  --accent: #2f5d50;
-  --accent-hover: #264c42;
-  --accent-ink: #ffffff;
-  --focus: #4a8c79;
-  --rules-bg: #def3e8; --rules-ink: #196449;
-  --ai-bg: #ece5ff; --ai-ink: #6941b8;
-  --fixed-bg: #fff0cb; --fixed-ink: #875300;
-  --danger: #b42318;
-  --danger-bg: #fdecea;
-  --radius: 10px;
-  --space: 12px;
+  color-scheme: dark;
+  --theme-primary: #ffd447;
+  --theme-secondary: #2495ff;
+  --theme-highlight: #d7eeff;
+  --bg: color-mix(in srgb, var(--theme-secondary) 3%, #080c14);
+  --surface: color-mix(in srgb, var(--theme-secondary) 4%, #111722);
+  --surface-2: color-mix(in srgb, var(--theme-secondary) 8%, #17202e);
+  --input: color-mix(in srgb, var(--theme-secondary) 3%, #0a101b);
+  --ink: #ecf1fa;
+  --muted: #96a5bb;
+  --line: color-mix(in srgb, var(--theme-secondary) 12%, #ffffff12);
+  --accent: var(--theme-primary);
+  --accent-hover: color-mix(in srgb, var(--accent) 80%, white);
+  --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+  --accent-ink: #0b1420;
+  --secondary: var(--theme-secondary);
+  --secondary-soft: color-mix(in srgb, var(--secondary) 10%, transparent);
+  --focus: var(--accent);
+  --success: #83d8b8;
+  --rules-bg: #83d8b812; --rules-ink: #83d8b8;
+  --ai-bg: #bea3ff14; --ai-ink: #c8b2ff;
+  --fixed-bg: #ffd47914; --fixed-ink: #f1cf81;
+  --danger: #ff92a2;
+  --danger-bg: #ff627b14;
+  --radius: 16px;
+  --space: 14px;
+  --shadow: 0 8px 30px #00000016, inset 0 1px 0 #ffffff04;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #171715;
-    --surface: #22221f;
-    --surface-2: #2c2c28;
-    --ink: #eceae3;
-    --muted: #a3a097;
-    --line: #3a3934;
-    --accent: #7fc4ad;
-    --accent-hover: #9bd3c0;
-    --accent-ink: #10231d;
-    --focus: #7fc4ad;
-    --rules-bg: #193a2c; --rules-ink: #8fdcb7;
-    --ai-bg: #2e2548; --ai-ink: #c5b2ff;
-    --fixed-bg: #3d2f12; --fixed-ink: #f2c66b;
-    --danger: #ff8a80;
-    --danger-bg: #3b1d1a;
-  }
-}
-
 *, *::before, *::after { box-sizing: border-box; }
-
+html { min-height: 100%; scrollbar-color: var(--surface-2) var(--bg); scrollbar-width: thin; }
 body {
   margin: 0;
-  background: var(--bg);
+  min-width: 280px;
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--secondary) 7%, transparent), transparent 48%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--ink);
-  font: 14px/1.5 var(--font);
+  font: 13px/1.6 var(--font);
   -webkit-font-smoothing: antialiased;
 }
-
-h1, h2, p { margin: 0; }
-
-input, select, textarea, button { font: inherit; color: inherit; }
-
-input:not([type='checkbox']), select, textarea {
+h1, h2, h3, p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button, summary, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button svg { flex-shrink: 0; }
+input:not([type='checkbox']):not([type='radio']), select, textarea {
   width: 100%;
   min-width: 0;
-  padding: 7px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
+  border-radius: 10px;
+  background: var(--input);
+  transition: border-color 150ms, box-shadow 150ms;
+  &:hover:not(:disabled) { border-color: color-mix(in srgb, var(--secondary) 40%, var(--line)); }
+  &:focus { border-color: var(--secondary); box-shadow: 0 0 0 3px var(--secondary-soft); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
-
+input::placeholder, textarea::placeholder { color: #74849e; }
+select { cursor: pointer; }
+option { background: var(--surface); color: var(--ink); }
 textarea { resize: vertical; }
+input[type='checkbox'], input[type='radio'] { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); flex: none; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+code { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+a { color: var(--accent); }
 
-input[type='checkbox'] { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); flex: none; }
-
-:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-
-code { font-family: var(--mono); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; }
+}

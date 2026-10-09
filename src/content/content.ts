@@ -1,15 +1,22 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 6:40 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:25 PM
 import type { AIResult, FillContext, FillReport, FillSource, Question, Reply } from '../types/index.ts';
 import { AI_TIMEOUT_MS } from '../types/defaults.ts';
 import { harvestAllControls, controlValue, isVisible, pageRoots, rejectionReason, resolveChoiceText } from './read.ts';
 import type { Control } from './read.ts';
-import { matchFile, matchQuestion } from './matching.ts';
-import { applyValueToControl, attachFile, pause, showBadge } from './write.ts';
+import { matchFile, matchQuestion, selectTargets } from './matching.ts';
+import { applyValueToControl, attachFile, pause, showBadge, spotlight } from './write.ts';
 
 const manuallyEdited = new WeakSet<HTMLElement>();
 document.addEventListener('input', event => { if (event.isTrusted && event.composedPath()[0] instanceof HTMLElement) manuallyEdited.add(event.composedPath()[0] as HTMLElement); }, true);
 document.addEventListener('change', event => { if (event.isTrusted && event.composedPath()[0] instanceof HTMLElement) manuallyEdited.add(event.composedPath()[0] as HTMLElement); }, true);
 let currentFill: AbortController | null = null;
+// The last form field you clicked or typed in, for "fill this" / "punan mo ito".
+const FIELD = 'input, textarea, select, [role="combobox"], [role="radio"], [role="checkbox"]';
+let lastFocused: HTMLElement | null = null;
+document.addEventListener('focusin', event => {
+  const element = event.composedPath()[0];
+  if (element instanceof HTMLElement && element.matches(FIELD)) lastFocused = element;
+}, true);
 
 async function askAI(questions: Question[], context: FillContext, signal: AbortSignal): Promise<AIResult> {
   if (!questions.length) return { answers: [], tokens: 0 };
@@ -65,15 +72,27 @@ async function fillPage(context: FillContext): Promise<FillReport> {
   const timer = setTimeout(() => controller.abort(new Error('The page reached its 300-second time limit.')), Math.max(1, context.deadline - Date.now()));
   const filled = new Map<string, FillSource>(), failed = new Set<string>(), attempted = new Set<string>();
   let tokens = 0, notice = '';
-  const eligible = (control: Control) => !control.elements.some(element => manuallyEdited.has(element));
+  // A targeted fill ("fill the email", "fill this") only touches the questions you pointed at, and may replace what's there.
+  const target = context.target;
+  const focused = target?.focused ? (document.activeElement instanceof HTMLElement && document.activeElement.matches(FIELD) ? document.activeElement : lastFocused) : null;
+  const inScope = (controls: Control[]): Control[] => {
+    if (!target) return controls;
+    if (target.focused) return focused ? controls.filter(control => control.elements.some(element => element === focused || element.contains(focused))) : [];
+    const picked = new Set(selectTargets(target.text ?? '', controls.map(control => control.question.question)));
+    return controls.filter((_, index) => picked.has(index));
+  };
+  const labels = new Map<string, string>();
+  const eligible = (control: Control) => Boolean(target) || !control.elements.some(element => manuallyEdited.has(element));
   async function write(control: Control, value: string, source: FillSource): Promise<boolean> {
     signal.throwIfAborted();
     if (!eligible(control)) return false;
+    if (target) spotlight(control.primary, labels.size === 0);
     const success = await applyValueToControl(control, value, context.settings.typingDelay, signal);
-    if (success) { filled.set(control.question.id, source); failed.delete(control.question.id); showBadge(control, source); }
+    if (success) { filled.set(control.question.id, source); failed.delete(control.question.id); showBadge(control, source); labels.set(control.question.id, cleanLabel(control.question.question)); }
     else failed.add(control.question.id);
     return success;
   }
+  let matched = 0;
   async function resolve(controls: Control[], repair = false): Promise<Control[]> {
     if (!context.aiReady || !controls.length) return controls;
     try {
@@ -94,12 +113,13 @@ async function fillPage(context: FillContext): Promise<FillReport> {
 
   try {
     for (let pass = 0; pass < 3; pass++) {
-      const controls = harvestAllControls();
+      const controls = inScope(harvestAllControls());
+      matched = Math.max(matched, controls.length);
       const pending: Control[] = [], weak = new Map<string, string>();
       for (const control of controls) {
         signal.throwIfAborted();
         const id = control.question.id;
-        if (filled.has(id) || attempted.has(id) || controlValue(control) || !eligible(control)) continue;
+        if (filled.has(id) || attempted.has(id) || (!target && controlValue(control)) || !eligible(control)) continue;
         attempted.add(id);
         if (isConsent(control)) {
           if (context.settings.autoConsent) await write(control, consentAnswer(control)!, 'rules');
@@ -107,7 +127,7 @@ async function fillPage(context: FillContext): Promise<FillReport> {
         }
         if (control.question.kind === 'file') {
           const file = matchFile(control.question.question, control.primary.getAttribute('accept') ?? '', context.profile.files);
-          if (file && attachFile(control, file)) { filled.set(id, 'rules'); showBadge(control, 'rules'); }
+          if (file && attachFile(control, file)) { filled.set(id, 'rules'); showBadge(control, 'rules'); labels.set(id, cleanLabel(control.question.question)); if (target) spotlight(control.primary, true); }
           continue;
         }
         const match = matchQuestion(control.question, context.profile.fields);
@@ -123,11 +143,11 @@ async function fillPage(context: FillContext): Promise<FillReport> {
         if (candidate !== undefined) await write(control, candidate, 'rules');
       }
       await pause(450, signal);
-      const newlyVisible = harvestAllControls().some(control => !attempted.has(control.question.id) && !controlValue(control) && eligible(control));
+      const newlyVisible = inScope(harvestAllControls()).some(control => !attempted.has(control.question.id) && !controlValue(control) && eligible(control));
       if (!newlyVisible) break;
     }
 
-    const rejected = harvestAllControls().filter(control => filled.has(control.question.id) && eligible(control) && rejectionReason(control));
+    const rejected = inScope(harvestAllControls()).filter(control => filled.has(control.question.id) && eligible(control) && rejectionReason(control));
     const needsAI: Control[] = [];
     for (const control of rejected) {
       const replacement = repairWithRules(control);
@@ -140,10 +160,10 @@ async function fillPage(context: FillContext): Promise<FillReport> {
   finally { clearTimeout(timer); if (currentFill === controller) currentFill = null; }
 
   const sources = [...filled.values()];
-  const unanswered = harvestAllControls().filter(control => !filled.has(control.question.id) && !controlValue(control));
+  const unanswered = inScope(harvestAllControls()).filter(control => !filled.has(control.question.id) && !(target ? false : controlValue(control)));
   const skipped = unanswered.filter(control => !failed.has(control.question.id)).length;
   const left = unanswered.map(control => cleanLabel(control.question.question));
-  return { id: crypto.randomUUID(), url: location.href, rules: sources.filter(source => source === 'rules').length, ai: sources.filter(source => source === 'ai').length, fixed: sources.filter(source => source === 'fixed').length, failed: failed.size, skipped, tokens, elapsedMs: Date.now() - startedAt, createdAt: Date.now(), ...(notice ? { notice } : {}) , ...(left.length ? { left } : {}) };
+  return { id: crypto.randomUUID(), url: location.href, rules: sources.filter(source => source === 'rules').length, ai: sources.filter(source => source === 'ai').length, fixed: sources.filter(source => source === 'fixed').length, failed: failed.size, skipped, tokens, elapsedMs: Date.now() - startedAt, createdAt: Date.now(), ...(notice ? { notice } : {}) , ...(left.length ? { left } : {}), ...(labels.size ? { filled: [...labels.values()] } : {}), ...(target ? { matched } : {}) };
 }
 
 function pageSignature(): string {

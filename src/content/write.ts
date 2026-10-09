@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:39 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:24 PM
 import type { FillSource, SavedFile } from '../types/index.ts';
 import type { Control } from './read.ts';
 import { controlValue, pageRoots, resolveChoiceText } from './read.ts';
@@ -101,4 +101,14 @@ export function showBadge(control: Control, source: FillSource): void {
   }
   const style = { rules: ['Filled', '#def3e8', '#196449'], ai: ['AI', '#ece5ff', '#6941b8'], fixed: ['Fixed', '#fff0cb', '#875300'] }[source];
   badge.textContent = style[0]; badge.style.background = style[1]; badge.style.color = style[2];
+}
+
+/** Scrolls a targeted field into view and makes it glow for a moment, so you can see what the agent is working on. */
+export function spotlight(element: HTMLElement, first: boolean): void {
+  if (first) element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const previous = { outline: element.style.outline, boxShadow: element.style.boxShadow, transition: element.style.transition };
+  element.style.transition = 'box-shadow 300ms ease, outline-color 300ms ease';
+  element.style.outline = '2px solid #8b5cf6';
+  element.style.boxShadow = '0 0 0 6px #8b5cf633, 0 0 24px #8b5cf688';
+  setTimeout(() => Object.assign(element.style, previous), 1800);
 }
