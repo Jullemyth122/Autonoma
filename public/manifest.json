@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Autonoma",
+  "version": "0.1.0",
+  "minimum_chrome_version": "120",
+  "description": "Rules-first autofill, with local AI for the harder questions.",
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "tabs",
+    "webNavigation",
+    "unlimitedStorage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Autonoma"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}

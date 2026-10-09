@@ -1,0 +1,121 @@
+// Time log (9 Oct 2026): created 6:12 PM (orb UI)
+// The orb glows additively, so it always sits on its own dark "screen", in light and dark themes alike.
+.stage {
+  --orb-glow: #22b4ff80;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 14px 16px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  isolation: isolate;
+  color: #eaf2ff;
+  background: radial-gradient(ellipse at 50% 42%, #193b63 0%, #0f223b 48%, #0b192d 90%);
+
+  // Faint dot grid, fading out at the top and bottom.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.2;
+    background-image: radial-gradient(#7e9abd 0.6px, transparent 0.6px);
+    background-size: 20px 20px;
+    mask-image: linear-gradient(transparent, #000 30%, transparent 90%);
+  }
+
+  &[data-tone='azure'] { --orb-glow: #3d86ff80; }
+  &[data-tone='emerald'] { --orb-glow: #2fe06080; }
+  &[data-tone='ember'] { --orb-glow: #fb7a1280; }
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  gap: 10px;
+}
+
+.eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 1.8px; color: #8ca2c1; }
+
+.presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #b9cbe3;
+  white-space: nowrap;
+
+  i { width: 6px; height: 6px; border-radius: 50%; background: #77cdb1; box-shadow: 0 0 9px #77cdb166; }
+  &[data-state='thinking'] i, &[data-state='transcribing'] i { background: #7fb2ff; box-shadow: 0 0 9px #7fb2ff88; animation: blink 0.8s ease-in-out infinite alternate; }
+  &[data-state='listening'] i { background: #f2c66b; box-shadow: 0 0 9px #f2c66b88; }
+}
+
+@keyframes blink { to { opacity: 0.35; } }
+
+.orb {
+  position: relative;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: filter 0.25s;
+
+  &:hover:not(:disabled) { filter: brightness(1.16); }
+  &:disabled { cursor: progress; }
+}
+
+// Neon bloom without full-screen post-processing.
+.scene { position: absolute !important; inset: 0; pointer-events: none; filter: drop-shadow(0 0 5px var(--orb-glow)); }
+
+// Shown while three.js loads, or if WebGL is unavailable.
+.backup {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  border: 1px solid #79bdff88;
+  box-shadow: 0 0 25px #2985ff25, inset 0 0 25px #2985ff25;
+  background: repeating-radial-gradient(ellipse at center, transparent 0 8px, #4c99ea33 9px, transparent 10px 16px);
+  animation: breathe 7s ease-in-out infinite;
+}
+
+@keyframes breathe { 0%, 100% { transform: scale(0.98); } 50% { transform: scale(1.04); } }
+
+.caption {
+  min-height: 21px;
+  max-width: 100%;
+  padding: 0 30px; // clear of the sound button
+  font-size: 13px;
+  color: #b9cbe3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.sound {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #9ac4ff33;
+  border-radius: 50%;
+  background: #18365480;
+  color: #b9cbe3;
+  cursor: pointer;
+
+  &:hover { color: #fff; border-color: #9ac4ff66; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backup, .presence i { animation: none !important; }
+}

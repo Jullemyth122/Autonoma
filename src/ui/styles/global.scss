@@ -1,0 +1,75 @@
+// Time log (9 Oct 2026): created 3:23 PM by Claude Code
+:root {
+  color-scheme: light;
+  --bg: #f6f5f0;
+  --surface: #ffffff;
+  --surface-2: #efede6;
+  --ink: #1f1e1b;
+  --muted: #66645d;
+  --line: #e1ded5;
+  --accent: #2f5d50;
+  --accent-hover: #264c42;
+  --accent-ink: #ffffff;
+  --focus: #4a8c79;
+  --rules-bg: #def3e8; --rules-ink: #196449;
+  --ai-bg: #ece5ff; --ai-ink: #6941b8;
+  --fixed-bg: #fff0cb; --fixed-ink: #875300;
+  --danger: #b42318;
+  --danger-bg: #fdecea;
+  --radius: 10px;
+  --space: 12px;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #171715;
+    --surface: #22221f;
+    --surface-2: #2c2c28;
+    --ink: #eceae3;
+    --muted: #a3a097;
+    --line: #3a3934;
+    --accent: #7fc4ad;
+    --accent-hover: #9bd3c0;
+    --accent-ink: #10231d;
+    --focus: #7fc4ad;
+    --rules-bg: #193a2c; --rules-ink: #8fdcb7;
+    --ai-bg: #2e2548; --ai-ink: #c5b2ff;
+    --fixed-bg: #3d2f12; --fixed-ink: #f2c66b;
+    --danger: #ff8a80;
+    --danger-bg: #3b1d1a;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, p { margin: 0; }
+
+input, select, textarea, button { font: inherit; color: inherit; }
+
+input:not([type='checkbox']), select, textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+textarea { resize: vertical; }
+
+input[type='checkbox'] { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); flex: none; }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+code { font-family: var(--mono); font-size: 12px; }

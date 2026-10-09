@@ -1,0 +1,25 @@
+// Time log (9 Oct 2026): created 3:23 PM by Claude Code
+.headline { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+
+  > span:not(:last-child) { padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+}
+
+// The same three colors as the badges written next to fields on the page.
+.rules { background: var(--rules-bg); color: var(--rules-ink); }
+.ai { background: var(--ai-bg); color: var(--ai-ink); }
+.fixed { background: var(--fixed-bg); color: var(--fixed-ink); }
+
+.meta {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

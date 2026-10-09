@@ -1,0 +1,141 @@
+<!doctype html>
+<!-- Time log (9 Oct 2026): created 3:24 PM by Claude Code · last changed 6:11 PM -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Demo Hackathon Registration</title>
+<style>
+  :root { --bg: #f4f2ec; --card: #fff; --ink: #1f1e1b; --muted: #6b6960; --line: #dedad0; --accent: #2b4c7e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161614; --card: #20201d; --ink: #ecebe5; --muted: #a29f95; --line: #3a3934; --accent: #8fb0e6; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, 'Segoe UI', sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .lede { margin: 0 0 24px; color: var(--muted); }
+  form { padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+  .steps { margin: 0 0 20px; font-size: 13px; color: var(--muted); }
+  .q { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+  .q > label, legend { font-weight: 600; }
+  fieldset { margin: 0 0 18px; padding: 0; border: 0; }
+  fieldset label { display: flex; gap: 8px; align-items: center; font-weight: 400; margin-top: 6px; }
+  input:not([type=radio]):not([type=checkbox]), select, textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: inherit; font: inherit; }
+  .help { font-size: 13px; color: var(--muted); }
+  .actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; }
+  button { padding: 10px 18px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  [hidden] { display: none !important; }
+  /* Every question is required; the star is CSS so it isn't part of the question text. */
+  .q > label::after, legend::after { content: ' *'; color: #d93025; }
+  pre { white-space: pre-wrap; padding: 16px; border-radius: 8px; background: var(--card); border: 1px solid var(--line); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Demo Hackathon 2026 — Registration</h1>
+  <p class="lede">A sample form for testing Autonoma. Nothing here is sent anywhere. Every question is required.</p>
+
+  <form id="form" novalidate>
+    <section id="step1">
+      <p class="steps">Step 1 of 2 — About you</p>
+      <div class="q"><label for="first">First name</label><input id="first" name="first_name" required autocomplete="off" /></div>
+      <div class="q"><label for="last">Last name</label><input id="last" name="last_name" required autocomplete="off" /></div>
+      <div class="q"><label for="email">Email address</label><input id="email" name="email" type="email" required autocomplete="off" /></div>
+      <div class="q"><label for="mobile">Mobile number</label><input id="mobile" name="mobile" type="tel" required autocomplete="off" /></div>
+      <div class="q">
+        <label for="cert">Full name for your certificate (Surname, First Name M.I.)</label>
+        <input id="cert" name="certificate_name" placeholder="e.g. DELA CRUZ, Juan P." required autocomplete="off" />
+      </div>
+      <div class="q"><label for="dob">Date of birth</label><input id="dob" name="dob" type="date" required /></div>
+      <div class="q">
+        <label for="country">Country</label>
+        <select id="country" name="country" required>
+          <option value="">Choose…</option>
+          <option>Indonesia</option><option>Malaysia</option><option>Philippines</option><option>Singapore</option><option>Vietnam</option><option>Other</option>
+        </select>
+      </div>
+      <div class="actions"><span></span><button type="button" id="next">Next</button></div>
+    </section>
+
+    <section id="step2" hidden>
+      <p class="steps">Step 2 of 2 — Experience</p>
+      <fieldset>
+        <legend>Are you currently a student?</legend>
+        <label><input type="radio" name="student" value="yes" required /> Yes</label>
+        <label><input type="radio" name="student" value="no" /> No</label>
+      </fieldset>
+      <div id="studentOnly" hidden>
+        <div class="q"><label for="university">Which university do you attend?</label><input id="university" name="university" required autocomplete="off" /></div>
+        <div class="q">
+          <label for="year">Year level</label>
+          <select id="year" name="year" required><option value="">Choose…</option><option>1st year</option><option>2nd year</option><option>3rd year</option><option>4th year</option><option>Graduate student</option></select>
+        </div>
+      </div>
+      <fieldset aria-required="true">
+        <legend>Which of these do you use regularly?</legend>
+        <label><input type="checkbox" name="stack" value="ts" /> TypeScript</label>
+        <label><input type="checkbox" name="stack" value="react" /> React</label>
+        <label><input type="checkbox" name="stack" value="python" /> Python</label>
+        <label><input type="checkbox" name="stack" value="go" /> Go</label>
+        <label><input type="checkbox" name="stack" value="rust" /> Rust</label>
+      </fieldset>
+      <div class="q">
+        <label for="why">In one or two sentences, why do you want to join?</label>
+        <textarea id="why" name="why" rows="3" required></textarea>
+      </div>
+      <div class="q">
+        <label for="resume">Upload your résumé (PDF)</label>
+        <input id="resume" name="resume" type="file" accept=".pdf" required />
+        <span class="help">PDF only.</span>
+      </div>
+      <fieldset>
+        <legend>Code of conduct</legend>
+        <label><input type="checkbox" name="coc" required /> I have read and agree to the code of conduct</label>
+      </fieldset>
+      <div class="actions"><button type="button" class="ghost" id="back">Back</button><button type="submit">Submit</button></div>
+    </section>
+  </form>
+
+  <pre id="result" hidden></pre>
+</main>
+<script>
+  const form = document.getElementById('form');
+  const step1 = document.getElementById('step1'), step2 = document.getElementById('step2');
+  // Checks every visible question in a step and points at the first empty one.
+  function stepIsComplete(step) {
+    for (const group of step.querySelectorAll('fieldset[aria-required="true"]')) {
+      const boxes = [...group.querySelectorAll('input[type=checkbox]')];
+      boxes.forEach(box => box.setCustomValidity(''));
+      if (!group.closest('[hidden]') && !boxes.some(box => box.checked)) boxes[0].setCustomValidity('Choose at least one option.');
+    }
+    const invalid = [...step.querySelectorAll('input, select, textarea')].find(el => !el.closest('[hidden]') && !el.checkValidity());
+    if (invalid) { invalid.reportValidity(); return false; }
+    return true;
+  }
+  form.addEventListener('change', event => {
+    if (event.target.type === 'checkbox') event.target.closest('fieldset')?.querySelectorAll('input').forEach(box => box.setCustomValidity(''));
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    if (!stepIsComplete(step1)) return;
+    step1.hidden = true; step2.hidden = false; window.scrollTo(0, 0);
+  });
+  document.getElementById('back').addEventListener('click', () => { step2.hidden = true; step1.hidden = false; });
+  // Conditional question: only students see university and year level.
+  form.addEventListener('change', event => {
+    if (event.target.name === 'student') document.getElementById('studentOnly').hidden = form.student.value !== 'yes';
+  });
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!stepIsComplete(step2)) return;
+    const data = {};
+    for (const [key, value] of new FormData(form)) {
+      const shown = value instanceof File ? (value.name ? `${value.name} (${Math.round(value.size / 1024 * 10) / 10} KB)` : '') : value;
+      data[key] = key in data ? [].concat(data[key], shown) : shown;
+    }
+    const result = document.getElementById('result');
+    result.textContent = 'Submitted (locally, nothing was sent):\n\n' + JSON.stringify(data, null, 2);
+    result.hidden = false; form.hidden = true; window.scrollTo(0, 0);
+  });
+</script>
+</body>
+</html>

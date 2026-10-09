@@ -1,0 +1,279 @@
+{
+  "fields": {
+    "First Name": "Maria",
+    "Middle Name": "Reyes",
+    "Last Name": "Santos",
+    "Email": "maria.santos@example.com",
+    "Phone": "+639175550142",
+    "Date of Birth": "2003-05-14",
+    "City": "Quezon City",
+    "Country": "Philippines"
+  },
+  "questions": [
+    {
+      "question": "First name",
+      "expect": "First Name",
+      "strong": true
+    },
+    {
+      "question": "Last name",
+      "expect": "Last Name",
+      "strong": true
+    },
+    {
+      "question": "Surname",
+      "expect": "Last Name",
+      "strong": true
+    },
+    {
+      "question": "Given name",
+      "expect": "First Name",
+      "strong": true
+    },
+    {
+      "question": "E-mail address",
+      "format": "Input type: email",
+      "expect": "Email",
+      "strong": true
+    },
+    {
+      "question": "Date of birth",
+      "format": "Input type: date",
+      "expect": "Date of Birth",
+      "strong": true
+    },
+    {
+      "question": "Date of birth",
+      "format": "MM/DD/YYYY",
+      "expect": "Date of Birth",
+      "strong": false
+    },
+    {
+      "question": "Country",
+      "expect": "Country",
+      "strong": true
+    },
+    {
+      "question": "Full name (Surname, First Name M.I.)",
+      "strong": false
+    },
+    {
+      "question": "Name",
+      "strong": false
+    },
+    {
+      "question": "Mobile number",
+      "expect": "Phone",
+      "strong": false
+    },
+    {
+      "question": "Why do you want to join?",
+      "expect": null
+    }
+  ],
+  "files": [
+    {
+      "question": "Upload your résumé (PDF)",
+      "accept": ".pdf",
+      "expect": "Maria_Santos_Resume.pdf"
+    },
+    {
+      "question": "Profile photo",
+      "accept": "image/*",
+      "expect": null
+    }
+  ],
+  "savedFiles": [
+    {
+      "name": "Maria_Santos_Resume.pdf",
+      "type": "application/pdf",
+      "context": "resume CV"
+    },
+    {
+      "name": "Transcript.pdf",
+      "type": "application/pdf",
+      "context": "grades records"
+    }
+  ],
+  "options": [
+    {
+      "value": "Philippines",
+      "options": [
+        "Indonesia",
+        "Malaysia",
+        "Philippines",
+        "Singapore",
+        "Vietnam",
+        "Other"
+      ],
+      "expect": "Philippines"
+    },
+    {
+      "value": "PMS Bldg Brgy 186 Tala Caloocan City, Philippines",
+      "options": [
+        "Indonesia",
+        "Malaysia",
+        "Philippines",
+        "Singapore",
+        "Vietnam",
+        "Other"
+      ],
+      "expect": "Philippines"
+    },
+    {
+      "value": "Manila, Philippines or Singapore",
+      "options": [
+        "Indonesia",
+        "Malaysia",
+        "Philippines",
+        "Singapore",
+        "Vietnam",
+        "Other"
+      ],
+      "expect": null
+    },
+    {
+      "value": "Quezon City",
+      "options": [
+        "Indonesia",
+        "Malaysia",
+        "Philippines",
+        "Singapore",
+        "Vietnam",
+        "Other"
+      ],
+      "expect": null
+    }
+  ],
+  "dates": [
+    {
+      "value": "2003-05-14",
+      "expect": "2003-05-14"
+    },
+    {
+      "value": "20/11/2003",
+      "expect": "2003-11-20"
+    },
+    {
+      "value": "11/20/2003",
+      "expect": "2003-11-20"
+    },
+    {
+      "value": "05/06/2003",
+      "expect": null
+    },
+    {
+      "value": "May 14, 2003",
+      "expect": "2003-05-14"
+    },
+    {
+      "value": "14 November 2003",
+      "expect": "2003-11-14"
+    },
+    {
+      "value": "31/02/2003",
+      "expect": null
+    }
+  ],
+  "ages": {
+    "today": "2026-10-09",
+    "cases": [
+      {
+        "birth": "2003-11-20",
+        "expect": 22
+      },
+      {
+        "birth": "2003-10-09",
+        "expect": 23
+      },
+      {
+        "birth": "2003-10-10",
+        "expect": 22
+      }
+    ],
+    "options": [
+      {
+        "age": 22,
+        "option": "18-24",
+        "expect": true
+      },
+      {
+        "age": 22,
+        "option": "25-34",
+        "expect": false
+      },
+      {
+        "age": 22,
+        "option": "Under 18",
+        "expect": false
+      },
+      {
+        "age": 40,
+        "option": "35 and above",
+        "expect": true
+      },
+      {
+        "age": 22,
+        "option": "21+",
+        "expect": true
+      }
+    ]
+  },
+  "separateProfile": {
+    "fields": {
+      "Which of these do you use regularly?": "Typescript | Javascript | Rust",
+      "Are you student?": "Yes",
+      "why do you want to join?": "Because it is my passion for 7years of programming."
+    },
+    "questions": [
+      {
+        "question": "Which university do you attend?",
+        "expect": null
+      },
+      {
+        "question": "Year level",
+        "expect": null
+      },
+      {
+        "question": "Which of these do you use regularly?",
+        "expect": "Which of these do you use regularly?",
+        "strong": true
+      },
+      {
+        "question": "In one or two sentences, why do you want to join?",
+        "expect": "why do you want to join?"
+      }
+    ]
+  },
+  "choices": [
+    {
+      "value": "Typescript | Javascript | Rust",
+      "options": [
+        "TypeScript",
+        "React",
+        "Python",
+        "Go",
+        "Rust"
+      ],
+      "expect": [
+        "TypeScript",
+        "Rust"
+      ]
+    },
+    {
+      "value": "TypeScript, React; Python",
+      "options": [
+        "TypeScript",
+        "React",
+        "Python",
+        "Go",
+        "Rust"
+      ],
+      "expect": [
+        "TypeScript",
+        "React",
+        "Python"
+      ]
+    }
+  ]
+}

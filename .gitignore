@@ -1,0 +1,8 @@
+# Time log (9 Oct 2026): created 3:04 PM by Codex (before this session)
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+! .env.example
+.verification/

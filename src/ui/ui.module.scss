@@ -1,0 +1,116 @@
+// Time log (9 Oct 2026): created 3:23 PM by Claude Code
+// Shared building blocks for the side panel and the workspace.
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+
+  &[data-disabled='true'] { opacity: 0.6; }
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  > select, > input:not([type='checkbox']) { flex: 1 1 140px; width: auto; }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  > span { font-size: 12px; font-weight: 500; color: var(--muted); }
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.muted { color: var(--muted); }
+
+.notice {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 13px;
+}
+
+.error {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+%button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.primary {
+  @extend %button;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: var(--accent-ink);
+
+  &:hover:not(:disabled) { background: var(--accent-hover); }
+}
+
+.secondary {
+  @extend %button;
+  align-self: flex-start;
+  border-color: var(--line);
+  background: var(--surface);
+
+  &:hover:not(:disabled) { background: var(--surface-2); }
+}
+
+.danger {
+  @extend %button;
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.icon {
+  @extend %button;
+  flex: none;
+  padding: 6px;
+  background: transparent;
+  color: var(--muted);
+
+  &:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); }
+}
