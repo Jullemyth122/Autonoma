@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 6:05 PM
+// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 6:59 PM
 import { useEffect, useRef, useState } from 'react';
 import { Cpu, Link, Mic, Play, Power, RefreshCw, Settings as SettingsIcon, Square, Volume2 } from 'lucide-react';
 import type { AdvanceResult, AppState, FillReport, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';

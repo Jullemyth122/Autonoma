@@ -235,6 +235,9 @@ How it works: your voice is recorded only while the mic is on. **Whisper tiny** 
 | Pagination | Off | Clicks **Next** through multi-page forms. |
 | Auto-submit on the last page | Off | Clicks **Submit**, then checks the page really changed. |
 | Tick agreement boxes | Off | Ticks terms, consent, privacy and code-of-conduct boxes on your behalf. |
+| Talk back | On | The agent says what it did after each fill. Replies to voice commands are always spoken. The orb's mute button silences everything. |
+| Language | English | English or Tagalog, for both talking back and voice commands. |
+| 🎤 (on the orb) / Speak a command | — | Push-to-talk voice command; see [Voice](#voice). |
 | Multi-Link | — | Fills several form links in background tabs. |
 | ⏻ Release model memory | — | Unloads the model from GPU/RAM; it reloads on the next fill. |
 

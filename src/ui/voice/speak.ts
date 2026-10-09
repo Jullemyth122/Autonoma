@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:40 PM by Claude Code
+// Time log (9 Oct 2026): created 6:40 PM by Claude Code · last changed 6:41 PM
 // The agent's voice. Uses only voices installed on this computer (localService), so it works offline and sends
 // nothing anywhere. The orb's mute button silences it too.
 import { useEffect, useState } from 'react';

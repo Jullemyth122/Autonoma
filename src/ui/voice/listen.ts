@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 6:57 PM
 // Records one spoken command from the microphone as 16 kHz mono audio (what Whisper expects).
 // Stops by itself after a short pause, or when `stop()` is called. Audio never leaves this page.
 

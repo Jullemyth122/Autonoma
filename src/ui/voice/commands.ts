@@ -1,9 +1,9 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 8:15 PM
 // Spoken commands in English and simple Tagalog, matched by plain rules. Sentences the rules don't
 // recognise go to the local model (PARSE_COMMAND) to work out the intent.
 import type { Profile, VoiceCommand, VoiceIntent } from '../../types/index.ts';
 
-const clean = (text: string) => text.toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
+const clean = (text: string) => text.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
   .replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
 
 // Checked in order: the first rule that matches wins.

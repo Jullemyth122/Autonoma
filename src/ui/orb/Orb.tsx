@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 6:59 PM (mic button added by Claude Code)
 import { Suspense, lazy, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import type { OrbPointer, OrbState, OrbTone } from './parts.tsx';

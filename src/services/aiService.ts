@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:39 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 6:56 PM
 import type { AIAnswer, AIResult, Memory, Profile, Question, RuntimeStatus, VoiceIntent } from '../types/index.ts';
 import { ageOn, isAgeQuestion, matchOption, normalize, optionFitsAge, splitChoices, toIsoDate } from '../content/matching.ts';
 

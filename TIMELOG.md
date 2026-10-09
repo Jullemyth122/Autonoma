@@ -14,32 +14,32 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | File | Created | Last changed | By | What it is |
 | --- | --- | --- | --- | --- |
 | `package.local-ai.draft.json` | 2:03 PM | 2:36 PM | Codex (before this session) | Codex draft manifest (reference only) |
-| `PROJECT_SETUP.md` | 2:36 PM | 5:52 PM | Codex (before this session) | Plan, quick start, and what changed |
+| `PROJECT_SETUP.md` | 2:36 PM | 8:15 PM | Codex (before this session) | Plan, quick start, and what changed |
 | `.gitignore` | 3:04 PM | — | Codex (before this session) | Files kept out of git |
 | `eslint.config.js` | 3:04 PM | — | Codex (before this session) | Lint rules |
 | `index.html` | 3:04 PM | — | Codex (before this session) | Side panel page |
 | `options.html` | 3:04 PM | — | Codex (before this session) | Workspace (options) page |
-| `package.json` | 3:04 PM | 6:01 PM | Codex (before this session) | Scripts and dependencies |
-| `public/manifest.json` | 3:04 PM | 4:31 PM | Codex (before this session) | Chrome extension manifest |
-| `scripts/build.mjs` | 3:04 PM | 5:32 PM | Codex (before this session) | Builds the pages, content script and service worker; stamps the build time |
-| `src/background/background.ts` | 3:04 PM | 5:33 PM | Codex (before this session) | Fill jobs, Pagination, Multi-Link, AI requests |
-| `src/content/content.ts` | 3:04 PM | 5:50 PM | Codex (before this session) | Fill flow on the page: rules, AI, repair, agreement boxes |
+| `package.json` | 3:04 PM | 7:39 PM | Codex (before this session) | Scripts and dependencies |
+| `public/manifest.json` | 3:04 PM | 6:59 PM | Codex (before this session) | Chrome extension manifest |
+| `scripts/build.mjs` | 3:04 PM | 7:40 PM | Codex (before this session) | Builds the pages, content script and service worker; stamps the build time |
+| `src/background/background.ts` | 3:04 PM | 6:56 PM | Codex (before this session) | Fill jobs, Pagination, Multi-Link, AI requests |
+| `src/content/content.ts` | 3:04 PM | 6:40 PM | Codex (before this session) | Fill flow on the page: rules, AI, repair, agreement boxes |
 | `src/content/matching.ts` | 3:04 PM | 5:40 PM | Codex (before this session) | Keyword matching, options, dates, age |
 | `src/content/read.ts` | 3:04 PM | 5:14 PM | Codex (before this session) | Reads questions, labels and options from the page |
 | `src/content/write.ts` | 3:04 PM | 5:39 PM | Codex (before this session) | Types values, picks options, attaches files, badges |
-| `src/services/aiService.ts` | 3:04 PM | 5:39 PM | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
+| `src/services/aiService.ts` | 3:04 PM | 6:56 PM | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
 | `src/services/repository.ts` | 3:04 PM | 3:50 PM | Codex (before this session) | Saves data in chrome.storage.local |
-| `src/services/vault.ts` | 3:04 PM | 5:50 PM | Codex (before this session) | Validates saved/imported data |
-| `src/types/defaults.ts` | 3:04 PM | 5:50 PM | Codex (before this session) | Default data and model |
-| `src/types/index.ts` | 3:04 PM | 5:50 PM | Codex (before this session) | Shared types and messages |
+| `src/services/vault.ts` | 3:04 PM | 6:40 PM | Codex (before this session) | Validates saved/imported data |
+| `src/types/defaults.ts` | 3:04 PM | 6:40 PM | Codex (before this session) | Default data and model |
+| `src/types/index.ts` | 3:04 PM | 6:56 PM | Codex (before this session) | Shared types and messages |
 | `tsconfig.json` | 3:04 PM | — | Codex (before this session) | TypeScript settings |
-| `vite.config.ts` | 3:04 PM | — | Codex (before this session) | Vite build for the panel and workspace pages |
-| `package-lock.json` | 3:17 PM | 6:01 PM | Claude Code | Exact dependency versions |
+| `vite.config.ts` | 3:04 PM | 6:59 PM | Codex (before this session) | Vite build for the panel and workspace pages |
+| `package-lock.json` | 3:17 PM | 7:39 PM | Claude Code | Exact dependency versions |
 | `src/ui/api.ts` | 3:20 PM | 3:50 PM | Claude Code | Messages to the background; app and AI state hooks |
-| `src/ui/Panel.tsx` | 3:21 PM | 6:05 PM | Claude Code | Side panel |
+| `src/ui/Panel.tsx` | 3:21 PM | 6:59 PM | Claude Code | Side panel |
 | `src/ui/Report.tsx` | 3:21 PM | — | Claude Code | Fill report card |
 | `src/main.tsx` | 3:22 PM | — | Claude Code | Starts the panel or the workspace |
-| `src/ui/Workspace.tsx` | 3:22 PM | 5:50 PM | Claude Code | Workspace: profile, memory, files, AI, import/export |
+| `src/ui/Workspace.tsx` | 3:22 PM | 6:59 PM | Claude Code | Workspace: profile, memory, files, AI, import/export |
 | `src/ui/sample.ts` | 3:22 PM | — | Claude Code | Demo profile with a sample résumé |
 | `scripts/match-cases.json` | 3:23 PM | 5:39 PM | Claude Code | Test cases for match-check |
 | `scripts/match-check.mjs` | 3:23 PM | 5:39 PM | Claude Code | Keyword-matching regression check |
@@ -52,17 +52,20 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `scripts/serve-demo.mjs` | 3:24 PM | — | Claude Code | Serves the demo form on 127.0.0.1:5500 |
 | `src/ui/build.d.ts` | 5:32 PM | — | Claude Code | Type for the build stamp |
 | `public/sounds/orb-startup.mp3` | 6:12 PM | — | Orb UI | Orb startup sound |
-| `src/ui/orb/Orb.module.scss` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
-| `src/ui/orb/Orb.tsx` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
+| `src/ui/orb/Orb.module.scss` | 6:12 PM | 6:59 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
+| `src/ui/orb/Orb.tsx` | 6:12 PM | 6:59 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
 | `src/ui/orb/OrbCanvas.tsx` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/hud.tsx` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/sfx.ts` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
-| `README.md` | 6:22 PM | — | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
-| `src/ui/voice/speak.ts` | 6:40 PM | — | Claude Code | Agent's voice: offline system voices, speaking state for the orb |
-| `src/ui/voice/phrases.ts` | 6:40 PM | 7:10 PM | Claude Code | What the agent says, in English and Tagalog |
-| `src/ui/voice/commands.ts` | 6:55 PM | 7:48 PM | Claude Code | Spoken commands (EN + TL) matched by rules, forgiving mishearings |
-| `src/ui/voice/listen.ts` | 6:55 PM | — | Claude Code | Records one command from the mic; stops on a pause |
-| `src/ui/voice/recognizer.ts` | 6:55 PM | 7:40 PM | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
-| `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:40 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
+| `README.md` | 6:22 PM | 8:15 PM | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
+| `src/ui/voice/speak.ts` | 6:40 PM | 6:41 PM | Claude Code | Agent's voice: offline system voices, speaking state for the orb |
+| `src/ui/voice/phrases.ts` | 6:40 PM | 6:58 PM | Claude Code | What the agent says, in English and Tagalog |
+| `src/ui/voice/commands.ts` | 6:55 PM | 8:15 PM | Claude Code | Spoken commands (EN + TL) matched by rules, forgiving mishearings |
+| `src/ui/voice/listen.ts` | 6:55 PM | 6:57 PM | Claude Code | Records one command from the mic; stops on a pause |
+| `src/ui/voice/recognizer.ts` | 6:55 PM | 7:41 PM | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
+| `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:41 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
 | `DATA_AND_MODELS.md` | 7:58 PM | — | Claude Code | Disclosure: models used (not trained), hand-written rules, test samples, network use |
+| `TIMELOG.md` | 6:15 PM | 8:15 PM | Claude Code | This time log |
+| `demo/index2.html` | 6:41 PM | 6:41 PM | Added outside this Claude Code session | Demo form: Application for Senior Product Engineer — Acme Labs |
+| `demo/index3.html` | 6:45 PM | 6:45 PM | Added outside this Claude Code session | Demo form: PSA Birth Certificate Online Request |

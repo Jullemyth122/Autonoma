@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:33 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 6:56 PM
 import type { AdvanceResult, AIResult, FillContext, FillReport, JobStatus, Request } from '../types/index.ts';
 import { PAGE_TIMEOUT_MS } from '../types/defaults.ts';
 import { checkRuntime, parseCommand, resolveQuestions, setModelResidency } from '../services/aiService.ts';
