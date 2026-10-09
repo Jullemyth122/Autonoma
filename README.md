@@ -1,4 +1,4 @@
-<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 2:05 AM, 10 Oct (Expresso repository, submission sheet) -->
+<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 3:05 AM, 10 Oct (real screenshots) -->
 # Autonoma
 
 **A Chrome extension that fills web forms for you, by click, by voice or by sign language, using small AI models that run entirely on your own computer.**
@@ -22,6 +22,22 @@ Everything runs on your machine: no account, no API key, no subscription, and no
 ---
 
 ## Screenshots
+
+**A real Google Form, filled.** One click on the orb: 8 fields filled in 13.9 s, 1 by rules (green **Filled**) and 7 by the local AI (purple **AI**), on `docs.google.com`. Questions it couldn't answer from the profile are listed under **Needs you**.
+
+![A Google Form job application filled by Autonoma, with the side panel's report](docs/screenshots/google-form-filled.png)
+
+**Voice: fill just one field.** "Fill the first name": only *First name* is filled, and the orb confirms it.
+
+![Demo registration form with only the first name filled after a voice command](docs/screenshots/voice-targeted-fill.png)
+
+**Sign mode.** The camera preview is shown here (it's hidden by default). The sign **FILL THIS PHONE NUMBER** was read at 91% and filled only the mobile number, by local AI, at 20 fps. The sign was trained in [Expresso](https://github.com/Jullemyth122/Expresso).
+
+![Sign mode: the camera reads FILL THIS PHONE NUMBER and the mobile number is filled](docs/screenshots/sign-mode-fill.png)
+
+**Workspace: Local AI.** qwen3:1.7b through Ollama on this computer, voice commands with Whisper tiny, and the one-time setup.
+
+![Workspace Local AI page: model, voice commands and Ollama setup](docs/screenshots/workspace-local-ai.png)
 
 **Workspace: Profile.** Saved facts, one compact row each (here with quiz answers), next to the side panel with the 3D agent orb, the command dock and the system card.
 
