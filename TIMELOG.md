@@ -27,7 +27,7 @@ Autonoma, built on 9 October 2026, finishing just after midnight. Times are loca
   - your model is git-ignored.
 - **12:00–12:15 AM (10 Oct):** README, CHANGELOG, DATA_AND_MODELS and this time log updated for Sign mode.
 - **About 1:25 AM (10 Oct):** your first real sign model exported from Expresso (12 signs, self-test 12/12). The camera is now hidden by default: it keeps running, and the orb shows what it reads. A camera button by the mic (red dot = on) shows or hides the preview.
-- **About 1:40 AM (10 Oct):** low-memory fixes. The speech model now falls back to the CPU when the GPU can't load it ("createBuffer failed"), and a crash in the 3D orb shows the flat orb instead of a blank panel.
+- **1:33 AM (10 Oct):** low-memory fixes. The speech model now falls back to the CPU when the GPU can't load it ("createBuffer failed"), and a crash in the 3D orb shows the flat orb instead of a blank panel.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
