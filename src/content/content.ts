@@ -140,8 +140,10 @@ async function fillPage(context: FillContext): Promise<FillReport> {
   finally { clearTimeout(timer); if (currentFill === controller) currentFill = null; }
 
   const sources = [...filled.values()];
-  const skipped = harvestAllControls().filter(control => !filled.has(control.question.id) && !failed.has(control.question.id) && !controlValue(control)).length;
-  return { id: crypto.randomUUID(), url: location.href, rules: sources.filter(source => source === 'rules').length, ai: sources.filter(source => source === 'ai').length, fixed: sources.filter(source => source === 'fixed').length, failed: failed.size, skipped, tokens, elapsedMs: Date.now() - startedAt, createdAt: Date.now(), ...(notice ? { notice } : {}) };
+  const unanswered = harvestAllControls().filter(control => !filled.has(control.question.id) && !controlValue(control));
+  const skipped = unanswered.filter(control => !failed.has(control.question.id)).length;
+  const left = unanswered.map(control => cleanLabel(control.question.question));
+  return { id: crypto.randomUUID(), url: location.href, rules: sources.filter(source => source === 'rules').length, ai: sources.filter(source => source === 'ai').length, fixed: sources.filter(source => source === 'fixed').length, failed: failed.size, skipped, tokens, elapsedMs: Date.now() - startedAt, createdAt: Date.now(), ...(notice ? { notice } : {}) , ...(left.length ? { left } : {}) };
 }
 
 function pageSignature(): string {
@@ -150,7 +152,11 @@ function pageSignature(): string {
 /** The question that stops the form advancing: required and empty, or rejected by the page. Cleaned of required-markers. */
 function blocker(controls: Control[]): string {
   const control = controls.find(item => item.required && !controlValue(item) || Boolean(rejectionReason(item)));
-  return control ? control.question.question.replace(/[\s*]+$/, '').replace(/\s*\*\s*/g, ' ').trim() || 'A required question' : '';
+  return control ? cleanLabel(control.question.question) || 'A required question' : '';
+}
+/** A question as people read it, without required-markers like " * *". */
+function cleanLabel(question: string): string {
+  return question.replace(/[\s*]+$/, '').replace(/\s*\*\s*/g, ' ').trim();
 }
 async function advancePage(autoSubmit: boolean): Promise<{ action: string; signature: string; blockedBy?: string }> {
   const controls = harvestAllControls();

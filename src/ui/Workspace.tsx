@@ -7,6 +7,8 @@ import { newField } from '../types/defaults.ts';
 import { parseVault } from '../services/vault.ts';
 import { AI_LABELS, errorText, send, useAppState, useLocalAI } from './api.ts';
 import { sampleProfile } from './sample.ts';
+import { requestMicrophone } from './voice/listen.ts';
+import { loadSpeechModel, useModelStatus } from './voice/recognizer.ts';
 import ui from './ui.module.scss';
 import styles from './Workspace.module.scss';
 
@@ -22,7 +24,8 @@ const SECTIONS: { id: Section; label: string; icon: ReactNode }[] = [
 /** Options page: profiles, memory, files, and settings. Edits save automatically. */
 export function Workspace() {
   const { state, setState, error } = useAppState();
-  const [section, setSection] = useState<Section>('profile');
+  // The side panel opens options.html#voice when it needs microphone permission.
+  const [section, setSection] = useState<Section>(location.hash === '#voice' ? 'ai' : 'profile');
   return (
     <div className={styles.workspace}>
       <aside className={styles.nav}>
@@ -201,6 +204,7 @@ function AISection({ settings, setSettings }: { settings: Settings; setSettings:
           </select>
         </label>
       </section>
+      <VoiceSetup />
       <section className={ui.card}>
         <h2 className={ui.cardTitle}>Setup</h2>
         <p className={ui.muted}>Allow this extension to talk to Ollama once, then restart Ollama from the tray:</p>
@@ -263,5 +267,34 @@ function BackupSection({ draft, update }: { draft: VaultData; update: (change: (
       </div>
       {message && <p className={ui.notice} role="status">{message}</p>}
     </>
+  );
+}
+
+/** Microphone permission and the speech model, for voice commands in the side panel. */
+function VoiceSetup() {
+  const model = useModelStatus();
+  const [mic, setMic] = useState<'unknown' | 'allowed' | 'blocked'>('unknown');
+  useEffect(() => {
+    void navigator.permissions?.query({ name: 'microphone' as PermissionName }).then(result => {
+      setMic(result.state === 'granted' ? 'allowed' : result.state === 'denied' ? 'blocked' : 'unknown');
+      result.onchange = () => setMic(result.state === 'granted' ? 'allowed' : result.state === 'denied' ? 'blocked' : 'unknown');
+    }).catch(() => undefined);
+  }, []);
+  return (
+    <section className={ui.card} id="voice">
+      <h2 className={ui.cardTitle}>Voice commands</h2>
+      <p className={ui.muted}>Speak to the agent from the side panel's microphone button, in English or Tagalog. Speech is turned into text on this computer with Whisper tiny; your voice is never sent anywhere.</p>
+      <div className={ui.row}>
+        <button className={ui.secondary} onClick={() => void requestMicrophone().then(ok => setMic(ok ? 'allowed' : 'blocked'))}>
+          {mic === 'allowed' ? 'Microphone allowed ✓' : 'Allow microphone'}
+        </button>
+        <button className={ui.secondary} disabled={model.state === 'loading' || model.state === 'ready'} onClick={() => void loadSpeechModel().catch(() => undefined)}>
+          {model.state === 'ready' ? `Speech model ready (${model.device === 'webgpu' ? 'GPU' : 'CPU'}) ✓` : model.state === 'loading' ? `Downloading… ${model.percent}%` : 'Download speech model now (~40 MB)'}
+        </button>
+      </div>
+      {mic === 'blocked' && <p className={ui.notice}>The microphone is blocked. Click the icon at the left of the address bar, allow the microphone for Autonoma, then try again.</p>}
+      {model.state === 'error' && <p className={ui.error}>Speech model failed to load: {model.error}</p>}
+      <p className={ui.muted}>Try: “fill this form”, “fill all pages”, “next”, “submit”, “stop”, “what's left”, “use Job Applications”, or in Tagalog: “punan mo ang form”, “punan lahat”, “susunod”, “ipasa”, “itigil”, “ano pa ang kulang”.</p>
+    </section>
   );
 }

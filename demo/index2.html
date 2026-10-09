@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application for Senior Product Engineer — Acme Labs</title>
+  <style>
+    :root {
+      --bg: #f5f4ef;
+      --card: #ffffff;
+      --ink: #191816;
+      --muted: #6f6b64;
+      --line: #dedad2;
+      --focus: #1c4ed8;
+      --accent: #1c4ed8;
+      --accent-hover: #173fae;
+      --accent-soft: rgba(28, 78, 216, 0.08);
+      --danger: #cf3726;
+      --danger-soft: #fdf2f2;
+      --badge-bg: #eceae3;
+      --radius: 10px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141413;
+        --card: #1f1e1c;
+        --ink: #edece8;
+        --muted: #9c988f;
+        --line: #33322e;
+        --focus: #60a5fa;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --accent-soft: rgba(59, 130, 246, 0.15);
+        --danger: #f87171;
+        --danger-soft: #2a1515;
+        --badge-bg: #2b2a26;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main {
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 36px 18px 72px;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: var(--badge-bg);
+      color: var(--muted);
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 27px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    /* Stepper Indicator */
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 22px;
+      background: var(--card);
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .step-node {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .step-node.active {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .step-node.complete {
+      color: var(--accent);
+    }
+
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .step-node.active .step-num {
+      background: var(--ink);
+      color: var(--card);
+      border-color: var(--ink);
+    }
+
+    .step-node.complete .step-num {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .step-sep {
+      color: var(--line);
+      font-size: 12px;
+    }
+
+    form {
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .form-group-title {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .q {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: flex;
+      gap: 14px;
+    }
+
+    .row > .q {
+      flex: 1;
+    }
+
+    .q > label, legend {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .req > label::after, fieldset.req > legend::after {
+      content: ' *';
+      color: var(--danger);
+    }
+
+    input:not([type=radio]):not([type=checkbox]):not([type=file]), select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      color: inherit;
+      font: inherit;
+      font-size: 14.5px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    .help {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    fieldset {
+      margin: 0 0 20px;
+      padding: 0;
+      border: 0;
+    }
+
+    .choice-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .choice-group.horizontal {
+      flex-direction: row;
+      gap: 18px;
+    }
+
+    .choice-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 400;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    input[type=radio], input[type=checkbox] {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .file-dropzone {
+      position: relative;
+      border: 2px dashed var(--line);
+      border-radius: 8px;
+      padding: 24px 16px;
+      text-align: center;
+      background: var(--bg);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .file-dropzone:hover, .file-dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .file-dropzone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-meta {
+      display: none;
+      margin-top: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--card);
+      font-size: 13px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .file-meta.active {
+      display: flex;
+    }
+
+    .file-remove {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 12px;
+      padding: 2px 6px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Action buttons */
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 600;
+      font-size: 14.5px;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    button.ghost:hover {
+      background: var(--badge-bg);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    /* Review output card */
+    .summary-card {
+      margin-top: 24px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 0;
+      font-size: 13.5px;
+    }
+
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .summary-val {
+      font-weight: 600;
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
+    }
+
+    .msg-banner {
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .msg-banner.error {
+      display: block;
+      background: var(--danger-soft);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="badge">Job Code: LABS-2026-PE</span>
+    <h1>Senior Product Engineer</h1>
+    <p class="lede">Distributed Team · Full-time · Please fill out all required details below.</p>
+  </header>
+
+  <nav class="stepper" aria-label="Application Steps">
+    <div class="step-node active" id="node1">
+      <span class="step-num">1</span>
+      <span>Basics</span>
+    </div>
+    <span class="step-sep">/</span>
+    <div class="step-node" id="node2">
+      <span class="step-num">2</span>
+      <span>Experience</span>
+    </div>
+    <span class="step-sep">/</span>
+    <div class="step-node" id="node3">
+      <span class="step-num">3</span>
+      <span>Documents</span>
+    </div>
+  </nav>
+
+  <div id="errorBanner" class="msg-banner"></div>
+
+  <form id="jobForm" novalidate>
+    <!-- STEP 1: BASICS & CONTACT -->
+    <section id="step1">
+      <h2 class="form-group-title">1. Personal & Contact Information</h2>
+
+      <div class="row">
+        <div class="q req">
+          <label for="first">First name</label>
+          <input id="first" name="first_name" required autocomplete="given-name" />
+        </div>
+        <div class="q req">
+          <label for="last">Last name</label>
+          <input id="last" name="last_name" required autocomplete="family-name" />
+        </div>
+      </div>
+
+      <div class="q req">
+        <label for="email">Work/Primary email</label>
+        <input id="email" name="email" type="email" required autocomplete="email" placeholder="name@domain.com" />
+      </div>
+
+      <div class="row">
+        <div class="q req">
+          <label for="phone">Phone number</label>
+          <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="+1 (555) 000-0000" />
+        </div>
+        <div class="q req">
+          <label for="country">Current Location</label>
+          <select id="country" name="country" required>
+            <option value="">Select country…</option>
+            <option>United States</option>
+            <option>Canada</option>
+            <option>United Kingdom</option>
+            <option>Germany</option>
+            <option>Singapore</option>
+            <option>Philippines</option>
+            <option>Australia</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="q">
+        <label for="linkedin">LinkedIn or Portfolio URL</label>
+        <input id="linkedin" name="linkedin_url" type="url" placeholder="https://" autocomplete="off" />
+      </div>
+
+      <!-- Conditional Sponsor Section -->
+      <fieldset class="req">
+        <legend>Will you now or in the future require visa sponsorship?</legend>
+        <div class="choice-group horizontal">
+          <label><input type="radio" name="sponsorship" value="no" required /> No</label>
+          <label><input type="radio" name="sponsorship" value="yes" /> Yes</label>
+        </div>
+      </fieldset>
+
+      <div id="sponsorNotice" hidden class="help" style="margin-top: -10px; margin-bottom: 20px; padding: 10px; background: var(--bg); border-radius: 6px;">
+        Note: We currently support direct employment or remote global contracts (EOR) depending on geographic region.
+      </div>
+
+      <div class="actions">
+        <span></span>
+        <button type="button" id="btnToStep2">Continue to Experience</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: EXPERIENCE & SKILLS -->
+    <section id="step2" hidden>
+      <h2 class="form-group-title">2. Role Fit & Experience</h2>
+
+      <div class="q req">
+        <label for="experienceYears">Years of software engineering experience</label>
+        <select id="experienceYears" name="years_exp" required>
+          <option value="">Choose one…</option>
+          <option value="1-3">1 – 3 years</option>
+          <option value="4-6">4 – 6 years</option>
+          <option value="7-9">7 – 9 years</option>
+          <option value="10+">10+ years</option>
+        </select>
+      </div>
+
+      <fieldset class="req" aria-required="true" id="skillsGroup">
+        <legend>Core competencies (select at least one)</legend>
+        <div class="choice-group">
+          <label><input type="checkbox" name="stack" value="TypeScript / React" /> TypeScript / React ecosystems</label>
+          <label><input type="checkbox" name="stack" value="Node / Python Services" /> Backend APIs (Node.js, Go, or Python)</label>
+          <label><input type="checkbox" name="stack" value="Cloud Architecture" /> Cloud & Distributed Infrastructure (AWS/GCP)</label>
+          <label><input type="checkbox" name="stack" value="Product Engineering" /> Product Design & Systems Thinking</label>
+        </div>
+        <span class="help">Check all areas where you feel comfortable shipping production software.</span>
+      </fieldset>
+
+      <div class="q req">
+        <label for="referral">How did you hear about this role?</label>
+        <select id="referral" name="referral_source" required>
+          <option value="">Select source…</option>
+          <option value="linkedin">LinkedIn Job Post</option>
+          <option value="employee">Employee Referral</option>
+          <option value="twitter">X / Twitter</option>
+          <option value="news">Hacker News / Tech Blog</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- Conditional Referral Field -->
+      <div id="referrerDetails" class="q req" hidden>
+        <label for="referrerName">Referrer Name / Email</label>
+        <input id="referrerName" name="referrer_name" placeholder="Who recommended Acme Labs?" autocomplete="off" />
+      </div>
+
+      <div class="actions">
+        <button type="button" class="ghost" id="btnBackTo1">Back</button>
+        <button type="button" id="btnToStep3">Continue to Documents</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: RESUME & FINALIZE -->
+    <section id="step3" hidden>
+      <h2 class="form-group-title">3. Documents & Additional Details</h2>
+
+      <div class="q req">
+        <label>Upload your Résumé / CV</label>
+        <div class="file-dropzone" id="dropzone">
+          <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" required />
+          <p style="margin: 0; font-weight: 500;">Click to upload or drag & drop</p>
+          <span class="help">PDF or DOCX format (Max file size: 5 MB)</span>
+        </div>
+        <div id="fileInfo" class="file-meta">
+          <span id="fileNameDisplay" style="font-weight: 500;"></span>
+          <button type="button" class="file-remove" id="removeFile">Remove</button>
+        </div>
+      </div>
+
+      <div class="q req">
+        <label for="pitch">Tell us about an impactful project you led or built</label>
+        <textarea id="pitch" name="project_highlight" rows="3" required placeholder="What was the problem, your technical approach, and the key outcome?"></textarea>
+      </div>
+
+      <div class="row">
+        <div class="q">
+          <label for="notice">Notice Period</label>
+          <select id="notice" name="notice_period">
+            <option value="immediate">Immediately available</option>
+            <option value="2weeks" selected>2 weeks</option>
+            <option value="1month">1 month</option>
+            <option value="2months+">2+ months</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="salary">Target annual compensation (USD)</label>
+          <input id="salary" name="target_compensation" type="text" placeholder="e.g. $140k - $160k" />
+        </div>
+      </div>
+
+      <fieldset class="req">
+        <legend>Compliance & Consent</legend>
+        <div class="choice-group">
+          <label>
+            <input type="checkbox" name="data_consent" required />
+            I agree to the processing of my application data under the Acme privacy policy
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="ghost" id="btnBackTo2">Back</button>
+        <button type="submit" id="submitBtn">Review & Submit</button>
+      </div>
+    </section>
+  </form>
+
+  <div id="submissionOutput" class="summary-card" hidden>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <h2 style="margin: 0; font-size: 20px;">Application Summary</h2>
+      <span class="badge" style="background: var(--accent-soft); color: var(--accent);">Submitted Locally</span>
+    </div>
+    <p class="help" style="margin-bottom: 18px;">
+      Your application payload has been gathered and validated locally. No sensitive data was dispatched outside your browser.
+    </p>
+    <div id="summaryRows"></div>
+    <div style="margin-top: 20px; display: flex; gap: 10px;">
+      <button type="button" class="ghost" id="resetBtn">Apply for another position</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const form = document.getElementById('jobForm');
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+
+  const node1 = document.getElementById('node1');
+  const node2 = document.getElementById('node2');
+  const node3 = document.getElementById('node3');
+
+  const errorBanner = document.getElementById('errorBanner');
+  const dropzone = document.getElementById('dropzone');
+  const resumeInput = document.getElementById('resume');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileNameDisplay = document.getElementById('fileNameDisplay');
+  const removeFile = document.getElementById('removeFile');
+
+  // Multi-step progression validation
+  function validateStep(stepElement) {
+    errorBanner.className = 'msg-banner';
+    errorBanner.style.display = 'none';
+
+    // Validate required checkbox groups
+    for (const group of stepElement.querySelectorAll('fieldset[aria-required="true"]')) {
+      const boxes = [...group.querySelectorAll('input[type=checkbox]')];
+      boxes.forEach(b => b.setCustomValidity(''));
+      if (!group.closest('[hidden]') && !boxes.some(b => b.checked)) {
+        boxes[0].setCustomValidity('Please select at least one skill.');
+      }
+    }
+
+    // Validate all active inputs
+    const inputs = [...stepElement.querySelectorAll('input, select, textarea')];
+    const invalid = inputs.find(el => !el.closest('[hidden]') && !el.checkValidity());
+
+    if (invalid) {
+      invalid.reportValidity();
+      errorBanner.textContent = invalid.validationMessage || 'Please complete all required fields.';
+      errorBanner.className = 'msg-banner error';
+      invalid.focus();
+      return false;
+    }
+    return true;
+  }
+
+  // Update stepper UI
+  function setStep(current) {
+    [node1, node2, node3].forEach((node, i) => {
+      const stepIdx = i + 1;
+      node.classList.remove('active', 'complete');
+      if (stepIdx === current) {
+        node.classList.add('active');
+      } else if (stepIdx < current) {
+        node.classList.add('complete');
+      }
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Step 1 -> Step 2
+  document.getElementById('btnToStep2').addEventListener('click', () => {
+    if (!validateStep(step1)) return;
+    step1.hidden = true;
+    step2.hidden = false;
+    setStep(2);
+  });
+
+  // Step 2 -> Step 1
+  document.getElementById('btnBackTo1').addEventListener('click', () => {
+    step2.hidden = true;
+    step1.hidden = false;
+    setStep(1);
+  });
+
+  // Step 2 -> Step 3
+  document.getElementById('btnToStep3').addEventListener('click', () => {
+    if (!validateStep(step2)) return;
+    step2.hidden = true;
+    step3.hidden = false;
+    setStep(3);
+  });
+
+  // Step 3 -> Step 2
+  document.getElementById('btnBackTo2').addEventListener('click', () => {
+    step3.hidden = true;
+    step2.hidden = false;
+    setStep(2);
+  });
+
+  // Dynamic fields: Sponsorship and Referral logic
+  form.addEventListener('change', (e) => {
+    if (e.target.name === 'sponsorship') {
+      const sponsorNotice = document.getElementById('sponsorNotice');
+      sponsorNotice.hidden = e.target.value !== 'yes';
+    }
+
+    if (e.target.name === 'referral_source') {
+      const refField = document.getElementById('referrerDetails');
+      const refInput = document.getElementById('referrerName');
+      const isEmployee = e.target.value === 'employee';
+      refField.hidden = !isEmployee;
+      refInput.required = isEmployee;
+      if (!isEmployee) refInput.value = '';
+    }
+
+    if (e.target.type === 'checkbox') {
+      e.target.closest('fieldset')?.querySelectorAll('input').forEach(b => b.setCustomValidity(''));
+    }
+  });
+
+  // Drag & drop file styling & validation
+  ['dragenter', 'dragover'].forEach(name => {
+    dropzone.addEventListener(name, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(name => {
+    dropzone.addEventListener(name, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+    });
+  });
+
+  function handleFileSelection(file) {
+    if (!file) return;
+    const maxBytes = 5 * 1024 * 1024; // 5 MB
+    if (file.size > maxBytes) {
+      resumeInput.setCustomValidity('File must be smaller than 5 MB.');
+      resumeInput.reportValidity();
+      resumeInput.value = '';
+      fileInfo.classList.remove('active');
+      return;
+    }
+    resumeInput.setCustomValidity('');
+    fileNameDisplay.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    fileInfo.classList.add('active');
+  }
+
+  resumeInput.addEventListener('change', (e) => {
+    handleFileSelection(e.target.files[0]);
+  });
+
+  removeFile.addEventListener('click', () => {
+    resumeInput.value = '';
+    fileInfo.classList.remove('active');
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validateStep(step3)) return;
+
+    const data = {};
+    const formData = new FormData(form);
+
+    for (const [key, value] of formData.entries()) {
+      let displayValue = value;
+      if (value instanceof File) {
+        displayValue = value.name ? `${value.name} (${Math.round(value.size / 1024)} KB)` : 'None';
+      }
+      if (key in data) {
+        data[key] = Array.isArray(data[key]) ? [...data[key], displayValue] : [data[key], displayValue];
+      } else {
+        data[key] = displayValue;
+      }
+    }
+
+    // Render Clean Summary
+    const summaryContainer = document.getElementById('summaryRows');
+    summaryContainer.innerHTML = '';
+
+    const labelMapping = {
+      first_name: 'First Name',
+      last_name: 'Last Name',
+      email: 'Email',
+      phone: 'Phone',
+      country: 'Location',
+      linkedin_url: 'Profile URL',
+      sponsorship: 'Requires Sponsorship',
+      years_exp: 'Experience (Years)',
+      stack: 'Core Competencies',
+      referral_source: 'Source',
+      referrer_name: 'Referred By',
+      resume: 'Uploaded Résumé',
+      project_highlight: 'Project Spotlight',
+      notice_period: 'Notice Period',
+      target_compensation: 'Target Comp'
+    };
+
+    Object.keys(labelMapping).forEach(key => {
+      if (data[key] !== undefined && data[key] !== '') {
+        const row = document.createElement('div');
+        row.className = 'summary-item';
+
+        const label = document.createElement('span');
+        label.className = 'summary-label';
+        label.textContent = labelMapping[key];
+
+        const val = document.createElement('span');
+        val.className = 'summary-val';
+        val.textContent = Array.isArray(data[key]) ? data[key].join(', ') : data[key];
+
+        row.appendChild(label);
+        row.appendChild(val);
+        summaryContainer.appendChild(row);
+      }
+    });
+
+    form.hidden = true;
+    document.getElementById('submissionOutput').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    form.reset();
+    fileInfo.classList.remove('active');
+    document.getElementById('sponsorNotice').hidden = true;
+    document.getElementById('referrerDetails').hidden = true;
+    document.getElementById('submissionOutput').hidden = true;
+    form.hidden = false;
+    step3.hidden = true;
+    step2.hidden = true;
+    step1.hidden = false;
+    setStep(1);
+  });
+</script>
+</body>
+</html>

@@ -22,6 +22,8 @@ export function parseVault(value: unknown): VaultData {
   data.settings.typingDelay = Math.max(0, Math.min(250, Number(data.settings.typingDelay) || 0));
   data.settings.autoSubmit = data.settings.autoSubmit === true;
   data.settings.autoConsent = data.settings.autoConsent === true;
+  data.settings.voiceReplies = data.settings.voiceReplies !== false;
+  data.settings.voiceLanguage = data.settings.voiceLanguage === 'tl' ? 'tl' : 'en';
   data.settings.useAI = data.settings.useAI !== false;
   return normalizeVault(data);
 }
