@@ -9,6 +9,7 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **6:40–7:50 PM:** voice: the agent talks back in English/Tagalog, plus push-to-talk voice commands (Whisper tiny, local).
 - **7:58 PM:** DATA_AND_MODELS.md: every model, rule list and test sample used. Nothing was trained.
 - **8:50 PM:** ChatGPT UI work: app themes, theme picker, restyled panel and workspace (outside this session).
+- **9:57 PM:** interrupting and quiet live mode: tap the orb or mic, or press Esc, to stop the agent talking; live mode no longer answers background noise or announces its 2-minute timeout; sounds shorter than ~0.4 s don't count as speech.
 - **9:45–9:55 PM:** performance pass, measured in Chromium: fills 2–3× faster (no per-field page scroll, 4 ms instead of 30 ms settle per field), fill report fixed on plain-HTTP pages (`crypto.randomUUID` fallback), orb redraws at 30 fps when idle (idle CPU 13.7% → 6.4%).
 - **9:15–9:45 PM:** live conversation (optional): one tap keeps the mic listening for command after command; several fields per sentence ("fill this name, this email"); "stop listening" / "tama na" ends it.
 - **9:00–9:12 PM:** premium compact redesign on the `premium-ui` branch: slim header, bigger orb, palette popover, command dock with option chips, stat-bar report, one dense System card with switches; spreadsheet-style Workspace rows. `main` keeps the previous UI.
@@ -41,7 +42,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `vite.config.ts` | 3:04 PM | 6:59 PM | Codex (before this session) | Vite build for the panel and workspace pages |
 | `package-lock.json` | 3:17 PM | 7:39 PM | Claude Code | Exact dependency versions |
 | `src/ui/api.ts` | 3:20 PM | 3:50 PM | Claude Code | Messages to the background; app and AI state hooks |
-| `src/ui/Panel.tsx` | 3:21 PM | 9:37 PM | Claude Code | Side panel |
+| `src/ui/Panel.tsx` | 3:21 PM | 9:57 PM | Claude Code | Side panel |
 | `src/ui/Report.tsx` | 3:21 PM | 9:02 PM | Claude Code | Fill report card |
 | `src/main.tsx` | 3:22 PM | — | Claude Code | Starts the panel or the workspace |
 | `src/ui/Workspace.tsx` | 3:22 PM | 6:59 PM | Claude Code | Workspace: profile, memory, files, AI, import/export |
@@ -67,7 +68,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/voice/speak.ts` | 6:40 PM | 9:22 PM | Claude Code | Agent's voice: offline system voices, speaking state for the orb |
 | `src/ui/voice/phrases.ts` | 6:40 PM | 9:22 PM | Claude Code | What the agent says, in English and Tagalog |
 | `src/ui/voice/commands.ts` | 6:55 PM | 9:37 PM | Claude Code | Spoken commands (EN + TL) matched by rules, forgiving mishearings |
-| `src/ui/voice/listen.ts` | 6:55 PM | 9:29 PM | Claude Code | Records one command from the mic; stops on a pause |
+| `src/ui/voice/listen.ts` | 6:55 PM | 9:57 PM | Claude Code | Records one command from the mic; stops on a pause |
 | `src/ui/voice/recognizer.ts` | 6:55 PM | 7:41 PM | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
 | `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:41 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
 | `DATA_AND_MODELS.md` | 7:58 PM | 9:41 PM | Claude Code | Disclosure: models used (not trained), hand-written rules, test samples, network use |

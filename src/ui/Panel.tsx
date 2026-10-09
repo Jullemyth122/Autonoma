@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 9:37 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 9:57 PM (interrupt + quiet live mode by Claude Code)
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AudioLines, ChevronsRight, Cpu, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
 import type { AdvanceResult, AppState, FillReport, FillTarget, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
@@ -66,6 +66,18 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   // Live conversation: keep listening for one command after another until you say "stop listening".
   const live = useRef(false);
   const [liveOn, setLiveOn] = useState(false);
+  const [liveNote, setLiveNote] = useState('');
+  // Interrupt the agent: a tap on the orb or the mic, or Esc, stops it talking (a live session keeps listening).
+  const hush = () => {
+    if (!speech.speaking && !(typeof speechSynthesis !== 'undefined' && speechSynthesis.speaking)) return false;
+    stopSpeaking();
+    return true;
+  };
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') stopSpeaking(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   // The live loop outlives a render; read the latest settings and actions through these.
   const latest = useRef({ language, data, ai, running });
   latest.current = { language, data, ai, running };
@@ -141,7 +153,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   async function liveSession() {
     if (live.current) return endLive();
     live.current = true;
-    setLiveOn(true); stopSpeaking(); setError(''); setHeard('');
+    setLiveOn(true); stopSpeaking(); setError(''); setHeard(''); setLiveNote('');
     void loadSpeechModel().catch(() => undefined);
     void speak(say.liveOn(latest.current.language), latest.current.language);
     await waitUntilQuiet();
@@ -156,7 +168,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
         const audio = await mic.next({ waitMs: 12000, maxMs: 12000, pauseMs: 900 });
         recording.current = null;
         if (!live.current) break;
-        if (!audio) { if (++quietRounds >= 10) { ended = 'timeout'; break; } continue; }
+        if (!audio) { if (++quietRounds >= 10) { ended = 'timeout'; break; } continue; } // ends quietly, never speaks up on its own
         quietRounds = 0;
         setVoicePhase('understanding');
         const text = await transcribe(audio, latest.current.language);
@@ -164,10 +176,8 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
         if (/^\W*$|^\W*(thank you|thanks for watching|you|bye|okay|uh+|um+|hmm+)\W*$/i.test(text)) continue; // silence and noise phantoms
         setHeard(text);
         const commands = await understand(text);
-        if (!commands.length) {
-          if (text.trim().split(/\s+/).length >= 2) { void speak(say.sorryShort(latest.current.language), latest.current.language); await waitUntilQuiet(); }
-          continue;
-        }
+        // Background talk or noise that isn't a command is ignored silently (it still shows under "You said").
+        if (!commands.length) continue;
         await runAll(commands);
       }
     } catch (caught) {
@@ -181,7 +191,8 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
       live.current = false; recording.current = null;
       setLiveOn(false); setVoicePhase('idle');
     }
-    if (ended !== 'error') void speak(ended === 'timeout' ? say.liveTimeout(latest.current.language) : say.liveOff(latest.current.language), latest.current.language);
+    if (ended === 'timeout') setLiveNote(say.liveTimeout(latest.current.language));
+    else if (ended !== 'error') void speak(say.liveOff(latest.current.language), latest.current.language);
   }
 
   async function perform(command: VoiceCommand) {
@@ -220,7 +231,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   const micLabel = liveOn ? 'End live conversation' : voicePhase === 'listening' ? 'Stop listening' : data.settings.voiceLive ? 'Start live conversation' : 'Speak a command';
   const micButton = (
     <button title={micLabel} aria-label={micLabel} aria-pressed={micActive} data-live={liveOn || undefined}
-      disabled={voicePhase === 'understanding' && !liveOn} onClick={() => void (data.settings.voiceLive || liveOn ? liveSession() : listen())}><Mic size={14} /></button>
+      disabled={voicePhase === 'understanding' && !liveOn} onClick={() => { if (!hush()) void (data.settings.voiceLive || liveOn ? liveSession() : listen()); }}><Mic size={14} /></button>
   );
 
   // When a fill ends, say what happened: how much was filled and which questions need you.
@@ -240,7 +251,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
 
   return (
     <>
-      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => void start()} extra={micButton}
+      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => { if (!hush()) void start(); }} extra={micButton}
         caption={running ? job!.message : agent.caption}
       />
 
@@ -317,7 +328,8 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
           <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.voiceLive} disabled={liveOn} onChange={event => void setSettings({ voiceLive: event.target.checked })} />
         </label>
         <p className={styles.sysHint}>
-          {heard ? <>You said <q>{heard}</q></> : <><Mic size={11} aria-hidden="true" /> {liveOn ? 'Live: say a command, or “stop listening”' : `Tap the mic on the orb${data.settings.voiceLive ? ' to start a live conversation' : ''}`} · {modelHint}</>}
+          {speech.speaking ? 'Tap the orb or the mic, or press Esc, to stop it talking'
+            : heard ? <>You said <q>{heard}</q></> : liveNote ? liveNote : <><Mic size={11} aria-hidden="true" /> {liveOn ? 'Live: say a command, or “stop listening”' : `Tap the mic on the orb${data.settings.voiceLive ? ' to start a live conversation' : ''}`} · {modelHint}</>}
         </p>
       </section>
     </>

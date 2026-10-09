@@ -1,15 +1,18 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 9:29 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 9:57 PM (interrupt + quiet live mode by Claude Code)
 // Records spoken commands from the microphone as 16 kHz mono audio (what Whisper expects). Each command ends by itself
 // after a short pause, or when `stop()` is called. Audio never leaves this page.
 
 export class MicrophoneBlockedError extends Error {}
 
 const SPEECH_LEVEL = 0.015;
+// Loud chunks (128 ms each) needed before a sound counts as speech: about 0.4 s, so clicks and coughs are ignored.
+const SPEECH_CHUNKS = 3;
 export interface ListenOptions { maxMs?: number; pauseMs?: number; waitMs?: number }
 
 interface Take {
   chunks: Float32Array[];
   heard: boolean;
+  voiced: number;
   started: number;
   lastSound: number;
   options: Required<ListenOptions>;
@@ -49,7 +52,10 @@ export async function openMicrophone() {
     let sum = 0;
     for (const sample of input) sum += sample * sample;
     const now = performance.now();
-    if (Math.sqrt(sum / input.length) > SPEECH_LEVEL) { take.heard = true; take.lastSound = now; }
+    if (Math.sqrt(sum / input.length) > SPEECH_LEVEL) {
+      take.lastSound = now;
+      if (++take.voiced >= SPEECH_CHUNKS) take.heard = true;
+    }
     const { pauseMs, maxMs, waitMs } = take.options;
     // Stop after a pause once you've spoken, at the time limit, or if nothing was said at all.
     if ((take.heard && now - take.lastSound > pauseMs) || now - take.started > maxMs || (!take.heard && now - take.started > waitMs)) finish();
@@ -62,7 +68,7 @@ export async function openMicrophone() {
       finish();
       return new Promise(resolve => {
         const now = performance.now();
-        take = { chunks: [], heard: false, started: now, lastSound: now, options: { maxMs, pauseMs, waitMs }, resolve };
+        take = { chunks: [], heard: false, voiced: 0, started: now, lastSound: now, options: { maxMs, pauseMs, waitMs }, resolve };
       });
     },
     /** Ends the current command now (what was heard so far is kept). */
