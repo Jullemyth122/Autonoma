@@ -1,8 +1,9 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 8:29 PM
 import { useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { AdditiveBlending, DoubleSide, PlaneGeometry, ShaderMaterial, type Group, type Mesh } from 'three';
-import { Dust, Rig, clamp01, useDrive, type OrbDrive, type OrbPointer, type OrbState, type OrbTone } from './parts.tsx';
+import { Dust, Rig, clamp01, useDrive, type OrbDrive, type OrbPointer, type OrbState } from './parts.tsx';
+import type { OrbTheme } from './themes.ts';
 import { ORB_CUES, ORB_IGNITION_TIME, playOrbAssembly, whenOrbSoundUnlocked } from './sfx.ts';
 
 // HUD: flat, layered rings in the style of a heads-up display. Neighbouring
@@ -128,10 +129,12 @@ const VERTEX = `
 
 const PRELUDE = `
   uniform float uTime, uEnergy, uBusy, uBurst, uSweep, uRipple, uListen, uSpeak;
-  uniform float uReveal, uTurn, uOpacity, uFine;
+  uniform float uReveal, uTurn, uOpacity, uFine, uAccentMix;
   uniform vec3 uBase, uHot, uAccent;
   varying vec2 vPos;
   #define TAU 6.28318530718
+  // Assign each ring one of the two colors; keep highlights from washing them out.
+  vec3 hudColor(float heat) { return mix(mix(uBase, uAccent, uAccentMix), uHot, clamp(heat, 0.0, 1.0) * 0.42) * 1.35; }
   float hash(float n) { return fract(sin(n * 12.9898 + 78.233) * 43758.5453); }
   // Angle as a fraction of a turn, clockwise from 12 o'clock.
   float turn01(vec2 p) { return fract(atan(p.x, p.y) / TAU); }
@@ -176,7 +179,7 @@ const RING = `
     float shape = (body + glow) * seg * inArc + pip;
     float scribe = writeHead(a) * (1.0 - smoothstep(-px, px * 2.0, max(uInner - r, r - uOuter))) * inArc;
     float alpha = (shape * (0.5 + heat * 0.9) * drawn(a) * power() + scribe) * detail(px) * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, clamp(heat + scribe, 0.0, 1.0)) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(heat + scribe), alpha);
     ${OUTPUT}
   }
 `;
@@ -200,7 +203,7 @@ const HALFTONE = `
     float rims = ringLine(r, uInner - 0.008, 0.004, px) + ringLine(r, uOuter + 0.008, 0.004, px);
     float heat = clamp(profile * 0.4 + uEnergy * wave * 0.6 + swept(a) * uBusy * 0.6, 0.0, 1.0);
     float alpha = ((dots * inBand * (0.3 + heat * 0.7) + rims * 0.7) * drawn(a) * power() + writeHead(a) * inBand) * inArc * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, heat) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(heat), alpha);
     ${OUTPUT}
   }
 `;
@@ -225,7 +228,7 @@ const SPECTRUM = `
     float heat = clamp(y / uLength + level * 0.4, 0.0, 1.0);
     float scribe = writeHead(x) * bar * step(0.0, y) * step(y, uLength);
     float alpha = ((bar * (lit * led * (0.7 + level * 1.1) + track) + baseline * 0.6) * ends * drawn(x) * power() + scribe) * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, heat) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(heat), alpha);
     ${OUTPUT}
   }
 `;
@@ -243,7 +246,7 @@ const ARROWS = `
     float glow = exp(-t / 0.025) * 0.25 * smoothstep(L, 0.0, s);
     float heat = clamp(0.3 + uEnergy * 0.7 + uBusy * 0.5, 0.0, 1.0);
     float alpha = (shaft + tip + glow) * along * (0.55 + heat * 0.6) * drawn(a) * power() * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, heat) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(heat), alpha);
     ${OUTPUT}
   }
 `;
@@ -269,7 +272,7 @@ const GLYPHS = `
     float on = step(hash(id * 3.1 + row * 17.0 + floor(uTime * (1.5 + uBusy * 8.0) + n * 7.0)), 0.72 + uEnergy * 0.25);
     float heat = clamp(swept(a) * (0.25 + uBusy) + uEnergy * 0.35, 0.0, 1.0);
     float alpha = g * inBand * on * (0.3 + heat * 0.9) * drawn(a) * power() * detail(px) * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, heat) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(heat), alpha);
     ${OUTPUT}
   }
 `;
@@ -293,7 +296,7 @@ const CORE = `
     float ignite = sin(clamp(uReveal, 0.0, 1.0) * 3.14159265) * exp(-r * r * 18.0);
     float total = rim * 1.1 + pupil + rings * (0.35 + e * 0.6) + ripples * (0.12 + e * 1.1 + uBusy * 0.15) + ignite;
     float alpha = total * (1.0 - smoothstep(0.44, 0.5, r)) * smoothstep(0.0, 0.25, uReveal) * power() * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, clamp(rim * 0.6 + pupil + e * 0.4, 0.0, 1.0)) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(rim * 0.6 + pupil + e * 0.4), alpha);
     ${OUTPUT}
   }
 `;
@@ -307,7 +310,7 @@ const SWEEP = `
     float trail = exp(-behind * 7.0) * 0.14 + exp(-behind * 160.0) * 0.45;
     float band = smoothstep(uInner, uInner + 0.06, r) * (1.0 - smoothstep(uOuter - 0.12, uOuter, r));
     float alpha = trail * band * (0.1 + uBusy * 0.9) * smoothstep(0.5, 1.0, uReveal) * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, 0.5) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(0.5), alpha);
     ${OUTPUT}
   }
 `;
@@ -334,7 +337,7 @@ const RETICLE = `
     float heat = clamp(uEnergy * 0.6 + uBusy * 0.3, 0.0, 1.0);
     float shapes = (ring * 0.75 + ticks + plus * 0.8 + xmark * 0.6) * (0.6 + heat * 0.6) + hair * (0.08 + heat * 0.2);
     float alpha = (shapes * drawn(a) * power() + flare * smoothstep(0.3, 1.0, uReveal)) * uOpacity;
-    gl_FragColor = vec4(mix(uBase, uHot, clamp(heat + flare, 0.0, 1.0)) * 1.35, alpha);
+    gl_FragColor = vec4(hudColor(heat + flare), alpha);
     ${OUTPUT}
   }
 `;
@@ -342,26 +345,26 @@ const RETICLE = `
 type Uniforms = Record<string, number>;
 const ring = (o: Uniforms): Uniforms => ({ uArc: 1, uSegments: 1, uDuty: 1, uDrop: 0, uSeed: 0, uFlicker: 0, uOutline: 0, uMajor: 0, uMinor: 1, uPips: 0, ...o });
 
-interface LayerSpec { frag: string; size: number; order: number; own: Uniforms; step?: number; drift?: number; phase?: number; pulse?: number; swing?: boolean; flow?: boolean }
+interface LayerSpec { frag: string; size: number; order: number; own: Uniforms; accent?: boolean; step?: number; drift?: number; phase?: number; pulse?: number; swing?: boolean; flow?: boolean }
 
 // order: start-up sequence and depth (inside out). step: click size in radians.
 // swing: clicks back and forth instead of round. flow: arrows flip while listening.
 const LAYERS: LayerSpec[] = [
   { frag: CORE, size: 0.5, order: 0, pulse: 0.08, own: { uHole: 0.2 } },
-  { frag: HALFTONE, size: 0.62, order: 1, step: TAU / 8, drift: 0.03, own: { uInner: 0.46, uOuter: 0.575, uRows: 3, uArcs: 4, uGap: 0.07 } },
+  { frag: HALFTONE, size: 0.62, order: 1, accent: true, step: TAU / 8, drift: 0.03, own: { uInner: 0.46, uOuter: 0.575, uRows: 3, uArcs: 4, uGap: 0.07 } },
   { frag: RING, size: 0.66, order: 2, step: TAU / 30, drift: -0.05, own: ring({ uInner: 0.6, uOuter: 0.63, uSegments: 120, uDuty: 0.4, uMajor: 10, uMinor: 0.45, uFine: 1 }) },
-  { frag: SPECTRUM, size: 0.98, order: 3, own: { uInner: 0.68, uLength: 0.26, uFrom: 0.53, uSpan: 0.44 } },
+  { frag: SPECTRUM, size: 0.98, order: 3, accent: true, own: { uInner: 0.68, uLength: 0.26, uFrom: 0.53, uSpan: 0.44 } },
   { frag: SWEEP, size: 1.46, order: 3, own: { uInner: 0.44, uOuter: 1.46 } },
-  { frag: RING, size: 0.92, order: 4, step: TAU * 0.34 / 9, swing: true, phase: -0.07 * TAU, pulse: 0.03,
+  { frag: RING, size: 0.92, order: 4, accent: true, step: TAU * 0.34 / 9, swing: true, phase: -0.07 * TAU, pulse: 0.03,
     own: ring({ uInner: 0.74, uOuter: 0.88, uArc: 0.34, uSegments: 9, uDuty: 0.84, uOutline: 1, uFlicker: 1, uSeed: 2 }) },
   { frag: ARROWS, size: 1.06, order: 5, drift: -0.35, flow: true, own: { uRadius: 0.985, uWidth: 0.012, uLength: 0.2, uCount: 2, uHead: 0.065 } },
-  { frag: RING, size: 1.1, order: 6, step: TAU / 12, own: ring({ uInner: 1.035, uOuter: 1.046, uSegments: 3, uDuty: 0.9, uPips: 3 }) },
-  { frag: RING, size: 1.22, order: 7, step: TAU * 0.8 / 16, pulse: 0.02,
+  { frag: RING, size: 1.1, order: 6, accent: true, step: TAU / 12, own: ring({ uInner: 1.035, uOuter: 1.046, uSegments: 3, uDuty: 0.9, uPips: 3 }) },
+  { frag: RING, size: 1.22, order: 7, accent: true, step: TAU * 0.8 / 16, pulse: 0.02,
     own: ring({ uInner: 1.09, uOuter: 1.19, uArc: 0.8, uSegments: 16, uDuty: 0.88, uDrop: 0.15, uOutline: 0.6, uFlicker: 1, uSeed: 5 }) },
   { frag: RING, size: 1.29, order: 8, step: TAU / 24, drift: 0.02,
     own: ring({ uInner: 1.225, uOuter: 1.26, uArc: 0.62, uSegments: 150, uDuty: 0.32, uMajor: 5, uMinor: 0.45, uSeed: 9, uFine: 1 }) },
   { frag: GLYPHS, size: 1.46, order: 9, own: { uInner: 1.3, uOuter: 1.43, uRows: 3, uCell: 0.043, uSeed: 3, uFine: 1 } },
-  { frag: RING, size: 1.6, order: 10, step: TAU / 16, own: ring({ uInner: 1.55, uOuter: 1.57, uSegments: 2, uDuty: 0.13, uOutline: 1, uSeed: 1 }) },
+  { frag: RING, size: 1.6, order: 10, accent: true, step: TAU / 16, own: ring({ uInner: 1.55, uOuter: 1.57, uSegments: 2, uDuty: 0.13, uOutline: 1, uSeed: 1 }) },
   { frag: RETICLE, size: 1.82, order: 11, own: { uRadius: 1.5 } },
 ];
 
@@ -370,15 +373,15 @@ const asUniforms = (values: Uniforms) => Object.fromEntries(Object.entries(value
 interface Motion { angle: number; vel: number; target: number; drift: number; dir: number; timer: number; seen: number; due: number }
 
 function Layer({ u, hud, layer }: { u: OrbDrive; hud: HudDrive; layer: LayerSpec }) {
-  const { frag, size, order, own, step = 0, drift = 0, phase = 0, pulse = 0, swing = false, flow = false } = layer;
+  const { frag, size, order, own, accent = false, step = 0, drift = 0, phase = 0, pulse = 0, swing = false, flow = false } = layer;
   const mesh = useRef<Mesh>(null);
   const motion = useRef<Motion | null>(null);
   const geometry = useMemo(() => new PlaneGeometry(size * 2, size * 2), [size]);
   const material = useMemo(() => new ShaderMaterial({
     vertexShader: VERTEX, fragmentShader: PRELUDE + frag,
-    uniforms: { ...u.uniforms, ...hud.uniforms, ...asUniforms({ uFine: 0, uOpacity: 1, ...own }), uReveal: { value: 0 }, uTurn: { value: 0 } },
+    uniforms: { ...u.uniforms, ...hud.uniforms, ...asUniforms({ uFine: 0, uOpacity: 1, uAccentMix: accent ? 1 : 0, ...own }), uReveal: { value: 0 }, uTurn: { value: 0 } },
     transparent: true, depthWrite: false, depthTest: false, blending: AdditiveBlending, side: DoubleSide,
-  }), [u, hud, frag, own]);
+  }), [u, hud, frag, own, accent]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   useEffect(() => () => material.dispose(), [material]);
 
@@ -430,8 +433,8 @@ function Assembly({ u, hud, children }: { u: OrbDrive; hud: HudDrive; children: 
   return <group ref={root} rotation={[-0.9, 0, 0.6]} scale={0.78}>{children}</group>;
 }
 
-export function HudScene({ state, levelRef, pointerRef, tone }: { state: OrbState; levelRef: RefObject<number>; pointerRef: RefObject<OrbPointer>; tone: OrbTone }) {
-  const u = useDrive(state, levelRef, tone);
+export function HudScene({ state, levelRef, pointerRef, theme }: { state: OrbState; levelRef: RefObject<number>; pointerRef: RefObject<OrbPointer>; theme: OrbTheme }) {
+  const u = useDrive(state, levelRef, theme);
   const hud = useHud(u, state, levelRef);
   return <Rig u={u} pointerRef={pointerRef} sway={0.12}>
     <Assembly u={u} hud={hud}>

@@ -34,6 +34,7 @@
 
 | What | Where | What it contains |
 | --- | --- | --- |
+| Targeted fills | `src/ui/voice/commands.ts`, `src/content/matching.ts` | “fill the …” parsing; Tagalog question words (*pangalan → name, apelyido → last name, kaarawan → birthday, edad → age, telepono → phone, tirahan → address, bansa → country, paaralan → school*); synonyms for finding the question (*birthday ↔ date of birth, phone ↔ mobile, school ↔ university, résumé ↔ CV*). |
 | Voice command phrases | `src/ui/voice/commands.ts` | English and Tagalog phrase patterns for each command, e.g. *fill / punan / sagutan*, *next / susunod / tuloy*, *submit / ipasa / isumite*, *stop / itigil / tama na*, *what's left / ano pa ang kulang*. Also fixes for common mishearings: "feel/phil this form" → fill, "panan/punnan" → punan. |
 | What the agent says | `src/ui/voice/phrases.ts` | Every spoken reply, in English and simple Tagalog, written by hand. |
 | Form matching | `src/content/matching.ts` | Word lists (filler words like *which, do, you*; synonyms like *surname → last name*), date formats, age-group ranges, option matching. |
@@ -53,6 +54,21 @@ None of these are in the repository unless marked; they were kept in a temporary
 | `fill-tl.wav` | "Punan mo ang form." | "Panan Mmo Inform" | Understood as *punan* after the mishearing fix ✅ |
 | `left-tl.wav` | "Ano pa ang kulang?" | "Ano pa ang koolang." | Answered in Tagalog ✅ |
 
+**More recordings for targeted fills, live mode and interruptions** (same computer voices):
+
+| File | Says | Whisper heard | Result |
+| --- | --- | --- | --- |
+| `email-en.wav` | "Fill the email." | "Fill the email." | Filled only Email ✅ |
+| `name-tl.wav` | "Punan ang pangalan." | "Panan ng Ping Ellen" | ❌ Not understood: the American computer voice can't say *pangalan* clearly enough for Whisper tiny |
+| `firstlast-en.wav` | "Fill first name and last name." | "Feel First Name and Last Name." (earlier: "Phil 1st Name…") | Filled First and Last name ✅, after the "feel / 1st" fixes |
+| `live-en.wav` (58 s) | "Fill this name, this email." … "Fill the birthday." … "Stop listening." | all three | One tap: First name, Last name, Email, then Date of birth, then the session ended ✅ |
+| `chatter.wav` (37 s, voice *Microsoft Zira*) | "The weather is really nice today, isn't it?" … "Stop listening." | both | The chatter got no reply; only "Stop listening" was answered ✅ |
+
+**Other test inputs (no recordings):**
+- **Quiz questions:** the three questions from the developer's Google Form screenshot (entrepreneur definition, entrepreneurial mindset, Market Risk), with saved answers rebuilt from a profile screenshot. They were asked one at a time; the right option was picked every time.
+- **"Fill this":** on the demo form's radio, checkbox and dropdown questions, both by clicking the question text and by scrolling it to mid-screen.
+- **Performance pages:** generated forms of 50, 300 and 1,000 text fields (labels like "First name 0", "Email address 2"…) plus 2,000 paragraphs of filler text, served only to the test browser.
+
 A computer voice reading Tagalog with an American accent is harder to understand than a real Filipino speaker, so these are a tough test. No real person's voice was recorded.
 
 **Profiles used in tests:**
@@ -61,6 +77,7 @@ A computer voice reading Tagalog with an American accent is harder to understand
 - **A copy of the developer's own profile**, rebuilt from screenshots and an exported JSON file: name, email, phone, birthday, address, and the quiz-answer fields. It was used only in local test scripts to reproduce bugs reported from real forms. It is **not** in the repository.
 - **A dummy résumé file** named like the developer's own résumé (69 bytes, no real content), used to test file matching.
 - The developer's **real résumé was never read or copied**.
+- **README screenshots** (`docs/screenshots/`) were taken by the developer and show their own Profile page, including real contact details. They were published as-is by the developer's choice; they were not used for testing or training.
 
 **Form questions used in tests:**
 
@@ -97,3 +114,9 @@ A computer voice reading Tagalog with an American accent is harder to understand
 | 7:00 PM | Four test recordings made with Microsoft David |
 | ~7:40 PM | Switched to transformers.js 3.8.1, with GPU → CPU fallback; all four voice tests pass |
 | 7:58 PM | This document |
+| 8:20–8:40 PM | Targeted fills: rules and Tagalog question words added; two more test recordings (`email-en.wav`, `name-tl.wav`) |
+| 9:15–9:45 PM | Live conversation; `live-en.wav` |
+| 9:45–9:55 PM | Performance tests (generated 50 / 300 / 1,000-field pages) |
+| 9:57 PM | Interrupt and quiet live mode; `chatter.wav` |
+| 10:15 PM | "Fill this" for any question; quiz-question test |
+| 10:25–10:30 PM | Several fields per command; `firstlast-en.wav`; the local-model fallback now returns several fields |

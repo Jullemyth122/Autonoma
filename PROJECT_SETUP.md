@@ -47,6 +47,16 @@ Updated: 9 October 2026. Scope: a 24-hour hackathon product demo using React + S
 - On install or reload, the extension loads its current page script into already-open tabs (`scripting` permission), so a stale tab can't run old fill code.
 - `OLLAMA_ORIGINS` only takes effect after Ollama restarts. Chrome sends the extension origin only on POST, so the model list loads while preload fails; the panel now explains the fix.
 
+**Added after the plan (6:40–7:50 PM): voice.**
+
+- **The agent talks back** in English or Tagalog, using offline Windows voices: what it filled, and which questions are left, by name.
+- **Push-to-talk voice commands:** the 🎤 on the orb. Whisper tiny (pretrained, multilingual) runs inside the extension through transformers.js 3.8.1, on the GPU when it really works, otherwise on the CPU. Hand-written English/Tagalog rules turn the text into a command; anything they don't recognise goes to qwen.
+- Nothing was trained. Every model, rule and test sample is listed in [DATA_AND_MODELS.md](DATA_AND_MODELS.md).
+
+**Added later (8:20–10:38 PM):** targeted fills ("fill the email", "fill this" for any question), app themes, a premium compact side panel on the `premium-ui` branch, live conversation, interrupting the agent, several fields per voice command, and a measured performance pass (fills 2–3× faster, idle CPU halved, HTTP report fix). Details and test results: [CHANGELOG.md](CHANGELOG.md).
+
+**Memory on this laptop (7.4 GB):** with Docker Desktop, Discord and many browser tabs open, free memory dropped to 0.16 GB and Ollama couldn't load qwen. Close them before a demo. If Ollama reports a CUDA error or fails to load a model it loaded before, quit and restart it from the tray.
+
 **Known limits:** the 1.7B model's free-text answers can add small embellishments to the memories, so review long answers before submitting. A weak keyword fallback such as First Name for “Full name (Surname, …)” is used only when AI is unavailable.
 
 Autonoma, in the Autonoma workspace, fills web forms from a user's saved profile and memory. It reads controls and their questions, resolves straightforward matches with existing deterministic logic, asks a local model about unresolved questions, and writes values using the existing framework-aware controls code.

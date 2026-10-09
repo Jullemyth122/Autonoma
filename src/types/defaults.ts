@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:50 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
 import type { CM, VaultData } from './index.ts';
 
 export const DEFAULT_MODEL = 'qwen3:1.7b';
@@ -11,7 +11,7 @@ export function newVault(): VaultData {
     activeProfileId: id,
     profiles: [{ id, name: 'My profile', fields: [newField('First Name'), newField('Last Name'), newField('Email'), newField('Phone')], files: [] }],
     memories: [],
-    settings: { model: DEFAULT_MODEL, useAI: true, typingDelay: 0, autoSubmit: false, autoConsent: false, voiceReplies: true, voiceLanguage: 'en' },
+    settings: { model: DEFAULT_MODEL, useAI: true, typingDelay: 0, autoSubmit: false, autoConsent: false, voiceReplies: true, voiceLanguage: 'en', voiceLive: false },
   };
 }
 

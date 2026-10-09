@@ -1,9 +1,11 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 9:00 PM (premium compact redesign by Claude Code)
 import { Suspense, lazy, useRef, useState, type PointerEvent, type ReactNode } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Palette, Volume2, VolumeX } from 'lucide-react';
 import type { OrbPointer, OrbState, OrbTone } from './parts.tsx';
 import { isOrbSoundMuted, setOrbSoundMuted } from './sfx.ts';
 import { stopSpeaking } from '../voice/speak.ts';
+import { useAppTheme } from '../theme.ts';
+import { ThemePicker } from '../ThemePicker.tsx';
 import styles from './Orb.module.scss';
 
 const OrbCanvas = lazy(() => import('./OrbCanvas.tsx'));
@@ -21,6 +23,8 @@ export function Orb({ state, tone = 'cyan', caption, disabled, onActivate, extra
   const levelRef = useRef(0);
   const pointerRef = useRef<OrbPointer>({ x: 0, y: 0, hover: 0 });
   const [muted, setMuted] = useState(isOrbSoundMuted);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const { theme } = useAppTheme();
 
   function track(event: PointerEvent<HTMLButtonElement>) {
     const box = event.currentTarget.getBoundingClientRect();
@@ -33,22 +37,30 @@ export function Orb({ state, tone = 'cyan', caption, disabled, onActivate, extra
   }
 
   return (
-    <section className={styles.stage} data-tone={tone} aria-label="Autonoma agent">
+    <section className={styles.stage} data-tone={tone} data-theme={theme.id} aria-label="Autonoma agent">
       <div className={styles.top}>
         <span className={styles.eyebrow}>AUTONOMA / AGENT</span>
-        <span className={styles.presence} data-state={state}><i />{LABELS[state]}</span>
+        <span className={styles.topRight}>
+          <span className={styles.presence} data-state={state}><i />{LABELS[state]}</span>
+          <button className={styles.paletteButton} title={`Theme: ${theme.name}`} aria-label="Change theme" aria-expanded={paletteOpen} onClick={() => setPaletteOpen(open => !open)}>
+            <Palette size={13} />
+          </button>
+        </span>
       </div>
+      {paletteOpen && <div className={styles.palette}><ThemePicker compact /></div>}
       <button className={styles.orb} disabled={disabled} title={disabled ? caption : 'Autofill this page'} aria-label="Autofill this page"
         onClick={onActivate} onPointerMove={track} onPointerLeave={() => { pointerRef.current = { x: 0, y: 0, hover: 0 }; }}>
         <Suspense fallback={<span className={styles.backup} />}>
-          <OrbCanvas state={state} tone={tone} levelRef={levelRef} pointerRef={pointerRef} />
+          <OrbCanvas state={state} theme={theme} levelRef={levelRef} pointerRef={pointerRef} />
         </Suspense>
       </button>
-      <p className={styles.caption} aria-live="polite">{caption}</p>
-      {extra && <div className={styles.extra}>{extra}</div>}
-      <button className={styles.sound} title={muted ? 'Sound off' : 'Sound on'} aria-label={muted ? 'Turn orb sound on' : 'Turn orb sound off'} aria-pressed={!muted} onClick={toggleSound}>
-        {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-      </button>
+      <div className={styles.status}>
+        <p className={styles.caption} aria-live="polite">{caption}</p>
+        {extra && <div className={styles.extra}>{extra}</div>}
+        <button className={styles.sound} title={muted ? 'Sound off' : 'Sound on'} aria-label={muted ? 'Turn orb sound on' : 'Turn orb sound off'} aria-pressed={!muted} onClick={toggleSound}>
+          {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+        </button>
+      </div>
     </section>
   );
 }

@@ -1,5 +1,5 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:33 PM
-import type { AdvanceResult, AIResult, FillContext, FillReport, JobStatus, Request } from '../types/index.ts';
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 10:25 PM (several fields per command by Claude Code)
+import type { AdvanceResult, AIResult, FillContext, FillReport, FillTarget, JobStatus, Request } from '../types/index.ts';
 import { PAGE_TIMEOUT_MS } from '../types/defaults.ts';
 import { checkRuntime, parseCommand, resolveQuestions, setModelResidency } from '../services/aiService.ts';
 import { getData, getState, saveData } from '../services/repository.ts';
@@ -38,6 +38,8 @@ function emptyReport(url: string): FillReport {
 }
 function addReport(target: FillReport, report: FillReport): void {
   for (const key of ['rules', 'ai', 'fixed', 'skipped', 'failed', 'tokens'] as const) target[key] += report[key];
+  if (report.filled?.length) target.filled = [...new Set([...(target.filled ?? []), ...report.filled])].slice(0, 12);
+  if (report.matched) target.matched = (target.matched ?? 0) + report.matched;
   if (report.notice) target.notice = report.notice;
   if (report.left?.length) target.left = [...new Set([...(target.left ?? []), ...report.left])].slice(0, 12);
 }
@@ -52,7 +54,7 @@ async function pageChanged(tabId: number, frameId: number, signature: string, si
   return false;
 }
 
-async function fillTab(tabId: number, paginate: boolean, signal: AbortSignal): Promise<FillReport> {
+async function fillTab(tabId: number, paginate: boolean, signal: AbortSignal, fillTarget?: FillTarget): Promise<FillReport> {
   const started = Date.now(), tab = await chrome.tabs.get(tabId), report = emptyReport(tab.url ?? 'Current page');
   activeTabs.add(tabId);
   try {
@@ -60,7 +62,7 @@ async function fillTab(tabId: number, paginate: boolean, signal: AbortSignal): P
       signal.throwIfAborted();
       const data = await getData(), profile = data.profiles.find(profile => profile.id === data.activeProfileId)!;
       const runtime = data.settings.useAI ? await checkRuntime(data.settings.model) : { ready: false };
-      const context: FillContext = { profile, memories: data.memories, settings: data.settings, aiReady: runtime.ready, deadline: Date.now() + PAGE_TIMEOUT_MS };
+      const context: FillContext = { profile, memories: data.memories, settings: data.settings, aiReady: runtime.ready, deadline: Date.now() + PAGE_TIMEOUT_MS, ...(fillTarget ? { target: fillTarget } : {}) };
       let frames = await discoverFrames(tabId);
       if (!frames.length) throw new Error('Refresh this webpage after loading the extension, then try again. Browser settings pages cannot be filled.');
       const formFrames = frames.filter(frame => frame.state.count > 0);
@@ -98,7 +100,7 @@ async function fillTab(tabId: number, paginate: boolean, signal: AbortSignal): P
   return { ...report, elapsedMs: Date.now() - started };
 }
 
-async function startJob(paginate: boolean, urls?: string[]): Promise<void> {
+async function startJob(paginate: boolean, urls?: string[], fillTarget?: FillTarget): Promise<void> {
   if (jobController) throw new Error('A fill is already running. Stop it before starting another.');
   await getData();
   const links = urls?.map(url => new URL(url)).map(url => {
@@ -109,6 +111,7 @@ async function startJob(paginate: boolean, urls?: string[]): Promise<void> {
   if (!links.length && !active?.id) throw new Error('Open a form in a browser tab first.');
   const controller = new AbortController(); jobController = controller;
   const total = links.length || 1, started = Date.now(), combined = emptyReport(links.length ? `${total} linked forms` : active?.url ?? 'Current page');
+  if (fillTarget) combined.target = fillTarget.texts?.length ? fillTarget.texts.join(', ') : fillTarget.text ?? 'this field';
   await storeJob({ running: true, completed: 0, total, message: 'Reading the form…' });
   void keepWorkerAlive(async () => {
     let completed = 0;
@@ -121,7 +124,7 @@ async function startJob(paginate: boolean, urls?: string[]): Promise<void> {
           for (let wait = 0; wait < 40; wait++) { controller.signal.throwIfAborted(); if ((await chrome.tabs.get(tab.id!)).status === 'complete') break; await sleep(500); }
           await sleep(700);
         }
-        try { addReport(combined, await fillTab(tab.id!, paginate, controller.signal)); }
+        try { addReport(combined, await fillTab(tab.id!, paginate && !fillTarget, controller.signal, fillTarget)); }
         catch (error) { controller.signal.throwIfAborted(); combined.notice = error instanceof Error ? error.message : 'A form could not be filled.'; }
         completed++;
         combined.elapsedMs = Date.now() - started;
@@ -186,14 +189,14 @@ async function handle(request: Request, sender: chrome.runtime.MessageSender): P
       await keepWorkerAlive(() => setModelResidency(data.settings.model, false)); return status;
     }
     case 'RELEASE_MODEL': await setModelResidency((await getData()).settings.model, true); return null;
-    case 'START_FILL': await startJob(request.paginate, request.urls); return null;
+    case 'START_FILL': await startJob(request.paginate, request.urls, request.target); return null;
     case 'STOP': await stopJob(); return null;
     case 'ADVANCE': return advanceActiveTab(request.submit);
     case 'PARSE_COMMAND': {
       const data = await getData();
       const command = await parseCommand(request.text, data.profiles.map(profile => profile.name), data.settings.model, AbortSignal.timeout(20_000));
       const profileId = command.profile ? data.profiles.find(profile => profile.name === command.profile)?.id : undefined;
-      return { intent: command.intent, ...(profileId ? { profileId } : {}) };
+      return { intent: command.intent, ...(profileId ? { profileId } : {}), ...(command.target ? { target: command.target } : {}), ...(command.targets?.length ? { targets: command.targets } : {}) };
     }
   }
 }

@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 7:41 PM
 // Talks to the Whisper worker: loads the model once, then turns recorded audio into text.
 import { useEffect, useState } from 'react';
 import type { VoiceLanguage } from '../../types/index.ts';

@@ -1,15 +1,15 @@
-// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 6:05 PM
-import { useEffect, useRef, useState } from 'react';
-import { Cpu, Link, Mic, Play, Power, RefreshCw, Settings as SettingsIcon, Square, Volume2 } from 'lucide-react';
-import type { AdvanceResult, AppState, FillReport, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
+// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 9:57 PM (interrupt + quiet live mode by Claude Code)
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { AudioLines, ChevronsRight, Cpu, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
+import type { AdvanceResult, AppState, FillReport, FillTarget, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
 import { AI_LABELS, errorText, send, useAppState, useLocalAI, type AIPhase } from './api.ts';
 import { Orb } from './orb/Orb.tsx';
 import type { OrbState } from './orb/parts.tsx';
 import { Report } from './Report.tsx';
 import { say } from './voice/phrases.ts';
-import { speak, stopSpeaking, useSpeech } from './voice/speak.ts';
-import { matchCommand } from './voice/commands.ts';
-import { MicrophoneBlockedError, recordCommand } from './voice/listen.ts';
+import { speak, stopSpeaking, useSpeech, waitUntilQuiet } from './voice/speak.ts';
+import { matchCommands } from './voice/commands.ts';
+import { MicrophoneBlockedError, openMicrophone, recordCommand } from './voice/listen.ts';
 import { loadSpeechModel, transcribe, useModelStatus } from './voice/recognizer.ts';
 import ui from './ui.module.scss';
 import styles from './Panel.module.scss';
@@ -20,12 +20,15 @@ export function Panel() {
   return (
     <main className={styles.panel}>
       <header className={styles.header}>
-        <span className={styles.logo}>Autonoma</span>
-        <button className={ui.icon} title="Edit profile, memory, and files" aria-label="Open workspace" onClick={() => chrome.runtime.openOptionsPage()}><SettingsIcon size={16} /></button>
+        <div className={styles.brand}>
+          <span className={styles.brandMark}><Sparkles size={13} /></span>
+          <span className={styles.logo}>Autonoma</span>
+          <span className={styles.localTag}>Local</span>
+        </div>
+        <button className={styles.headerButton} title="Workspace: profile, memory, files" aria-label="Open workspace" onClick={() => chrome.runtime.openOptionsPage()}><SettingsIcon size={15} /></button>
       </header>
       {!state ? <p className={ui.muted}>{error || 'Loading…'}</p>
         : <Controls data={state.data} job={state.job} report={state.report} onState={setState} />}
-      {state?.report && <Report report={state.report} />}
       <p className={styles.build}>Build {typeof __BUILD_TIME__ === 'string' ? new Date(__BUILD_TIME__).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'dev'}</p>
     </main>
   );
@@ -37,6 +40,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   const ai = useLocalAI(data.settings, true);
   const [paginate, setPaginate] = useState(false);
   const [links, setLinks] = useState('');
+  const [linksOpen, setLinksOpen] = useState(false);
   const [error, setError] = useState('');
   const running = Boolean(job?.running);
 
@@ -48,9 +52,9 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   const setSettings = (patch: Partial<Settings>) => save({ ...data, settings: { ...data.settings, ...patch } });
   const language: VoiceLanguage = data.settings.voiceLanguage;
   const talk = (text: string) => { if (data.settings.voiceReplies) void speak(text, language); };
-  const start = (urls?: string[], allPages = paginate) => run(async () => {
-    await send({ type: 'START_FILL', paginate: allPages, urls });
-    talk(urls?.length ? say.startingLinks(urls.length, language) : say.starting(language));
+  const start = (urls?: string[], allPages = paginate, target?: FillTarget) => run(async () => {
+    await send({ type: 'START_FILL', paginate: allPages, urls, target });
+    talk(target ? say.startingTarget(target.text ?? 'this field', language) : urls?.length ? say.startingLinks(urls.length, language) : say.starting(language));
   });
   const urls = links.split(/\s+/).map(link => link.trim()).filter(Boolean);
   const models = ai.status.models.includes(data.settings.model) ? ai.status.models : [data.settings.model, ...ai.status.models];
@@ -59,7 +63,25 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
   const [heard, setHeard] = useState('');
   const recording = useRef<{ stop: () => void } | null>(null);
-  const agent = useAgent(running, job?.report, ai.phase, speech, voicePhase === 'listening' ? { state: 'listening', caption: say.listening(language) }
+  // Live conversation: keep listening for one command after another until you say "stop listening".
+  const live = useRef(false);
+  const [liveOn, setLiveOn] = useState(false);
+  const [liveNote, setLiveNote] = useState('');
+  // Interrupt the agent: a tap on the orb or the mic, or Esc, stops it talking (a live session keeps listening).
+  const hush = () => {
+    if (!speech.speaking && !(typeof speechSynthesis !== 'undefined' && speechSynthesis.speaking)) return false;
+    stopSpeaking();
+    return true;
+  };
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') stopSpeaking(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  // The live loop outlives a render; read the latest settings and actions through these.
+  const latest = useRef({ language, data, ai, running });
+  latest.current = { language, data, ai, running };
+  const agent = useAgent(running, job?.report, ai.phase, speech, voicePhase === 'listening' ? { state: 'listening', caption: liveOn ? say.liveListening(language) : say.listening(language) }
     : voicePhase === 'understanding' ? { state: 'transcribing', caption: model.state === 'loading' && model.percent < 100 ? say.downloading(model.percent, language) : say.understanding(language) } : null);
 
   // Replies to something you said are always spoken (unless the orb is muted).
@@ -89,19 +111,97 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
     try {
       const text = await transcribe(audio, language);
       setHeard(text);
-      let command = matchCommand(text, data.profiles);
-      if (!command && text && ai.phase === 'ready') command = await send<VoiceCommand>({ type: 'PARSE_COMMAND', text }).catch(() => null);
+      const commands = await understand(text);
       setVoicePhase('idle');
-      await perform(command ?? { intent: 'none' });
+      await runAll(commands.length ? commands : [{ intent: 'none' }]);
     } catch (caught) {
       setVoicePhase('idle'); setError(errorText(caught)); reply(say.voiceError(language));
     }
+  }
+
+  /** Text → commands: plain rules first, the local model for anything they don't recognise. */
+  async function understand(text: string): Promise<VoiceCommand[]> {
+    const { data: current, ai: model } = latest.current;
+    const commands = matchCommands(text, current.profiles);
+    if (commands.length || !text.trim() || model.phase !== 'ready') return commands;
+    const parsed = await send<VoiceCommand>({ type: 'PARSE_COMMAND', text }).catch(() => null);
+    return parsed && parsed.intent !== 'none' ? [parsed] : [];
+  }
+  /** Runs commands in order; a fill finishes (and the agent stops talking) before the next one starts. */
+  async function runAll(commands: VoiceCommand[]) {
+    for (const command of commands) {
+      // In a live conversation, a plain "stop" with nothing filling can only mean "stop listening".
+      if (command.intent === 'end_live' || (command.intent === 'stop' && live.current && !latest.current.running)) { endLive(); return; }
+      await performRef.current(command);
+      if (command.intent.startsWith('fill')) await waitForFill();
+      await waitUntilQuiet();
+    }
+  }
+  async function waitForFill() {
+    for (let tick = 0; tick < 800; tick++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const { job: current } = await chrome.storage.session.get('job') as { job?: JobStatus };
+      if (!current?.running && tick > 1) return;
+    }
+  }
+  function endLive() {
+    live.current = false;
+    recording.current?.stop();
+  }
+
+  /** Live conversation: listen → understand → act → listen again, until "stop listening", a tap on the mic, or 2 quiet minutes. */
+  async function liveSession() {
+    if (live.current) return endLive();
+    live.current = true;
+    setLiveOn(true); stopSpeaking(); setError(''); setHeard(''); setLiveNote('');
+    void loadSpeechModel().catch(() => undefined);
+    void speak(say.liveOn(latest.current.language), latest.current.language);
+    await waitUntilQuiet();
+    let quietRounds = 0, ended = 'off';
+    let mic: Awaited<ReturnType<typeof openMicrophone>> | null = null;
+    try {
+      // One microphone for the whole session; sound is only collected while it's your turn.
+      mic = await openMicrophone();
+      while (live.current) {
+        recording.current = { stop: mic.stop };
+        setVoicePhase('listening');
+        const audio = await mic.next({ waitMs: 12000, maxMs: 12000, pauseMs: 900 });
+        recording.current = null;
+        if (!live.current) break;
+        if (!audio) { if (++quietRounds >= 10) { ended = 'timeout'; break; } continue; } // ends quietly, never speaks up on its own
+        quietRounds = 0;
+        setVoicePhase('understanding');
+        const text = await transcribe(audio, latest.current.language);
+        setVoicePhase('idle');
+        if (/^\W*$|^\W*(thank you|thanks for watching|you|bye|okay|uh+|um+|hmm+)\W*$/i.test(text)) continue; // silence and noise phantoms
+        setHeard(text);
+        const commands = await understand(text);
+        // Background talk or noise that isn't a command is ignored silently (it still shows under "You said").
+        if (!commands.length) continue;
+        await runAll(commands);
+      }
+    } catch (caught) {
+      ended = 'error';
+      if (caught instanceof MicrophoneBlockedError) {
+        void speak(say.micBlocked(latest.current.language), latest.current.language);
+        void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#voice') });
+      } else setError(errorText(caught));
+    } finally {
+      mic?.close();
+      live.current = false; recording.current = null;
+      setLiveOn(false); setVoicePhase('idle');
+    }
+    if (ended === 'timeout') setLiveNote(say.liveTimeout(latest.current.language));
+    else if (ended !== 'error') void speak(say.liveOff(latest.current.language), latest.current.language);
   }
 
   async function perform(command: VoiceCommand) {
     switch (command.intent) {
       case 'fill': return running ? reply(say.busy(language)) : start();
       case 'fill_all': setPaginate(true); return running ? reply(say.busy(language)) : start(undefined, true);
+      case 'fill_field': return running ? reply(say.busy(language)) : start(undefined, false, { text: command.target ?? '', texts: command.targets });
+      case 'end_live': return running ? run(() => send({ type: 'STOP' })) : reply(say.stopped(language));
+      case 'fill_focused': return running ? reply(say.busy(language)) : start(undefined, false, { focused: true });
       case 'stop':
         if (!running) return reply(say.stopped(language));
         return run(() => send({ type: 'STOP' })); // the fill's own summary says "stopped"
@@ -125,9 +225,13 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
       default: return reply(say.notUnderstood(language));
     }
   }
+  const performRef = useRef(perform);
+  performRef.current = perform;
+  const micActive = voicePhase === 'listening' || liveOn;
+  const micLabel = liveOn ? 'End live conversation' : voicePhase === 'listening' ? 'Stop listening' : data.settings.voiceLive ? 'Start live conversation' : 'Speak a command';
   const micButton = (
-    <button title={voicePhase === 'listening' ? 'Stop listening' : 'Speak a command'} aria-label={voicePhase === 'listening' ? 'Stop listening' : 'Speak a command'}
-      aria-pressed={voicePhase === 'listening'} disabled={voicePhase === 'understanding'} onClick={() => void listen()}><Mic size={14} /></button>
+    <button title={micLabel} aria-label={micLabel} aria-pressed={micActive} data-live={liveOn || undefined}
+      disabled={voicePhase === 'understanding' && !liveOn} onClick={() => { if (!hush()) void (data.settings.voiceLive || liveOn ? liveSession() : listen()); }}><Mic size={14} /></button>
   );
 
   // When a fill ends, say what happened: how much was filled and which questions need you.
@@ -137,94 +241,96 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
     wasRunning.current = running;
   });
 
+  const option = (pressed: boolean, label: string, title: string, icon: ReactNode, onClick: () => void) => (
+    <button type="button" className={styles.chip} aria-pressed={pressed} title={title} disabled={running} onClick={onClick}>{icon}{label}</button>
+  );
+  const modelHint = model.state === 'ready' ? `Speech on ${model.device === 'webgpu' ? 'GPU' : 'CPU'}`
+    : model.state === 'loading' ? say.downloading(model.percent, language)
+    : model.state === 'error' ? 'Speech model failed to load'
+    : 'First use downloads ~40 MB once';
+
   return (
     <>
-      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => void start()} extra={micButton}
+      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => { if (!hush()) void start(); }} extra={micButton}
         caption={running ? job!.message : agent.caption}
       />
-      <section className={ui.card}>
-        <h2 className={ui.cardTitle}><Cpu size={16} />Local AI</h2>
-        <p className={styles.aiStatus} data-phase={ai.phase}><span className={styles.dot} />{AI_LABELS[ai.phase]}</p>
-        {ai.phase === 'error' && ai.status.reason && <p className={ui.notice}>{ai.status.reason}</p>}
-        <div className={ui.row}>
-          <select aria-label="Model" value={data.settings.model} disabled={running} onChange={event => void setSettings({ model: event.target.value })}>
-            {models.map(model => <option key={model} value={model}>{model}{ai.status.models.length && !ai.status.models.includes(model) ? ' (not installed)' : ''}</option>)}
-          </select>
-          <button className={ui.icon} title="Check again" aria-label="Check Ollama again" onClick={ai.recheck}><RefreshCw size={16} /></button>
-          <button className={ui.icon} title="Release model memory" aria-label="Release model memory" disabled={ai.phase !== 'ready' || running} onClick={() => void run(ai.release)}><Power size={16} /></button>
-        </div>
-        <label className={ui.toggle}>
-          <input type="checkbox" checked={data.settings.useAI} disabled={running} onChange={event => void setSettings({ useAI: event.target.checked })} />
-          Use local AI for questions rules can't answer
-        </label>
-      </section>
 
-      <section className={ui.card}>
-        <h2 className={ui.cardTitle}><Volume2 size={16} />Voice</h2>
-        <button className={ui.secondary} onClick={() => void listen()} disabled={voicePhase === 'understanding'} aria-pressed={voicePhase === 'listening'}>
-          <Mic size={14} />{voicePhase === 'listening' ? 'Listening… click to stop' : voicePhase === 'understanding' ? 'Understanding…' : 'Speak a command'}
-        </button>
-        {heard && <p className={ui.muted}>You said: “{heard}”</p>}
-        <p className={ui.muted}>
-          {model.state === 'ready' ? `Speech model ready (${model.device === 'webgpu' ? 'GPU' : 'CPU'}). Try “fill this form” or “punan mo ang form”.`
-            : model.state === 'loading' ? say.downloading(model.percent, language)
-            : model.state === 'error' ? `Speech model failed to load: ${model.error}`
-            : 'First use downloads a ~40 MB speech model once. After that it works offline.'}
-        </p>
-        <label className={ui.toggle}>
-          <input type="checkbox" checked={data.settings.voiceReplies} onChange={event => void setSettings({ voiceReplies: event.target.checked })} />
-          Talk back: the agent says what it did
-        </label>
-        <label className={ui.field}>
-          <span>Language</span>
-          <select value={language} onChange={event => {
-            const next = event.target.value as VoiceLanguage;
-            void setSettings({ voiceLanguage: next });
-            if (data.settings.voiceReplies) void speak(next === 'tl' ? 'Sige, Tagalog na tayo.' : "Okay, I'll speak English.", next);
-          }}>
-            <option value="en">English</option>
-            <option value="tl">Tagalog</option>
-          </select>
-        </label>
-      </section>
-
-      <section className={ui.card}>
-        <h2 className={ui.cardTitle}><Play size={16} />Fill</h2>
-        {data.profiles.length > 1 && (
-          <label className={ui.field}>
-            <span>Profile</span>
-            <select value={data.activeProfileId} disabled={running} onChange={event => void save({ ...data, activeProfileId: event.target.value })}>
+      <section className={styles.dock} aria-label="Autofill">
+        <div className={styles.dockHead}>
+          <span className={styles.kicker}>Autofill</span>
+          <label className={styles.profile} title="Active profile">
+            <UserRound size={12} aria-hidden="true" />
+            <select aria-label="Active profile" value={data.activeProfileId} disabled={running} onChange={event => void save({ ...data, activeProfileId: event.target.value })}>
               {data.profiles.map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}
             </select>
           </label>
-        )}
-        <label className={ui.toggle}>
-          <input type="checkbox" checked={paginate} disabled={running} onChange={event => setPaginate(event.target.checked)} />
-          Pagination — continue through Next pages
-        </label>
-        <label className={ui.toggle}>
-          <input type="checkbox" checked={data.settings.autoSubmit} disabled={running} onChange={event => void setSettings({ autoSubmit: event.target.checked })} />
-          Auto-submit on the last page
-        </label>
-        <label className={ui.toggle} title="Terms, consent, privacy and code-of-conduct boxes on any form">
-          <input type="checkbox" checked={data.settings.autoConsent} disabled={running} onChange={event => void setSettings({ autoConsent: event.target.checked })} />
-          Tick agreement boxes (terms, consent, code of conduct)
-        </label>
+        </div>
         {running ? (
           <div className={styles.progress}>
-            <progress max={job!.total} value={job!.completed} />
-            <p>{job!.message}</p>
-            <button className={ui.danger} onClick={() => void run(() => send({ type: 'STOP' }))}><Square size={14} />Stop</button>
+            <div className={styles.progressTop}><span>{job!.message}</span><span>{job!.completed}/{job!.total}</span></div>
+            <progress aria-label="Fill progress" max={job!.total} value={job!.completed} />
+            <button className={styles.stop} onClick={() => void run(() => send({ type: 'STOP' }))}><Square size={12} />Stop</button>
           </div>
         ) : (
-          <button className={ui.primary} onClick={() => void start()}><Play size={16} />Autofill this page</button>
+          <button className={styles.cta} onClick={() => void start()}><Play size={15} />Autofill this page</button>
         )}
-        <details className={styles.links}>
-          <summary><Link size={14} />Multi-Link: fill several forms</summary>
-          <textarea rows={3} placeholder="One form link per line" value={links} disabled={running} onChange={event => setLinks(event.target.value)} />
-          <button className={ui.secondary} disabled={running || !urls.length} onClick={() => void start(urls)}>Fill {urls.length || ''} link{urls.length === 1 ? '' : 's'} in background tabs</button>
-        </details>
+        <div className={styles.chips} role="group" aria-label="Fill options">
+          {option(paginate, 'Pages', 'Continue through Next pages', <ChevronsRight size={13} />, () => setPaginate(!paginate))}
+          {option(data.settings.autoSubmit, 'Submit', 'Auto-submit on the last page', <Send size={12} />, () => void setSettings({ autoSubmit: !data.settings.autoSubmit }))}
+          {option(data.settings.autoConsent, 'Agree', 'Tick agreement boxes (terms, consent, code of conduct)', <ShieldCheck size={13} />, () => void setSettings({ autoConsent: !data.settings.autoConsent }))}
+          {option(linksOpen, 'Links', 'Fill several forms in background tabs', <Link size={12} />, () => setLinksOpen(!linksOpen))}
+        </div>
+        {linksOpen && (
+          <div className={styles.links}>
+            <textarea aria-label="Form links" rows={3} placeholder="One form link per line" value={links} disabled={running} onChange={event => setLinks(event.target.value)} />
+            <button className={styles.ghost} disabled={running || !urls.length} onClick={() => void start(urls)}>Fill {urls.length || ''} link{urls.length === 1 ? '' : 's'} in background tabs</button>
+          </div>
+        )}
         {error && <p className={ui.error} role="alert">{error}</p>}
+      </section>
+
+      {report && <Report report={report} />}
+
+      <section className={styles.system} aria-label="Local AI and voice">
+        <div className={styles.sysRow}>
+          <span className={styles.sysIcon}><Cpu size={13} /></span>
+          <select className={styles.model} aria-label="Model" value={data.settings.model} disabled={running} onChange={event => void setSettings({ model: event.target.value })}>
+            {models.map(model => <option key={model} value={model}>{model}{ai.status.models.length && !ai.status.models.includes(model) ? ' (not installed)' : ''}</option>)}
+          </select>
+          <span className={styles.aiStatus} data-phase={ai.phase} title={AI_LABELS[ai.phase]}><span className={styles.dot} />{ai.phase === 'ready' ? 'Ready' : ai.phase === 'error' ? 'Offline' : ai.phase === 'off' ? 'Off' : '…'}</span>
+          <button className={styles.iconButton} title="Check again" aria-label="Check Ollama again" onClick={ai.recheck}><RefreshCw size={13} /></button>
+          <button className={styles.iconButton} title="Release model memory" aria-label="Release model memory" disabled={ai.phase !== 'ready' || running} onClick={() => void run(ai.release)}><Power size={13} /></button>
+        </div>
+        {ai.phase === 'error' && ai.status.reason && <p className={styles.sysNotice}>{ai.status.reason}</p>}
+        <label className={styles.switchRow}>
+          <span>Local AI for questions rules can't answer</span>
+          <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.useAI} disabled={running} onChange={event => void setSettings({ useAI: event.target.checked })} />
+        </label>
+        <div className={styles.divider} />
+        <div className={styles.sysRow}>
+          <span className={styles.sysIcon}><AudioLines size={13} /></span>
+          <div className={styles.segmented} role="radiogroup" aria-label="Voice language">
+            {(['en', 'tl'] as const).map(code => (
+              <button key={code} type="button" role="radio" aria-checked={language === code} onClick={() => {
+                if (code === language) return;
+                void setSettings({ voiceLanguage: code });
+                if (data.settings.voiceReplies) void speak(code === 'tl' ? 'Sige, Tagalog na tayo.' : "Okay, I'll speak English.", code);
+              }}>{code === 'en' ? 'English' : 'Tagalog'}</button>
+            ))}
+          </div>
+          <label className={styles.inlineSwitch} title="The agent says what it did">
+            Talk back
+            <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.voiceReplies} onChange={event => void setSettings({ voiceReplies: event.target.checked })} />
+          </label>
+        </div>
+        <label className={styles.switchRow} title="Keep listening: say one command after another until you say “stop listening”">
+          <span>Live conversation <em className={styles.liveHint}>keeps listening</em></span>
+          <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.voiceLive} disabled={liveOn} onChange={event => void setSettings({ voiceLive: event.target.checked })} />
+        </label>
+        <p className={styles.sysHint}>
+          {speech.speaking ? 'Tap the orb or the mic, or press Esc, to stop it talking'
+            : heard ? <>You said <q>{heard}</q></> : liveNote ? liveNote : <><Mic size={11} aria-hidden="true" /> {liveOn ? 'Live: say a command, or “stop listening”' : `Tap the mic on the orb${data.settings.voiceLive ? ' to start a live conversation' : ''}`} · {modelHint}</>}
+        </p>
       </section>
     </>
   );

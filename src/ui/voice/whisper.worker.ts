@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 7:41 PM
 // Speech-to-text with Whisper tiny (multilingual: English and Tagalog), in a worker so the panel stays smooth.
 // Runs on this computer: WebGPU when it really works, otherwise WebAssembly. The runtime ships with the extension;
 // only the model files are downloaded once from Hugging Face and then cached.
