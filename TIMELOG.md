@@ -7,6 +7,7 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **6:12 PM:** orb UI added to the side panel.
 - **6:22 PM:** README.md (setup guide, demo walkthrough, project structure) for the judges.
 - **6:40–7:50 PM:** voice: the agent talks back in English/Tagalog, plus push-to-talk voice commands (Whisper tiny, local).
+- **7:58 PM:** DATA_AND_MODELS.md: every model, rule list and test sample used. Nothing was trained.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
@@ -64,3 +65,4 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/voice/listen.ts` | 6:55 PM | — | Claude Code | Records one command from the mic; stops on a pause |
 | `src/ui/voice/recognizer.ts` | 6:55 PM | 7:40 PM | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
 | `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:40 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
+| `DATA_AND_MODELS.md` | 7:58 PM | — | Claude Code | Disclosure: models used (not trained), hand-written rules, test samples, network use |

@@ -1,0 +1,546 @@
+<!doctype html>
+<!-- PSA Online Certificate Request Demo — PhilSys / PSA Serbilis Style -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PSA Birth Certificate Online Request</title>
+  <style>
+    :root {
+      --bg: #f4f2ec;
+      --card: #ffffff;
+      --ink: #1f1e1b;
+      --muted: #6b6960;
+      --line: #dedad0;
+      --accent: #1e4d38; /* Forest Green civil registry accent */
+      --accent-hover: #163b2a;
+      --badge: #e8efe9;
+      --badge-ink: #1e4d38;
+      --error: #b3261e;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161614;
+        --card: #20201d;
+        --ink: #ecebe5;
+        --muted: #a29f95;
+        --line: #3a3934;
+        --accent: #6dbb96;
+        --accent-hover: #8fd1b0;
+        --badge: #23352c;
+        --badge-ink: #a0d8be;
+        --error: #f28b82;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 36px 16px 72px;
+    }
+
+    .badge-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--badge);
+      color: var(--badge-ink);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      letter-spacing: -0.01em;
+    }
+
+    .lede {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    .gov-alert {
+      padding: 12px 14px;
+      background: var(--card);
+      border-left: 4px solid var(--accent);
+      border-top: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+
+    form {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card);
+    }
+
+    .steps {
+      margin: 0 0 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 520px) {
+      .row { grid-template-columns: 1fr; }
+    }
+
+    .q {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 18px;
+    }
+
+    .q > label, legend {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .q > label::after, legend::after {
+      content: ' *';
+      color: var(--error);
+    }
+
+    .optional > label::after {
+      content: ' (Optional)';
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 12px;
+    }
+
+    fieldset {
+      margin: 0 0 18px;
+      padding: 0;
+      border: 0;
+    }
+
+    fieldset label {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      font-weight: 400;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    input:not([type=radio]):not([type=checkbox]), select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      color: inherit;
+      font: inherit;
+      transition: border-color 0.15s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .help {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .notice-box {
+      background: var(--bg);
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #ffffff;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--accent-hover); }
+
+    button.ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    button.ghost:hover {
+      background: var(--bg);
+    }
+
+    [hidden] { display: none !important; }
+
+    #summary {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .summary-label { color: var(--muted); }
+    .summary-val { font-weight: 600; text-align: right; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="badge-bar">Philippine Statistics Authority · Civil Registry</div>
+  <h1>Birth Certificate (SECPA) Request</h1>
+  <p class="lede">Order an official Certificate of Live Birth printed on Security Paper for local use or DFA passport applications.</p>
+
+  <div class="gov-alert">
+    <strong>Data Privacy Compliance (RA 10173):</strong> Birth records are strictly confidential. Issuance is restricted to the document owner, parents, direct descendants, or legal representatives with written authorization.
+  </div>
+
+  <form id="psaForm" novalidate>
+    <!-- STEP 1: SUBJECT OF THE CERTIFICATE -->
+    <section id="step1">
+      <p class="steps">Step 1 of 3 — Certificate Details (Person on Record)</p>
+
+      <div class="row">
+        <div class="q">
+          <label for="childFirst">First Name</label>
+          <input id="childFirst" name="child_first_name" required placeholder="e.g. Juan" autocomplete="off" />
+        </div>
+        <div class="q optional">
+          <label for="childMiddle">Middle Name</label>
+          <input id="childMiddle" name="child_middle_name" placeholder="Leave blank if none" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="q">
+          <label for="childLast">Last Name</label>
+          <input id="childLast" name="child_last_name" required placeholder="e.g. Dela Cruz" autocomplete="off" />
+        </div>
+        <div class="q optional">
+          <label for="childSuffix">Suffix</label>
+          <select id="childSuffix" name="child_suffix">
+            <option value="">None</option>
+            <option>Jr.</option><option>Sr.</option><option>II</option><option>III</option><option>IV</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="q">
+          <label for="sex">Sex at Birth</label>
+          <select id="sex" name="sex" required>
+            <option value="">Select...</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="dob">Date of Birth</label>
+          <input id="dob" name="date_of_birth" type="date" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="q">
+          <label for="pobProvince">Place of Birth (Province)</label>
+          <select id="pobProvince" name="pob_province" required>
+            <option value="">Select Province...</option>
+            <option>Metro Manila (NCR)</option>
+            <option>Bulacan</option>
+            <option>Cavite</option>
+            <option>Cebu</option>
+            <option>Davao del Sur</option>
+            <option>Iloilo</option>
+            <option>Laguna</option>
+            <option>Pampanga</option>
+            <option>Rizal</option>
+            <option>Other / Born Abroad</option>
+          </select>
+        </div>
+        <div class="q">
+          <label for="pobCity">City or Municipality</label>
+          <input id="pobCity" name="pob_city" placeholder="e.g. Quezon City" required autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="q">
+        <label for="fatherFull">Father's Full Name</label>
+        <input id="fatherFull" name="father_name" placeholder="First Name, Middle Name, Last Name" required autocomplete="off" />
+        <span class="help">If father is not acknowledged, indicate "Not Applicable".</span>
+      </div>
+
+      <div class="q">
+        <label for="motherMaiden">Mother's Maiden Name</label>
+        <input id="motherMaiden" name="mother_maiden_name" placeholder="First Name, Middle Name, Maiden Surname (Surname before marriage)" required autocomplete="off" />
+      </div>
+
+      <div class="actions">
+        <span></span>
+        <button type="button" id="btnStep1Next">Proceed to Requester</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: REQUESTER & LEGAL AUTHORITY -->
+    <section id="step2" hidden>
+      <p class="steps">Step 2 of 3 — Requesting Party & Authority</p>
+
+      <fieldset>
+        <legend>What is your relationship to the document owner?</legend>
+        <label><input type="radio" name="relationship" value="self" required /> I am the person named on the record (Self)</label>
+        <label><input type="radio" name="relationship" value="parent" /> I am the mother or father</label>
+        <label><input type="radio" name="relationship" value="child" /> I am the son or daughter</label>
+        <label><input type="radio" name="relationship" value="representative" /> Authorized Representative (Requires SPA or Authorization)</label>
+      </fieldset>
+
+      <!-- Conditional block for authorized reps -->
+      <div id="repDetails" class="notice-box" hidden>
+        <p style="margin: 0 0 10px; font-weight: 600;">Authorized Representative Requirement</p>
+        <div class="q">
+          <label for="repName">Full Name of Authorized Representative</label>
+          <input id="repName" name="rep_name" placeholder="As shown in government ID" autocomplete="off" />
+        </div>
+        <div class="q">
+          <label for="repIdType">Valid ID Presented upon Delivery</label>
+          <select id="repIdType" name="rep_id_type">
+            <option value="">Choose ID type...</option>
+            <option>Philippine Identification (PhilSys ID)</option>
+            <option>Passport</option>
+            <option>Driver's License</option>
+            <option>SSS / UMID Card</option>
+            <option>PRC ID</option>
+          </select>
+        </div>
+        <span class="help">Courier will inspect the signed letter of authorization and original valid government ID.</span>
+      </div>
+
+      <div class="row">
+        <div class="q">
+          <label for="reqEmail">Contact Email Address</label>
+          <input id="reqEmail" name="email" type="email" placeholder="For payment receipt & tracking" required autocomplete="off" />
+        </div>
+        <div class="q">
+          <label for="reqMobile">PH Mobile Number</label>
+          <input id="reqMobile" name="mobile" type="tel" pattern="[0-9]{11}" placeholder="09XXXXXXXXX (11 digits)" required autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="q">
+        <label for="purpose">Purpose of Certificate</label>
+        <select id="purpose" name="purpose" required>
+          <option value="">Select purpose...</option>
+          <option>Passport Application / Renewal (DFA)</option>
+          <option>Employment / Local Pre-employment (SSS/PhilHealth)</option>
+          <option>School Admission / Board Exam (PRC)</option>
+          <option>Marriage License</option>
+          <option>Visa Application / Travel Abroad</option>
+          <option>Claiming Benefits / Inheritance</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="ghost" id="btnStep2Back">Back</button>
+        <button type="button" id="btnStep2Next">Proceed to Delivery</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: COURIER DELIVERY & CONSENT -->
+    <section id="step3" hidden>
+      <p class="steps">Step 3 of 3 — Delivery Address & Declaration</p>
+
+      <div class="q">
+        <label for="deliveryAddress">Complete Delivery Address</label>
+        <textarea id="deliveryAddress" name="delivery_address" rows="3" placeholder="House/Unit No., Street, Barangay, Subdivision" required></textarea>
+      </div>
+
+      <div class="row">
+        <div class="q">
+          <label for="deliveryProvince">Province</label>
+          <input id="deliveryProvince" name="delivery_province" required placeholder="e.g. Metro Manila or Cavite" autocomplete="off" />
+        </div>
+        <div class="q">
+          <label for="deliveryZip">ZIP Code</label>
+          <input id="deliveryZip" name="delivery_zip" pattern="[0-9]{4}" placeholder="4-digit code" required autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="q">
+        <label for="copies">Number of Copies Needed</label>
+        <select id="copies" name="copies" required>
+          <option value="1">1 Copy (₱365.00)</option>
+          <option value="2">2 Copies (₱730.00)</option>
+          <option value="3">3 Copies (₱1,095.00)</option>
+        </select>
+        <span class="help">Fees include government processing, documentary stamp tax, and nationwide doorstep delivery.</span>
+      </div>
+
+      <fieldset>
+        <legend>Certification and Consent</legend>
+        <label>
+          <input type="checkbox" name="certify" required />
+          I certify under penalty of perjury that the information provided is true and correct, and I am authorized to receive this civil registry document under Philippine law.
+        </label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="ghost" id="btnStep3Back">Back</button>
+        <button type="submit" id="btnSubmit">Review & Generate Order</button>
+      </div>
+    </section>
+  </form>
+
+  <div id="summary" hidden>
+    <div class="badge-bar">Order Slip Generated</div>
+    <h2 style="margin: 0 0 8px; font-size: 20px;">Reference: PSA-2026-<span id="refNum"></span></h2>
+    <p style="color: var(--muted); margin-bottom: 20px; font-size: 13.5px;">Your document request preview has been generated. Ready for payment processor redirect (GCash / Maya / Landbank).</p>
+    
+    <div id="summaryDetails"></div>
+
+    <div style="margin-top: 24px; display: flex; gap: 10px;">
+      <button type="button" onclick="window.print()">Print Order Slip</button>
+      <button type="button" class="ghost" onclick="location.reload()">New Transaction</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const form = document.getElementById('psaForm');
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  const repDetails = document.getElementById('repDetails');
+  const repName = document.getElementById('repName');
+  const repIdType = document.getElementById('repIdType');
+
+  function validateStep(stepElement) {
+    const invalidInput = [...stepElement.querySelectorAll('input, select, textarea')]
+      .find(el => !el.closest('[hidden]') && !el.checkValidity());
+
+    if (invalidInput) {
+      invalidInput.reportValidity();
+      return false;
+    }
+    return true;
+  }
+
+  // Step 1 -> Step 2
+  document.getElementById('btnStep1Next').addEventListener('click', () => {
+    if (!validateStep(step1)) return;
+    step1.hidden = true;
+    step2.hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Step 2 -> Step 1
+  document.getElementById('btnStep2Back').addEventListener('click', () => {
+    step2.hidden = true;
+    step1.hidden = false;
+  });
+
+  // Dynamic Representative field handling
+  form.addEventListener('change', (e) => {
+    if (e.target.name === 'relationship') {
+      const isRep = form.relationship.value === 'representative';
+      repDetails.hidden = !isRep;
+      repName.required = isRep;
+      repIdType.required = isRep;
+    }
+  });
+
+  // Step 2 -> Step 3
+  document.getElementById('btnStep2Next').addEventListener('click', () => {
+    if (!validateStep(step2)) return;
+    step2.hidden = true;
+    step3.hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Step 3 -> Step 2
+  document.getElementById('btnStep3Back').addEventListener('click', () => {
+    step3.hidden = true;
+    step2.hidden = false;
+  });
+
+  // Final Form Submit -> Order Summary
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validateStep(step3)) return;
+
+    const formData = new FormData(form);
+    const refCode = Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('refNum').textContent = refCode;
+
+    const childName = `${formData.get('child_first_name')} ${formData.get('child_middle_name') || ''} ${formData.get('child_last_name')} ${formData.get('child_suffix') || ''}`.trim();
+    const copies = formData.get('copies');
+    const totalAmount = (copies * 365).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
+
+    const summaryHtml = `
+      <div class="summary-item"><span class="summary-label">Document Requested</span><span class="summary-val">PSA Birth Certificate (SECPA)</span></div>
+      <div class="summary-item"><span class="summary-label">Name of Child</span><span class="summary-val">${childName}</span></div>
+      <div class="summary-item"><span class="summary-label">Date of Birth</span><span class="summary-val">${formData.get('date_of_birth')}</span></div>
+      <div class="summary-item"><span class="summary-label">Place of Birth</span><span class="summary-val">${formData.get('pob_city')}, ${formData.get('pob_province')}</span></div>
+      <div class="summary-item"><span class="summary-label">Mother's Maiden Name</span><span class="summary-val">${formData.get('mother_maiden_name')}</span></div>
+      <div class="summary-item"><span class="summary-label">Requester Relationship</span><span class="summary-val">${formData.get('relationship').toUpperCase()}</span></div>
+      <div class="summary-item"><span class="summary-label">Contact Mobile</span><span class="summary-val">${formData.get('mobile')}</span></div>
+      <div class="summary-item"><span class="summary-label">Destination Address</span><span class="summary-val">${formData.get('delivery_address')}, ${formData.get('delivery_province')} (${formData.get('delivery_zip')})</span></div>
+      <div class="summary-item"><span class="summary-label">Quantity</span><span class="summary-val">${copies} Copy/ies</span></div>
+      <div class="summary-item" style="border-top: 2px solid var(--accent);"><span class="summary-label" style="font-weight:700;">Total Assessment</span><span class="summary-val" style="color:var(--accent); font-size:16px;">${totalAmount}</span></div>
+    `;
+
+    document.getElementById('summaryDetails').innerHTML = summaryHtml;
+    form.hidden = true;
+    document.getElementById('summary').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>

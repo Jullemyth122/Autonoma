@@ -5,7 +5,7 @@
 
 You save your details once: your profile, a few facts about yourself, your résumé. Autonoma then fills forms on any website, including Google Forms and multi-page applications. Exact matches are filled instantly by rules. Harder questions go to a local AI model running through [Ollama](https://ollama.com), so nothing is sent to the cloud. No account, no API key, no subscription.
 
-> Built in one day for a hackathon (9 October 2026). See [TIMELOG.md](TIMELOG.md) for when each file was made.
+> Built in one day for a hackathon (9 October 2026). See [TIMELOG.md](TIMELOG.md) for when each file was made, and [DATA_AND_MODELS.md](DATA_AND_MODELS.md) for every model, rule and test sample used. **No model was trained.**
 
 ---
 
@@ -360,6 +360,7 @@ Built on **9 October 2026** (times are local, UTC+8):
 | 6:12 PM | **Orb UI** added to the side panel. |
 | 6:22 PM | This README. |
 | 6:40–7:50 PM | **Voice:** the agent talks back (English/Tagalog), then push-to-talk voice commands with Whisper tiny, running locally. |
+| 7:58 PM | **DATA_AND_MODELS.md**: disclosure of models, rules and test samples. |
 
 Every code file starts with a one-line time-log comment, and **[TIMELOG.md](TIMELOG.md)** lists every file with its creation time, last change and purpose.
 
