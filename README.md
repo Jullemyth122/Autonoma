@@ -1,4 +1,4 @@
-<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 3:05 AM, 10 Oct (real screenshots) -->
+<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 3:02 AM, 10 Oct (real screenshots) -->
 # Autonoma
 
 **A Chrome extension that fills web forms for you, by click, by voice or by sign language, using small AI models that run entirely on your own computer.**
