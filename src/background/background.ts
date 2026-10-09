@@ -1,7 +1,7 @@
 // Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:33 PM
-import type { AIResult, FillContext, FillReport, JobStatus, Request } from '../types/index.ts';
+import type { AdvanceResult, AIResult, FillContext, FillReport, JobStatus, Request } from '../types/index.ts';
 import { PAGE_TIMEOUT_MS } from '../types/defaults.ts';
-import { checkRuntime, resolveQuestions, setModelResidency } from '../services/aiService.ts';
+import { checkRuntime, parseCommand, resolveQuestions, setModelResidency } from '../services/aiService.ts';
 import { getData, getState, saveData } from '../services/repository.ts';
 
 let jobController: AbortController | null = null;
@@ -136,6 +136,22 @@ async function startJob(paginate: boolean, urls?: string[]): Promise<void> {
     } finally { if (jobController === controller) jobController = null; }
   });
 }
+/** "Next" / "Submit" spoken outside a fill: click the button on the active tab and report what happened. */
+async function advanceActiveTab(submit: boolean): Promise<AdvanceResult> {
+  if (jobController) throw new Error('A fill is running. Stop it first.');
+  const tab = (await chrome.tabs.query({ active: true, lastFocusedWindow: true }))[0];
+  if (!tab?.id) throw new Error('Open a form in a browser tab first.');
+  const frames = (await discoverFrames(tab.id)).filter(frame => frame.state.count > 0).sort((a, b) => a.frameId - b.frameId);
+  for (const frame of frames) {
+    const result = await frameMessage<{ action: string; signature: string; blockedBy?: string }>(tab.id, frame.frameId, { type: 'ADVANCE_PAGE', autoSubmit: submit });
+    if (result.action === 'next') return { action: 'next' };
+    if (result.action === 'submitted') return { action: await pageChanged(tab.id, frame.frameId, result.signature, new AbortController().signal, 12) ? 'submitted' : 'not-submitted' };
+    if (result.action === 'blocked') return { action: 'blocked', blockedBy: result.blockedBy };
+    if (result.action === 'ready-to-submit') return { action: 'ready-to-submit' };
+  }
+  return { action: 'none' };
+}
+
 async function stopJob(): Promise<void> {
   jobController?.abort(new Error('Stopped by you.'));
   modelControllers.forEach(controller => controller.abort(new Error('Stopped.')));
@@ -172,6 +188,13 @@ async function handle(request: Request, sender: chrome.runtime.MessageSender): P
     case 'RELEASE_MODEL': await setModelResidency((await getData()).settings.model, true); return null;
     case 'START_FILL': await startJob(request.paginate, request.urls); return null;
     case 'STOP': await stopJob(); return null;
+    case 'ADVANCE': return advanceActiveTab(request.submit);
+    case 'PARSE_COMMAND': {
+      const data = await getData();
+      const command = await parseCommand(request.text, data.profiles.map(profile => profile.name), data.settings.model, AbortSignal.timeout(20_000));
+      const profileId = command.profile ? data.profiles.find(profile => profile.name === command.profile)?.id : undefined;
+      return { intent: command.intent, ...(profileId ? { profileId } : {}) };
+    }
   }
 }
 

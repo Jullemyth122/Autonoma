@@ -26,6 +26,12 @@ export interface RuntimeStatus { ready: boolean; models: string[]; reason?: stri
 export interface JobStatus { running: boolean; completed: number; total: number; message: string; report?: FillReport }
 export interface AppState { data: VaultData; report: FillReport | null; job: JobStatus | null }
 
+/** What a spoken command asks for. */
+export type VoiceIntent = 'fill' | 'fill_all' | 'stop' | 'next' | 'submit' | 'left' | 'help' | 'english' | 'tagalog' | 'profile' | 'none';
+export interface VoiceCommand { intent: VoiceIntent; profileId?: string }
+/** Result of moving a form on by voice: clicked Next, submitted (or tried to), stopped at a required question, or nothing to click. */
+export interface AdvanceResult { action: 'next' | 'submitted' | 'not-submitted' | 'ready-to-submit' | 'blocked' | 'none'; blockedBy?: string }
+
 export type Request =
   | { type: 'GET_STATE' }
   | { type: 'SAVE_DATA'; data: VaultData }
@@ -34,6 +40,8 @@ export type Request =
   | { type: 'RELEASE_MODEL' }
   | { type: 'START_FILL'; paginate: boolean; urls?: string[] }
   | { type: 'STOP' }
+  | { type: 'ADVANCE'; submit: boolean }
+  | { type: 'PARSE_COMMAND'; text: string }
   | { type: 'RESOLVE_AI_QUESTIONS'; questions: Question[]; timeoutMs: number };
 
 export type Reply<T> = { ok: true; data: T } | { ok: false; error: string };

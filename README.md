@@ -40,6 +40,8 @@ You save your details once: your profile, a few facts about yourself, your résu
 | **Dates and options** | Converts saved dates such as `20/11/2003` into what date fields accept, and picks "Philippines" from a country list even when your saved value is a full address. |
 | **Fill report** | After each run: fields filled by rules, by AI, and repaired, plus questions left for you, time taken, and tokens used. |
 | **Copy-paste backup** | All your data as editable JSON: copy it, paste it back, or download it as a file. |
+| **Talks back** | The agent says what it did: how many fields it filled and which questions are left for you, by name, in **English or Tagalog**. It uses the voices already installed on your computer, so it needs nothing extra and works offline. |
+| **Voice commands** | Click the 🎤 on the orb and speak, in English or simple Tagalog: *“fill this form”*, *“punan mo ang form”*, *“next”*, *“ipasa”*, *“what's left?”*… Speech is turned into text **on your computer** (Whisper tiny). No training is needed. |
 | **Agent orb** | An animated 3D orb in the side panel shows what the agent is doing (Ready → Working → Done / Waiting on you). Click it to start. |
 
 ### Built-in safeguards
@@ -182,6 +184,30 @@ The repo includes a two-page registration form with every kind of question Auton
 
 ---
 
+## Voice
+
+**Talking back** is on by default (Voice card → *Talk back*). Choose **English** or **Tagalog** there. Windows has English voices built in; a Tagalog line is read by an English voice unless you add a Filipino voice in Windows' speech settings. The orb's mute button silences it.
+
+**Voice commands:** click the 🎤 at the bottom left of the orb (or **Speak a command** in the Voice card), say the command, and pause. It stops listening by itself.
+
+| English | Tagalog | Does |
+| --- | --- | --- |
+| fill this form / autofill | punan mo ang form / sagutan | Fills the page |
+| fill all pages | punan lahat | Fills and clicks Next through the form |
+| next | susunod / tuloy | Clicks Next |
+| submit | ipasa / isumite | Clicks Submit, then checks it went through |
+| stop | itigil / tama na | Cancels the fill |
+| what's left? | ano pa ang kulang? | Reads the questions left for you |
+| use *profile name* | gamitin ang *profile name* | Switches profile |
+| speak Tagalog / speak English | | Switches the voice language |
+| help | tulong | Lists the commands |
+
+How it works: your voice is recorded only while the mic is on. **Whisper tiny** (multilingual) turns it into text inside the extension, on the GPU when it works and otherwise on the CPU, in about 1–8 seconds. Plain rules match the text to a command, and they forgive common mishearings ("feel this form" → fill, "panan" → punan). Anything the rules don't recognise goes to qwen to work out what you meant.
+
+- **First use downloads the speech model (~40 MB) once** from Hugging Face; it's cached after that. You can download it ahead of time under Workspace → Local AI → **Voice commands**.
+- **Microphone permission:** the side panel can't show Chrome's permission prompt. If the microphone is blocked, Autonoma opens Workspace → Local AI, where you click **Allow microphone** once.
+- **No voice training:** the model is pretrained, and the commands are a fixed phrase list.
+
 ## Using it on real forms
 
 ### Your data (Workspace → gear icon)
@@ -276,6 +302,7 @@ Autonoma/
 │   │   ├── Workspace.tsx        Profile, Memory, Files, Local AI, Import & export
 │   │   ├── Report.tsx           Fill report
 │   │   ├── orb/                 3D agent orb (three.js / react-three-fiber) and sound
+│   │   ├── voice/               Talking back, push-to-talk, Whisper worker, command rules (EN + TL)
 │   │   ├── api.ts               Messages to the background; state hooks
 │   │   ├── sample.ts            Demo profile ("Maria Santos")
 │   │   └── *.module.scss, styles/global.scss   Styles, light and dark mode
@@ -305,6 +332,8 @@ Autonoma/
 | **Ollama could not load the model (HTTP 500)**, usually out of GPU memory | Close other GPU-heavy apps, or click ⏻ to release memory. |
 | **Refresh this webpage after loading the extension** | Refresh the form tab. Browser pages such as `chrome://` can't be filled. |
 | **Stopped: "…" is required and needs your answer** | Working as intended: nothing you saved answers that question. Answer it yourself, or add a field, memory or file for it. |
+| **Ollama could not load the model** right after it worked before, or a **CUDA error** | Ollama's GPU runner sometimes gets stuck. Quit Ollama from the tray and start it again. Also check free memory: on an 8 GB laptop, close Docker Desktop, Discord and extra browser tabs. |
+| **Speech model failed to load** | Check your internet connection the first time (one ~40 MB download), then click 🎤 again. On some GPUs the voice model falls back to the CPU automatically; that's slower but works. |
 | Changes don't show up | Reload Autonoma in `chrome://extensions` and check the build time in the panel footer. |
 | The demo page doesn't fill | Open it at `http://127.0.0.1:5500` (`npm run demo`), not as a file. |
 
@@ -330,6 +359,7 @@ Built on **9 October 2026** (times are local, UTC+8):
 | 3:04–5:52 PM | **Claude Code session:** React UI (side panel and workspace), demo form, match checks, Ollama setup and fixes, removal of the passphrase vault, dates / age / next birthday, Google Forms labels, name rules, JSON import/export, required-field stops, agreement-box setting. |
 | 6:12 PM | **Orb UI** added to the side panel. |
 | 6:22 PM | This README. |
+| 6:40–7:50 PM | **Voice:** the agent talks back (English/Tagalog), then push-to-talk voice commands with Whisper tiny, running locally. |
 
 Every code file starts with a one-line time-log comment, and **[TIMELOG.md](TIMELOG.md)** lists every file with its creation time, last change and purpose.
 

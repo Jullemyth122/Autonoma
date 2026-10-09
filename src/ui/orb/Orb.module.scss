@@ -119,3 +119,27 @@
 @media (prefers-reduced-motion: reduce) {
   .backup, .presence i { animation: none !important; }
 }
+
+// Bottom-left slot, mirroring the sound button: the microphone.
+.extra {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+
+  > button {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #9ac4ff33;
+    border-radius: 50%;
+    background: #18365480;
+    color: #b9cbe3;
+    cursor: pointer;
+
+    &:hover { color: #fff; border-color: #9ac4ff66; }
+    &[aria-pressed='true'] { color: #10231d; background: #f2c66b; border-color: #f2c66b; box-shadow: 0 0 12px #f2c66b88; }
+    &:disabled { opacity: 0.5; cursor: progress; }
+  }
+}

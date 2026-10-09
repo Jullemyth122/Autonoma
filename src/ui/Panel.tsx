@@ -1,13 +1,16 @@
 // Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 6:05 PM
 import { useEffect, useRef, useState } from 'react';
-import { Cpu, Link, Play, Power, RefreshCw, Settings as SettingsIcon, Square, Volume2 } from 'lucide-react';
-import type { AppState, FillReport, JobStatus, Settings, VaultData, VoiceLanguage } from '../types/index.ts';
+import { Cpu, Link, Mic, Play, Power, RefreshCw, Settings as SettingsIcon, Square, Volume2 } from 'lucide-react';
+import type { AdvanceResult, AppState, FillReport, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
 import { AI_LABELS, errorText, send, useAppState, useLocalAI, type AIPhase } from './api.ts';
 import { Orb } from './orb/Orb.tsx';
 import type { OrbState } from './orb/parts.tsx';
 import { Report } from './Report.tsx';
 import { say } from './voice/phrases.ts';
-import { speak, useSpeech } from './voice/speak.ts';
+import { speak, stopSpeaking, useSpeech } from './voice/speak.ts';
+import { matchCommand } from './voice/commands.ts';
+import { MicrophoneBlockedError, recordCommand } from './voice/listen.ts';
+import { loadSpeechModel, transcribe, useModelStatus } from './voice/recognizer.ts';
 import ui from './ui.module.scss';
 import styles from './Panel.module.scss';
 
@@ -21,14 +24,16 @@ export function Panel() {
         <button className={ui.icon} title="Edit profile, memory, and files" aria-label="Open workspace" onClick={() => chrome.runtime.openOptionsPage()}><SettingsIcon size={16} /></button>
       </header>
       {!state ? <p className={ui.muted}>{error || 'Loading…'}</p>
-        : <Controls data={state.data} job={state.job} onState={setState} />}
+        : <Controls data={state.data} job={state.job} report={state.report} onState={setState} />}
       {state?.report && <Report report={state.report} />}
       <p className={styles.build}>Build {typeof __BUILD_TIME__ === 'string' ? new Date(__BUILD_TIME__).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'dev'}</p>
     </main>
   );
 }
 
-function Controls({ data, job, onState }: { data: VaultData; job: JobStatus | null; onState: (state: AppState) => void }) {
+type VoicePhase = 'idle' | 'listening' | 'understanding';
+
+function Controls({ data, job, report, onState }: { data: VaultData; job: JobStatus | null; report: FillReport | null; onState: (state: AppState) => void }) {
   const ai = useLocalAI(data.settings, true);
   const [paginate, setPaginate] = useState(false);
   const [links, setLinks] = useState('');
@@ -43,14 +48,87 @@ function Controls({ data, job, onState }: { data: VaultData; job: JobStatus | nu
   const setSettings = (patch: Partial<Settings>) => save({ ...data, settings: { ...data.settings, ...patch } });
   const language: VoiceLanguage = data.settings.voiceLanguage;
   const talk = (text: string) => { if (data.settings.voiceReplies) void speak(text, language); };
-  const start = (urls?: string[]) => run(async () => {
-    await send({ type: 'START_FILL', paginate, urls });
+  const start = (urls?: string[], allPages = paginate) => run(async () => {
+    await send({ type: 'START_FILL', paginate: allPages, urls });
     talk(urls?.length ? say.startingLinks(urls.length, language) : say.starting(language));
   });
   const urls = links.split(/\s+/).map(link => link.trim()).filter(Boolean);
   const models = ai.status.models.includes(data.settings.model) ? ai.status.models : [data.settings.model, ...ai.status.models];
   const speech = useSpeech();
-  const agent = useAgent(running, job?.report, ai.phase, speech);
+  const model = useModelStatus();
+  const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
+  const [heard, setHeard] = useState('');
+  const recording = useRef<{ stop: () => void } | null>(null);
+  const agent = useAgent(running, job?.report, ai.phase, speech, voicePhase === 'listening' ? { state: 'listening', caption: say.listening(language) }
+    : voicePhase === 'understanding' ? { state: 'transcribing', caption: model.state === 'loading' && model.percent < 100 ? say.downloading(model.percent, language) : say.understanding(language) } : null);
+
+  // Replies to something you said are always spoken (unless the orb is muted).
+  const reply = (text: string) => void speak(text, language);
+
+  /** Push-to-talk: record one command, turn it into text locally, then act on it. Clicking again stops early. */
+  async function listen() {
+    if (recording.current) return recording.current.stop();
+    stopSpeaking(); setError(''); setHeard('');
+    void loadSpeechModel().catch(() => undefined); // start loading while you speak
+    const take = recordCommand();
+    recording.current = take;
+    setVoicePhase('listening');
+    let audio: Float32Array | null;
+    try { audio = await take.done; }
+    catch (caught) {
+      recording.current = null; setVoicePhase('idle');
+      if (caught instanceof MicrophoneBlockedError) {
+        reply(say.micBlocked(language));
+        void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#voice') });
+      } else setError(errorText(caught));
+      return;
+    }
+    recording.current = null;
+    if (!audio) { setVoicePhase('idle'); return reply(say.heardNothing(language)); }
+    setVoicePhase('understanding');
+    try {
+      const text = await transcribe(audio, language);
+      setHeard(text);
+      let command = matchCommand(text, data.profiles);
+      if (!command && text && ai.phase === 'ready') command = await send<VoiceCommand>({ type: 'PARSE_COMMAND', text }).catch(() => null);
+      setVoicePhase('idle');
+      await perform(command ?? { intent: 'none' });
+    } catch (caught) {
+      setVoicePhase('idle'); setError(errorText(caught)); reply(say.voiceError(language));
+    }
+  }
+
+  async function perform(command: VoiceCommand) {
+    switch (command.intent) {
+      case 'fill': return running ? reply(say.busy(language)) : start();
+      case 'fill_all': setPaginate(true); return running ? reply(say.busy(language)) : start(undefined, true);
+      case 'stop':
+        if (!running) return reply(say.stopped(language));
+        return run(() => send({ type: 'STOP' })); // the fill's own summary says "stopped"
+      case 'next': case 'submit': {
+        const result = await send<AdvanceResult>({ type: 'ADVANCE', submit: command.intent === 'submit' }).catch(caught => { setError(errorText(caught)); return null; });
+        return result ? reply(say.advance(result, language)) : undefined;
+      }
+      case 'left': return reply(say.left(report?.left ?? [], language));
+      case 'help': return reply(say.help(language));
+      case 'english': case 'tagalog': {
+        const next: VoiceLanguage = command.intent === 'tagalog' ? 'tl' : 'en';
+        await setSettings({ voiceLanguage: next });
+        return void speak(next === 'tl' ? 'Sige, Tagalog na tayo.' : "Okay, I'll speak English.", next);
+      }
+      case 'profile': {
+        const profile = data.profiles.find(item => item.id === command.profileId);
+        if (!profile) return reply(say.notUnderstood(language));
+        await save({ ...data, activeProfileId: profile.id });
+        return reply(say.profile(profile.name, language));
+      }
+      default: return reply(say.notUnderstood(language));
+    }
+  }
+  const micButton = (
+    <button title={voicePhase === 'listening' ? 'Stop listening' : 'Speak a command'} aria-label={voicePhase === 'listening' ? 'Stop listening' : 'Speak a command'}
+      aria-pressed={voicePhase === 'listening'} disabled={voicePhase === 'understanding'} onClick={() => void listen()}><Mic size={14} /></button>
+  );
 
   // When a fill ends, say what happened: how much was filled and which questions need you.
   const wasRunning = useRef(running);
@@ -61,7 +139,7 @@ function Controls({ data, job, onState }: { data: VaultData; job: JobStatus | nu
 
   return (
     <>
-      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => void start()}
+      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => void start()} extra={micButton}
         caption={running ? job!.message : agent.caption}
       />
       <section className={ui.card}>
@@ -83,6 +161,16 @@ function Controls({ data, job, onState }: { data: VaultData; job: JobStatus | nu
 
       <section className={ui.card}>
         <h2 className={ui.cardTitle}><Volume2 size={16} />Voice</h2>
+        <button className={ui.secondary} onClick={() => void listen()} disabled={voicePhase === 'understanding'} aria-pressed={voicePhase === 'listening'}>
+          <Mic size={14} />{voicePhase === 'listening' ? 'Listening… click to stop' : voicePhase === 'understanding' ? 'Understanding…' : 'Speak a command'}
+        </button>
+        {heard && <p className={ui.muted}>You said: “{heard}”</p>}
+        <p className={ui.muted}>
+          {model.state === 'ready' ? `Speech model ready (${model.device === 'webgpu' ? 'GPU' : 'CPU'}). Try “fill this form” or “punan mo ang form”.`
+            : model.state === 'loading' ? say.downloading(model.percent, language)
+            : model.state === 'error' ? `Speech model failed to load: ${model.error}`
+            : 'First use downloads a ~40 MB speech model once. After that it works offline.'}
+        </p>
         <label className={ui.toggle}>
           <input type="checkbox" checked={data.settings.voiceReplies} onChange={event => void setSettings({ voiceReplies: event.target.checked })} />
           Talk back: the agent says what it did
@@ -148,7 +236,7 @@ const fields = (count: number) => `${count} field${count === 1 ? '' : 's'}`;
  * What the orb shows: thinking while a fill runs, a short "speaking" pulse when it
  * finishes, and "listening" for a while when fields are left for you.
  */
-function useAgent(running: boolean, report: FillReport | undefined, aiPhase: AIPhase, speech: { speaking: boolean; text: string }): { state: OrbState; caption: string } {
+function useAgent(running: boolean, report: FillReport | undefined, aiPhase: AIPhase, speech: { speaking: boolean; text: string }, voice: { state: OrbState; caption: string } | null): { state: OrbState; caption: string } {
   const [wasRunning, setWasRunning] = useState(running);
   const [finish, setFinish] = useState<{ state: OrbState; caption: string } | null>(null);
   if (running !== wasRunning) {
@@ -164,6 +252,7 @@ function useAgent(running: boolean, report: FillReport | undefined, aiPhase: AIP
     return () => clearTimeout(timer);
   }, [finish]);
 
+  if (voice) return voice;
   if (running) return { state: 'thinking', caption: '' };
   if (speech.speaking) return { state: 'speaking', caption: speech.text };
   if (finish) return finish;

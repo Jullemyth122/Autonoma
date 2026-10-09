@@ -1,5 +1,5 @@
 // Time log (9 Oct 2026): created 6:12 PM (orb UI)
-import { Suspense, lazy, useRef, useState, type PointerEvent } from 'react';
+import { Suspense, lazy, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import type { OrbPointer, OrbState, OrbTone } from './parts.tsx';
 import { isOrbSoundMuted, setOrbSoundMuted } from './sfx.ts';
@@ -17,7 +17,7 @@ const LABELS: Record<OrbState, string> = {
 };
 
 /** The agent's face: the HUD orb, a presence tag and one line of status. Clicking the orb runs `onActivate`. */
-export function Orb({ state, tone = 'cyan', caption, disabled, onActivate }: { state: OrbState; tone?: OrbTone; caption: string; disabled?: boolean; onActivate: () => void }) {
+export function Orb({ state, tone = 'cyan', caption, disabled, onActivate, extra }: { state: OrbState; tone?: OrbTone; caption: string; disabled?: boolean; onActivate: () => void; extra?: ReactNode }) {
   const levelRef = useRef(0);
   const pointerRef = useRef<OrbPointer>({ x: 0, y: 0, hover: 0 });
   const [muted, setMuted] = useState(isOrbSoundMuted);
@@ -45,6 +45,7 @@ export function Orb({ state, tone = 'cyan', caption, disabled, onActivate }: { s
         </Suspense>
       </button>
       <p className={styles.caption} aria-live="polite">{caption}</p>
+      {extra && <div className={styles.extra}>{extra}</div>}
       <button className={styles.sound} title={muted ? 'Sound off' : 'Sound on'} aria-label={muted ? 'Turn orb sound on' : 'Turn orb sound off'} aria-pressed={!muted} onClick={toggleSound}>
         {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
       </button>

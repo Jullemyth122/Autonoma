@@ -6,4 +6,6 @@ export default defineConfig({
   plugins: [react()],
   base: './',
   build: { rolldownOptions: { input: ['index.html', 'options.html'] } },
+  // The speech worker (Whisper) loads its model code lazily, so it must be an ES module worker.
+  worker: { format: 'es' },
 });
