@@ -5,6 +5,7 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **Before 3:04 PM:** Codex wrote the plan (`PROJECT_SETUP.md`) and the first fill engine: background worker, content scripts, Ollama service, types.
 - **3:04–5:52 PM:** Claude Code session: React UI (panel, workspace), demo form, match checks, Ollama setup and fixes, vault removal, dates/age/next birthday, Google Forms labels, name rules, JSON import/export, required-field stops, agreement-box setting.
 - **6:12 PM:** orb UI added to the side panel.
+- **6:22 PM:** README.md (setup guide, demo walkthrough, project structure) for the judges.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
@@ -55,3 +56,4 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/orb/hud.tsx` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/sfx.ts` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
+| `README.md` | 6:22 PM | — | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
