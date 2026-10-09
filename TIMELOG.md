@@ -8,21 +8,22 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **6:22 PM:** README.md (setup guide, demo walkthrough, project structure) for the judges.
 - **6:40–7:50 PM:** voice: the agent talks back in English/Tagalog, plus push-to-talk voice commands (Whisper tiny, local).
 - **7:58 PM:** DATA_AND_MODELS.md: every model, rule list and test sample used. Nothing was trained.
-- **8:50 PM:** ChatGPT UI work: app themes, theme picker, restyled panel and workspace (outside this session).
-- **10:25 PM:** several fields per command, even when misheard: a sentence starting with "feel/phil" is a fill, "1st name" means first name, and the local-model fallback can return several fields ("fill first name and last name" fills both).
-- **10:15 PM:** "fill this" works for any question, including radio and checkbox questions on Google Forms: it uses the question you last clicked (text, card, option or box), or the one mid-screen if you've scrolled since. Quiz options count as backed by saved answers when most of their words match.
-- **9:57 PM:** interrupting and quiet live mode: tap the orb or mic, or press Esc, to stop the agent talking; live mode no longer answers background noise or announces its 2-minute timeout; sounds shorter than ~0.4 s don't count as speech.
-- **9:45–9:55 PM:** performance pass, measured in Chromium: fills 2–3× faster (no per-field page scroll, 4 ms instead of 30 ms settle per field), fill report fixed on plain-HTTP pages (`crypto.randomUUID` fallback), orb redraws at 30 fps when idle (idle CPU 13.7% → 6.4%).
-- **9:15–9:45 PM:** live conversation (optional): one tap keeps the mic listening for command after command; several fields per sentence ("fill this name, this email"); "stop listening" / "tama na" ends it.
-- **9:00–9:12 PM:** premium compact redesign on the `premium-ui` branch: slim header, bigger orb, palette popover, command dock with option chips, stat-bar report, one dense System card with switches; spreadsheet-style Workspace rows. `main` keeps the previous UI.
 - **8:20–8:40 PM:** targeted fills: “fill the email / the name / this”, by voice in English and Tagalog. Only the named or clicked question is filled, and it glows.
+- **8:50 PM:** ChatGPT UI work: app themes, theme picker, restyled panel and workspace (outside this session).
+- **9:00–9:12 PM:** premium compact redesign on the `premium-ui` branch: slim header, bigger orb, palette popover, command dock with option chips, stat-bar report, one dense System card with switches; spreadsheet-style Workspace rows. `main` keeps the previous UI.
+- **9:15–9:45 PM:** live conversation (optional): one tap keeps the mic listening for command after command; several fields per sentence ("fill this name, this email"); "stop listening" / "tama na" ends it.
+- **9:45–9:55 PM:** performance pass, measured in Chromium: fills 2–3× faster (no per-field page scroll, 4 ms instead of 30 ms settle per field), fill report fixed on plain-HTTP pages (`crypto.randomUUID` fallback), orb redraws at 30 fps when idle (idle CPU 13.7% → 6.4%).
+- **9:57 PM:** interrupting and quiet live mode: tap the orb or mic, or press Esc, to stop the agent talking; live mode no longer answers background noise or announces its 2-minute timeout; sounds shorter than ~0.4 s don't count as speech.
+- **10:15 PM:** "fill this" works for any question, including radio and checkbox questions on Google Forms: it uses the question you last clicked (text, card, option or box), or the one mid-screen if you've scrolled since. Quiz options count as backed by saved answers when most of their words match.
+- **10:25 PM:** several fields per command, even when misheard: a sentence starting with "feel/phil" is a fill, "1st name" means first name, and the local-model fallback can return several fields ("fill first name and last name" fills both).
+- **10:36–10:38 PM:** notes brought up to date before pushing: README rewritten for everything above, new CHANGELOG.md, DATA_AND_MODELS.md and PROJECT_SETUP.md extended.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
 | File | Created | Last changed | By | What it is |
 | --- | --- | --- | --- | --- |
 | `package.local-ai.draft.json` | 2:03 PM | 2:36 PM | Codex (before this session) | Codex draft manifest (reference only) |
-| `PROJECT_SETUP.md` | 2:36 PM | 8:15 PM | Codex (before this session) | Plan, quick start, and what changed |
+| `PROJECT_SETUP.md` | 2:36 PM | 10:38 PM | Codex (before this session) | Plan, quick start, and what changed |
 | `.gitignore` | 3:04 PM | — | Codex (before this session) | Files kept out of git |
 | `eslint.config.js` | 3:04 PM | — | Codex (before this session) | Lint rules |
 | `index.html` | 3:04 PM | — | Codex (before this session) | Side panel page |
@@ -66,18 +67,19 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/orb/hud.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/sfx.ts` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
-| `README.md` | 6:22 PM | 9:41 PM | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
+| `README.md` | 6:22 PM | 10:36 PM | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
 | `src/ui/voice/speak.ts` | 6:40 PM | 9:22 PM | Claude Code | Agent's voice: offline system voices, speaking state for the orb |
 | `src/ui/voice/phrases.ts` | 6:40 PM | 9:22 PM | Claude Code | What the agent says, in English and Tagalog |
 | `src/ui/voice/commands.ts` | 6:55 PM | 10:30 PM | Claude Code | Spoken commands (EN + TL) matched by rules, forgiving mishearings |
 | `src/ui/voice/listen.ts` | 6:55 PM | 9:57 PM | Claude Code | Records one command from the mic; stops on a pause |
 | `src/ui/voice/recognizer.ts` | 6:55 PM | 7:41 PM | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
 | `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:41 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
-| `DATA_AND_MODELS.md` | 7:58 PM | 9:41 PM | Claude Code | Disclosure: models used (not trained), hand-written rules, test samples, network use |
-| `TIMELOG.md` | 6:15 PM | 8:31 PM | Claude Code | This time log |
+| `DATA_AND_MODELS.md` | 7:58 PM | 10:38 PM | Claude Code | Disclosure: models used (not trained), hand-written rules, test samples, network use |
+| `TIMELOG.md` | 6:15 PM | 10:38 PM | Claude Code | This time log |
 | `demo/index2.html` | 6:41 PM | 6:41 PM | Added outside this Claude Code session | Demo form: Application for Senior Product Engineer — Acme Labs |
 | `demo/index3.html` | 6:45 PM | 6:45 PM | Added outside this Claude Code session | Demo form: PSA Birth Certificate Online Request |
 | `src/ui/theme.ts` | 8:39 PM | — | Added outside this Claude Code session (ChatGPT UI work) | App theme state shared by all extension pages |
 | `src/ui/orb/themes.ts` | 8:28 PM | — | Added outside this Claude Code session (ChatGPT UI work) | The 8 colour themes (Solar, Aurora, Mint, Sunset, Nebula, Glacier, Voltage, Ember) |
 | `src/ui/ThemePicker.tsx` | 8:39 PM | 9:00 PM | Added outside this Claude Code session (ChatGPT UI work); compact mode by Claude Code | Theme picker (compact dots on the orb; full list in Workspace → Appearance) |
 | `src/ui/ThemePicker.module.scss` | 8:39 PM | 9:00 PM | Added outside this Claude Code session (ChatGPT UI work); compact mode by Claude Code | Theme picker styles |
+| `CHANGELOG.md` | 10:37 PM | — | Claude Code | What's new since the last GitHub version, how to apply it, and what could come next |

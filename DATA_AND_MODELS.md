@@ -54,9 +54,20 @@ None of these are in the repository unless marked; they were kept in a temporary
 | `fill-tl.wav` | "Punan mo ang form." | "Panan Mmo Inform" | Understood as *punan* after the mishearing fix ✅ |
 | `left-tl.wav` | "Ano pa ang kulang?" | "Ano pa ang koolang." | Answered in Tagalog ✅ |
 
-Two more recordings tested targeted fills: `email-en.wav` ("Fill the email.") was heard correctly and filled only the email. `name-tl.wav` ("Punan ang pangalan.") was heard as "Panan ng Ping Ellen": the American computer voice can't pronounce *pangalan* clearly enough for Whisper tiny, so that one wasn't understood.
+**More recordings for targeted fills, live mode and interruptions** (same computer voices):
 
-**Live conversation test** (`live-en.wav`, 58 s): "Fill this name, this email." … "Fill the birthday." … "Stop listening." with 14-second gaps. One tap on the mic filled First name, Last name and Email, then Date of birth, then ended the session.
+| File | Says | Whisper heard | Result |
+| --- | --- | --- | --- |
+| `email-en.wav` | "Fill the email." | "Fill the email." | Filled only Email ✅ |
+| `name-tl.wav` | "Punan ang pangalan." | "Panan ng Ping Ellen" | ❌ Not understood: the American computer voice can't say *pangalan* clearly enough for Whisper tiny |
+| `firstlast-en.wav` | "Fill first name and last name." | "Feel First Name and Last Name." (earlier: "Phil 1st Name…") | Filled First and Last name ✅, after the "feel / 1st" fixes |
+| `live-en.wav` (58 s) | "Fill this name, this email." … "Fill the birthday." … "Stop listening." | all three | One tap: First name, Last name, Email, then Date of birth, then the session ended ✅ |
+| `chatter.wav` (37 s, voice *Microsoft Zira*) | "The weather is really nice today, isn't it?" … "Stop listening." | both | The chatter got no reply; only "Stop listening" was answered ✅ |
+
+**Other test inputs (no recordings):**
+- **Quiz questions:** the three questions from the developer's Google Form screenshot (entrepreneur definition, entrepreneurial mindset, Market Risk), with saved answers rebuilt from a profile screenshot. They were asked one at a time; the right option was picked every time.
+- **"Fill this":** on the demo form's radio, checkbox and dropdown questions, both by clicking the question text and by scrolling it to mid-screen.
+- **Performance pages:** generated forms of 50, 300 and 1,000 text fields (labels like "First name 0", "Email address 2"…) plus 2,000 paragraphs of filler text, served only to the test browser.
 
 A computer voice reading Tagalog with an American accent is harder to understand than a real Filipino speaker, so these are a tough test. No real person's voice was recorded.
 
@@ -103,3 +114,8 @@ A computer voice reading Tagalog with an American accent is harder to understand
 | ~7:40 PM | Switched to transformers.js 3.8.1, with GPU → CPU fallback; all four voice tests pass |
 | 7:58 PM | This document |
 | 8:20–8:40 PM | Targeted fills: rules and Tagalog question words added; two more test recordings (`email-en.wav`, `name-tl.wav`) |
+| 9:15–9:45 PM | Live conversation; `live-en.wav` |
+| 9:45–9:55 PM | Performance tests (generated 50 / 300 / 1,000-field pages) |
+| 9:57 PM | Interrupt and quiet live mode; `chatter.wav` |
+| 10:15 PM | "Fill this" for any question; quiz-question test |
+| 10:25–10:30 PM | Several fields per command; `firstlast-en.wav`; the local-model fallback now returns several fields |
