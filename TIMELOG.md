@@ -104,4 +104,4 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/sign/useSign.ts` | 11:41 PM | 1:40 AM (10 Oct) | Claude Code | Camera in the side panel, one frame at a time to the worker, skeleton drawing, confident signs to the panel |
 | `src/ui/sign/onnxruntime.d.ts` | 11:43 PM | — | Claude Code | Type shim for onnxruntime-web 1.22 |
 | `src/ui/SignSetup.tsx` | 11:43 PM | 11:57 PM | Claude Code | Workspace → Signs: allow camera, model info, self-test, recognition settings, credits |
-| `src/ui/ErrorBoundary.tsx` | 1:34 AM (10 Oct) | — | Claude Code | Keeps a crash (e.g. the GPU dropping the 3D orb) from blanking the panel |
+| `src/ui/ErrorBoundary.tsx` | 1:34 AM (10 Oct) | 1:45 AM (10 Oct) | Claude Code | Keeps a crash (e.g. the GPU dropping the 3D orb) from blanking the panel |
