@@ -33,6 +33,7 @@ Autonoma, built on 9 October 2026 and finished in the early hours of 10 October.
 - **1:40–1:45 AM (10 Oct):** clearer camera errors (it asks for permission only when it's really not granted), and the 3D orb stops retrying after 3 tries when the browser has graphics switched off.
 - **2:05 AM (10 Oct):** Expresso became its own repository ([Jullemyth122/Expresso](https://github.com/Jullemyth122/Expresso)), linked from here; both time logs completed; [SUBMISSION.md](SUBMISSION.md) written for the judges.
 - **3:01 AM (10 Oct):** real screenshots from the laptop added to the README and SUBMISSION.md: a Google Form filled, a voice fill, Sign mode filling a phone number, Expresso recognising signs live, and the Local AI settings.
+- **4:00–4:15 AM (10 Oct):** **Sign guide** ([Expresso/docs/SIGNS.md](https://github.com/Jullemyth122/Expresso/blob/main/docs/SIGNS.md)): every trained sign drawn as an animated stick figure and a six-step strip from our own recordings; linked from the README, SUBMISSION.md and a new **How to sign** card in Workspace → Signs.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
@@ -72,7 +73,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/Report.module.scss` | 3:23 PM | 9:02 PM | Claude Code | Report styles |
 | `src/ui/Workspace.module.scss` | 3:23 PM | 11:57 PM | Claude Code | Workspace styles |
 | `src/ui/styles/global.scss` | 3:23 PM | — | Claude Code | Colours, dark mode, base styles |
-| `src/ui/ui.module.scss` | 3:23 PM | — | Claude Code | Shared cards, buttons, fields |
+| `src/ui/ui.module.scss` | 3:23 PM | 4:14 AM (10 Oct) | Claude Code | Shared cards, buttons, fields |
 | `demo/index.html` | 3:24 PM | 6:11 PM | Claude Code | Two-step demo form, every question required |
 | `scripts/serve-demo.mjs` | 3:24 PM | — | Claude Code | Serves the demo form on 127.0.0.1:5500 |
 | `src/ui/build.d.ts` | 5:32 PM | — | Claude Code | Type for the build stamp |
@@ -83,7 +84,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/orb/hud.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/sfx.ts` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
-| `README.md` | 6:22 PM | 2:05 AM (10 Oct) | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
+| `README.md` | 6:22 PM | 4:15 AM (10 Oct) | Claude Code | Overview, Ollama setup, demo walkthrough, project structure, time log |
 | `src/ui/voice/speak.ts` | 6:40 PM | 9:22 PM | Claude Code | Agent's voice: offline system voices, speaking state for the orb |
 | `src/ui/voice/phrases.ts` | 6:40 PM | 11:43 PM | Claude Code | What the agent says, in English and Tagalog |
 | `src/ui/voice/commands.ts` | 6:55 PM | 11:43 PM | Claude Code | Spoken commands (EN + TL) matched by rules, forgiving mishearings |
@@ -91,7 +92,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/voice/recognizer.ts` | 6:55 PM | 1:33 AM (10 Oct) | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
 | `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:41 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
 | `DATA_AND_MODELS.md` | 7:58 PM | 12:14 AM (10 Oct) | Claude Code | Disclosure: models used (only your sign model is trained, by you), hand-written rules, test samples, network use |
-| `TIMELOG.md` | 6:15 PM | 2:05 AM (10 Oct) | Claude Code | This time log |
+| `TIMELOG.md` | 6:15 PM | 4:15 AM (10 Oct) | Claude Code | This time log |
 | `demo/index2.html` | 6:41 PM | 6:41 PM | Added outside this Claude Code session | Demo form: Application for Senior Product Engineer — Acme Labs |
 | `demo/index3.html` | 6:45 PM | 6:45 PM | Added outside this Claude Code session | Demo form: PSA Birth Certificate Online Request |
 | `src/ui/theme.ts` | 8:39 PM | — | Added outside this Claude Code session (ChatGPT UI work) | App theme state shared by all extension pages |
@@ -108,9 +109,9 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/sign/sign.worker.ts` | 11:40 PM | 11:54 PM | Claude Code | Worker: MediaPipe hand + pose → segmenter → your ONNX sign model; self-test classification |
 | `src/ui/sign/useSign.ts` | 11:41 PM | 1:40 AM (10 Oct) | Claude Code | Camera in the side panel, one frame at a time to the worker, skeleton drawing, confident signs to the panel |
 | `src/ui/sign/onnxruntime.d.ts` | 11:43 PM | — | Claude Code | Type shim for onnxruntime-web 1.22 |
-| `src/ui/SignSetup.tsx` | 11:43 PM | 11:57 PM | Claude Code | Workspace → Signs: allow camera, model info, self-test, recognition settings, credits |
+| `src/ui/SignSetup.tsx` | 11:43 PM | 4:14 AM (10 Oct) | Claude Code | Workspace → Signs: allow camera, model info, self-test, recognition settings, credits |
 | `src/ui/ErrorBoundary.tsx` | 1:34 AM (10 Oct) | 1:45 AM (10 Oct) | Claude Code | Keeps a crash (e.g. the GPU dropping the 3D orb) from blanking the panel |
-| `SUBMISSION.md` | 2:05 AM (10 Oct) | — | Claude Code | Hackathon submission sheet: project, proof, disclosures, why local AI |
+| `SUBMISSION.md` | 2:05 AM (10 Oct) | 4:15 AM (10 Oct) | Claude Code | Hackathon submission sheet: project, proof, disclosures, why local AI |
 | `docs/screenshots/google-form-filled.png` | 3:01 AM (10 Oct) | — | Developer (screenshot) | README screenshot: a real Google Form filled (1 rule, 7 local AI) |
 | `docs/screenshots/voice-targeted-fill.png` | 3:01 AM (10 Oct) | — | Developer (screenshot) | README screenshot: voice command fills only the first name |
 | `docs/screenshots/sign-mode-fill.png` | 3:01 AM (10 Oct) | — | Developer (screenshot) | README screenshot: Sign mode reads FILL THIS PHONE NUMBER and fills it |
