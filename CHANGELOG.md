@@ -1,4 +1,4 @@
-<!-- Time log (9 Oct 2026): created 10:37 PM by Claude Code · last changed 12:12 AM, 10 Oct (Sign mode) -->
+<!-- Time log (9 Oct 2026): created 10:37 PM by Claude Code · last changed 2:05 AM, 10 Oct (Expresso repository link) -->
 # Changelog
 
 Everything added since the last version on GitHub (pull request #1, *"Added Voice AI and 3D Visualizer"*). All of it was built on 9 October 2026, between 7:58 PM and just after midnight. Every item was tested in a real Chromium browser with the extension loaded. [DATA_AND_MODELS.md](DATA_AND_MODELS.md) has the recordings and results.
@@ -171,7 +171,7 @@ Measured in Chromium with Chrome's performance counters:
 **What it is.** Sign a command to the camera: *FILL THIS PAGE*, *FILL THIS PHONE NUMBER*, *WHAT IS MISSING*, *NEXT*, *STOP*. These are real movements of the shoulders, arms and hands (like FSL), and they are **your** signs: you record and train them yourself.
 
 **Two parts, so the extension doesn't lag:**
-- **Expresso** (`C:\Hackathon\Expresso`, new). A local web app with four tabs:
+- **[Expresso](https://github.com/Jullemyth122/Expresso)** (new, its own repository; clone it next to Autonoma). A local web app with four tabs:
   - **Record:** webcam, live skeleton, 15 takes per sign, plus `_none` for random movement.
   - **Train:** PyTorch on your CPU, with per-sign accuracy and the mix-ups.
   - **Test:** live, showing what Autonoma will hear.
@@ -238,7 +238,7 @@ git push
 **On another computer** (or for a judge):
 1. Follow the README's [Setup](README.md#setup): Ollama, `qwen3:1.7b`, `OLLAMA_ORIGINS`, then `npm install`, `npm run build`, and load `dist`.
 2. `npm install` is needed: this update adds `@huggingface/transformers` 3.8.1 for the speech model and `@mediapipe/tasks-vision` 1.1.0 for Sign mode.
-3. For Sign mode: set up Expresso (`npm install`, `npm run setup:ml`, `npm run dev`), train your signs, and export. Your model isn't in the repo.
+3. For Sign mode: clone [Expresso](https://github.com/Jullemyth122/Expresso) next to Autonoma, set it up (`npm install`, `npm run setup:ml`, `npm run dev`), train your signs, and export. Your model isn't in the repo.
 
 **Settings worth checking after updating:**
 - **Live conversation:** off by default. Turn it on for hands-free use.

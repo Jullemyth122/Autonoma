@@ -1,4 +1,4 @@
-<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 12:10 AM, 10 Oct (Sign mode and Expresso) -->
+<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 2:05 AM, 10 Oct (Expresso repository, submission sheet) -->
 # Autonoma
 
 **A Chrome extension that fills web forms for you, by click, by voice or by sign language, using small AI models that run entirely on your own computer.**
@@ -8,7 +8,7 @@ You save your details once: your profile, a few facts about yourself, your résu
 - Exact matches are filled instantly by rules.
 - Harder questions go to a local AI model through [Ollama](https://ollama.com).
 - You can also just **talk to it**, in English or Tagalog: *"fill the email"*, *"fill this"*, *"punan mo ang form"*.
-- Or **sign to it** with your own signs (shoulders, arms and hands, like FSL). You record and train them in **[Expresso](../Expresso)**, a small companion web app, and Autonoma only recognises them.
+- Or **sign to it** with your own signs (shoulders, arms and hands, like FSL). You record and train them in **[Expresso](https://github.com/Jullemyth122/Expresso)**, a small companion web app (its own repository), and Autonoma only recognises them.
 
 Everything runs on your machine: no account, no API key, no subscription, and nothing is sent to the cloud.
 
@@ -16,6 +16,8 @@ Everything runs on your machine: no account, no API key, no subscription, and no
 > - [TIMELOG.md](TIMELOG.md): when each file was made.
 > - [DATA_AND_MODELS.md](DATA_AND_MODELS.md): every model, rule and test sample used. **Autonoma trains nothing.** The only trained model is the sign model *you* train on your own signs in Expresso.
 > - [CHANGELOG.md](CHANGELOG.md): what's new in this update.
+> - **[SUBMISSION.md](SUBMISSION.md): the hackathon submission sheet** (models, technologies, what runs locally, why local AI).
+> - **Two repositories:** this one (the extension) and **[Expresso](https://github.com/Jullemyth122/Expresso)** (record and train your signs). Clone them side by side: `Hackathon/Autonoma` and `Hackathon/Expresso`.
 
 ---
 
@@ -316,7 +318,7 @@ Sentences the rules don't recognise go to qwen, which can also return several fi
 
 Command Autonoma with **your own signs**: real movements of the shoulders, arms and hands, like Filipino Sign Language, not just hand shapes. The work is split in two so the extension stays light:
 
-| | **Expresso** (`C:\Hackathon\Expresso`, a local web app) | **Autonoma** (this extension) |
+| | **[Expresso](https://github.com/Jullemyth122/Expresso)** (a local web app; clone it next to this folder) | **Autonoma** (this extension) |
 | --- | --- | --- |
 | Does | Records your signs with the webcam, **trains** a small model on your CPU, lets you test it live, exports it | Only **recognises** signs and runs the matching command |
 | Runs | `npm run dev` → http://127.0.0.1:5180 (Record · Train · Test · Export) | A switch in the side panel; the camera is on only while Sign mode is on |
@@ -500,6 +502,7 @@ Autonoma/
 │   ├── match-check.mjs          Matching checks
 │   └── match-cases.json         Test cases
 ├── CHANGELOG.md                 What's new in this update
+├── SUBMISSION.md                Hackathon submission sheet
 ├── DATA_AND_MODELS.md           Models used (not trained), rules, test samples
 ├── PROJECT_SETUP.md             Original plan, design decisions, what changed
 ├── TIMELOG.md                   When each file was created and changed
@@ -575,9 +578,14 @@ Built on **9 October 2026**, finishing just after midnight (times are local, UTC
 | 11:23–11:37 PM | **Expresso** (new app next to Autonoma): record your own signs, train on your CPU, test live, export. |
 | 11:38–11:59 PM | **Sign mode** in Autonoma: camera + worker recognition, Workspace → Signs, self-test, SUBMIT needs YES. |
 | 12:00–12:15 AM (10 Oct) | Sign mode docs (this README, CHANGELOG, DATA_AND_MODELS, TIMELOG). |
+| 12:30–1:09 AM | The developer recorded 12 signs (187 takes) in Expresso and trained the first real model (100% held-out), then exported it: self-test 12/12 in Autonoma. |
+| 1:24 AM | Camera hidden by default in Sign mode; the orb shows what it reads; camera button by the mic. |
+| 1:31–1:48 AM | **ChatGPT Codex** redesigned Expresso's UI (app shell, themes, icons, Inter font). |
+| 1:33–1:45 AM | Low-memory fixes: the speech model falls back to the CPU when the GPU can't load it; a 3D-orb crash shows the flat orb instead of a blank panel; clearer camera errors. |
+| 2:05 AM | Expresso made its own repository, both time logs completed, [SUBMISSION.md](SUBMISSION.md) written. |
 
 Every code file starts with a one-line time-log comment, and **[TIMELOG.md](TIMELOG.md)** lists every file with its creation time, last change and purpose.
 
 ---
 
-**Team:** [Jullemyth122](https://github.com/Jullemyth122) (Xenex Ashura) · built with help from Codex, ChatGPT and Claude Code.
+**Team:** [Jullemyth122](https://github.com/Jullemyth122) (Xenex Ashura) · built with help from Codex, ChatGPT and Claude Code. · Companion repository: **[Expresso](https://github.com/Jullemyth122/Expresso)**.
