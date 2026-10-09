@@ -26,6 +26,7 @@ Autonoma, built on 9 October 2026, finishing just after midnight. Times are loca
   - MediaPipe pinned to 1.1.0, with its wasm copied at build;
   - your model is git-ignored.
 - **12:00–12:15 AM (10 Oct):** README, CHANGELOG, DATA_AND_MODELS and this time log updated for Sign mode.
+- **About 1:25 AM (10 Oct):** your first real sign model exported from Expresso (12 signs, self-test 12/12). The camera is now hidden by default: it keeps running, and the orb shows what it reads. A camera button by the mic (red dot = on) shows or hides the preview.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
@@ -47,21 +48,21 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/content/write.ts` | 3:04 PM | 9:49 PM | Codex (before this session) | Types values, picks options, attaches files, badges |
 | `src/services/aiService.ts` | 3:04 PM | 10:26 PM | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
 | `src/services/repository.ts` | 3:04 PM | 3:50 PM | Codex (before this session) | Saves data in chrome.storage.local |
-| `src/services/vault.ts` | 3:04 PM | 11:41 PM | Codex (before this session) | Validates saved/imported data |
-| `src/types/defaults.ts` | 3:04 PM | 11:41 PM | Codex (before this session) | Default data and model |
-| `src/types/index.ts` | 3:04 PM | 11:41 PM | Codex (before this session) | Shared types and messages |
+| `src/services/vault.ts` | 3:04 PM | 1:24 AM (10 Oct) | Codex (before this session) | Validates saved/imported data |
+| `src/types/defaults.ts` | 3:04 PM | 1:24 AM (10 Oct) | Codex (before this session) | Default data and model |
+| `src/types/index.ts` | 3:04 PM | 1:24 AM (10 Oct) | Codex (before this session) | Shared types and messages |
 | `tsconfig.json` | 3:04 PM | — | Codex (before this session) | TypeScript settings |
 | `vite.config.ts` | 3:04 PM | 6:59 PM | Codex (before this session) | Vite build for the panel and workspace pages |
 | `package-lock.json` | 3:17 PM | 11:38 PM | Claude Code | Exact dependency versions |
 | `src/ui/api.ts` | 3:20 PM | 3:50 PM | Claude Code | Messages to the background; app and AI state hooks |
-| `src/ui/Panel.tsx` | 3:21 PM | 11:44 PM | Claude Code | Side panel (Sign mode switch and camera view added at 11:44 PM) |
+| `src/ui/Panel.tsx` | 3:21 PM | 1:24 AM (10 Oct) | Claude Code | Side panel (Sign mode switch and camera view added at 11:44 PM) |
 | `src/ui/Report.tsx` | 3:21 PM | 9:02 PM | Claude Code | Fill report card |
 | `src/main.tsx` | 3:22 PM | — | Claude Code | Starts the panel or the workspace |
 | `src/ui/Workspace.tsx` | 3:22 PM | 11:43 PM | Claude Code | Workspace: profile, memory, files, AI, signs, import/export |
 | `src/ui/sample.ts` | 3:22 PM | — | Claude Code | Demo profile with a sample résumé |
 | `scripts/match-cases.json` | 3:23 PM | 5:39 PM | Claude Code | Test cases for match-check |
 | `scripts/match-check.mjs` | 3:23 PM | 5:39 PM | Claude Code | Keyword-matching regression check |
-| `src/ui/Panel.module.scss` | 3:23 PM | 11:42 PM | Claude Code | Panel styles |
+| `src/ui/Panel.module.scss` | 3:23 PM | 1:24 AM (10 Oct) | Claude Code | Panel styles |
 | `src/ui/Report.module.scss` | 3:23 PM | 9:02 PM | Claude Code | Report styles |
 | `src/ui/Workspace.module.scss` | 3:23 PM | 11:57 PM | Claude Code | Workspace styles |
 | `src/ui/styles/global.scss` | 3:23 PM | — | Claude Code | Colours, dark mode, base styles |
@@ -70,7 +71,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `scripts/serve-demo.mjs` | 3:24 PM | — | Claude Code | Serves the demo form on 127.0.0.1:5500 |
 | `src/ui/build.d.ts` | 5:32 PM | — | Claude Code | Type for the build stamp |
 | `public/sounds/orb-startup.mp3` | 6:12 PM | — | Orb UI | Orb startup sound |
-| `src/ui/orb/Orb.module.scss` | 6:12 PM | 9:23 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
+| `src/ui/orb/Orb.module.scss` | 6:12 PM | 1:24 AM (10 Oct) | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
 | `src/ui/orb/Orb.tsx` | 6:12 PM | 9:00 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
 | `src/ui/orb/OrbCanvas.tsx` | 6:12 PM | 9:49 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/hud.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
@@ -99,6 +100,6 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/sign/features.ts` | 11:39 PM | — | Claude Code (copied from Expresso) | One camera frame → 142 numbers; must match Expresso's `ml/features.py` |
 | `src/ui/sign/segmenter.ts` | 11:39 PM | — | Claude Code (copied from Expresso) | Cuts the frame stream into signs (hands down or hold still) |
 | `src/ui/sign/sign.worker.ts` | 11:40 PM | 11:54 PM | Claude Code | Worker: MediaPipe hand + pose → segmenter → your ONNX sign model; self-test classification |
-| `src/ui/sign/useSign.ts` | 11:41 PM | 11:55 PM | Claude Code | Camera in the side panel, one frame at a time to the worker, skeleton drawing, confident signs to the panel |
+| `src/ui/sign/useSign.ts` | 11:41 PM | 1:24 AM (10 Oct) | Claude Code | Camera in the side panel, one frame at a time to the worker, skeleton drawing, confident signs to the panel |
 | `src/ui/sign/onnxruntime.d.ts` | 11:43 PM | — | Claude Code | Type shim for onnxruntime-web 1.22 |
 | `src/ui/SignSetup.tsx` | 11:43 PM | 11:57 PM | Claude Code | Workspace → Signs: allow camera, model info, self-test, recognition settings, credits |

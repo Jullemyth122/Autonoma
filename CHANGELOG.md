@@ -179,6 +179,8 @@ Measured in Chromium with Chrome's performance counters:
   - You can add, remove and rename signs at any time.
 - **Autonoma** only recognises. A **Sign mode** switch in the system card turns on a small camera view with your skeleton and the last sign read. Tracking (MediaPipe hand + pose) and the model run in a **worker**, one frame at a time, and frames are skipped rather than queued.
 
+**The camera is hidden by default.** It keeps running, and the orb shows what it reads (*Reading your sign…*, *Signed “NEXT” · 92%*, *Not sure… sign it again*). A camera button above the mic (red dot = on) shows or hides the preview.
+
 **Signs are commands by name.** A sign's name goes through the same rules as a spoken sentence, so *FILL THIS EMAIL* fills the email with no extra code. "What are missing" was added to the voice rules too.
 
 **Safety:**

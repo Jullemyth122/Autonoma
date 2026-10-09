@@ -1,6 +1,6 @@
-// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 11:44 PM (sign mode by Claude Code)
+// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 1:24 AM, 10 Oct (hidden camera by Claude Code)
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AudioLines, ChevronsRight, Cpu, Hand, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
+import { AudioLines, Camera, ChevronsRight, Cpu, Hand, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
 import type { AdvanceResult, AppState, FillReport, FillTarget, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
 import { AI_LABELS, errorText, send, useAppState, useLocalAI, type AIPhase } from './api.ts';
 import { Orb } from './orb/Orb.tsx';
@@ -82,8 +82,6 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   // The live loop outlives a render; read the latest settings and actions through these.
   const latest = useRef({ language, data, ai, running });
   latest.current = { language, data, ai, running };
-  const agent = useAgent(running, job?.report, ai.phase, speech, voicePhase === 'listening' ? { state: 'listening', caption: liveOn ? say.liveListening(language) : say.listening(language) }
-    : voicePhase === 'understanding' ? { state: 'transcribing', caption: model.state === 'loading' && model.percent < 100 ? say.downloading(model.percent, language) : say.understanding(language) } : null);
 
   // Replies to something you said are always spoken (unless the orb is muted).
   const reply = (text: string) => void speak(text, language);
@@ -271,13 +269,35 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   const signStatus = sign.state === 'starting' ? 'Starting the camera and your sign model…'
     : sign.state === 'error' ? sign.error
     : confirming ? 'Sign YES to submit, or NO to cancel'
-    : `Raise your hands to sign · ${sign.labels.filter(label => label !== '_none').length} signs · ${sign.live.fps} fps${sign.live.delegate ? ` · ${sign.live.delegate}` : ''}`;
+    : `Camera on${data.settings.signPreview ? '' : ' (hidden)'} · raise your hands to sign · ${sign.labels.filter(label => label !== '_none').length} signs · ${sign.live.fps} fps`;
+  // With the camera hidden, the orb is the feedback: it watches while your hands are up, then shows what it read.
+  const [signNote, setSignNote] = useState('');
+  useEffect(() => {
+    const guess = sign.guess;
+    if (!guess || guess.label === '_none') return;
+    const sure = `${Math.round(guess.prob * 100)}%`;
+    setSignNote(guess.accepted ? `Signed “${guess.label}” · ${sure}` : `Not sure: “${guess.label}”? (${sure}) · sign it again`);
+    const timer = setTimeout(() => setSignNote(''), 3000);
+    return () => clearTimeout(timer);
+  }, [sign.guess]);
+  const signFace: { state: OrbState; caption: string } | null = !signOn ? null
+    : sign.state === 'starting' ? { state: 'transcribing', caption: 'Starting the camera…' }
+    : sign.state !== 'ready' ? null
+    : confirming ? { state: 'listening', caption: 'Sign YES to submit, or NO to cancel' }
+    : sign.live.capturing ? { state: 'listening', caption: 'Reading your sign…' }
+    : signNote ? { state: 'idle', caption: signNote } : null;
+  const voiceFace: { state: OrbState; caption: string } | null = voicePhase === 'listening' ? { state: 'listening', caption: liveOn ? say.liveListening(language) : say.listening(language) }
+    : voicePhase === 'understanding' ? { state: 'transcribing', caption: model.state === 'loading' && model.percent < 100 ? say.downloading(model.percent, language) : say.understanding(language) } : null;
+  const agent = useAgent(running, job?.report, ai.phase, speech, voiceFace ?? (running ? null : signFace));
   const micActive = voicePhase === 'listening' || liveOn;
   const micLabel = liveOn ? 'End live conversation' : voicePhase === 'listening' ? 'Stop listening' : data.settings.voiceLive ? 'Start live conversation' : 'Speak a command';
   const micButton = (
     <button title={micLabel} aria-label={micLabel} aria-pressed={micActive} data-live={liveOn || undefined}
       disabled={voicePhase === 'understanding' && !liveOn} onClick={() => { if (!hush()) void (data.settings.voiceLive || liveOn ? liveSession() : listen()); }}><Mic size={14} /></button>
   );
+  const cameraLabel = data.settings.signPreview ? 'Camera on · hide the preview' : 'Camera on (hidden) · show the preview';
+  const orbButtons = signOn ? <>{micButton}<button title={cameraLabel} aria-label={cameraLabel} aria-pressed={data.settings.signPreview} data-camera={sign.state === 'ready' || undefined}
+    onClick={() => void setSettings({ signPreview: !data.settings.signPreview })}><Camera size={13} /></button></> : micButton;
 
   // When a fill ends, say what happened: how much was filled and which questions need you.
   const wasRunning = useRef(running);
@@ -296,7 +316,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
 
   return (
     <>
-      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => { if (!hush()) void start(); }} extra={micButton}
+      <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => { if (!hush()) void start(); }} extra={orbButtons}
         caption={running ? job!.message : agent.caption}
       />
 
@@ -335,7 +355,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
       </section>
 
       {signOn && (
-        <section className={styles.signCam} aria-label="Sign mode camera" data-state={sign.state}>
+        <section className={styles.signCam} aria-label="Sign mode camera" data-state={sign.state} data-hidden={!data.settings.signPreview || undefined} aria-hidden={!data.settings.signPreview || undefined}>
           <div className={styles.signVideo} data-active={sign.live.active || undefined} data-capturing={sign.live.capturing || undefined}>
             <video ref={sign.videoRef} playsInline muted />
             <canvas ref={sign.canvasRef} />
@@ -345,9 +365,6 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
               </span>
             )}
           </div>
-          <p className={sign.state === 'error' ? ui.error : styles.sysHint}>
-            {signStatus}{sign.state === 'error' && <> · <button className={styles.textButton} onClick={() => void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#signs') })}>Sign settings</button></>}
-          </p>
         </section>
       )}
 
@@ -393,9 +410,13 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
           <span><Hand size={12} aria-hidden="true" /> Sign mode <em className={styles.liveHint}>camera · your signs</em></span>
           <input type="checkbox" role="switch" className={styles.switch} checked={signOn} onChange={event => void setSettings({ signMode: event.target.checked })} />
         </label>
+        {signOn && sign.state === 'error' && (
+          <p className={ui.error}>{sign.error} · <button className={styles.textButton} onClick={() => void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#signs') })}>Sign settings</button></p>
+        )}
         <p className={styles.sysHint}>
           {speech.speaking ? 'Tap the orb or the mic, or press Esc, to stop it talking'
-            : signed && signOn ? <>You signed <q>{signed}</q></>
+            : signed && signOn && sign.state === 'ready' ? <><Camera size={11} aria-hidden="true" /> You signed <q>{signed}</q> · {signStatus}</>
+            : signOn && sign.state !== 'error' && !heard ? <><Camera size={11} aria-hidden="true" /> {signStatus}</>
             : heard ? <>You said <q>{heard}</q></> : liveNote ? liveNote : <><Mic size={11} aria-hidden="true" /> {liveOn ? 'Live: say a command, or “stop listening”' : `Tap the mic on the orb${data.settings.voiceLive ? ' to start a live conversation' : ''}`} · {modelHint}</>}
         </p>
       </section>

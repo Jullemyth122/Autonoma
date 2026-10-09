@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 9:23 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 1:24 AM, 10 Oct (hidden camera by Claude Code)
 // The orb glows additively, so it always sits on its own dark "screen", in light and dark themes alike.
 .stage {
   --orb-primary: var(--theme-primary);
@@ -166,6 +166,10 @@
 .extra {
   position: absolute;
   left: 0;
+  bottom: 2px;
+  display: flex;
+  flex-direction: column-reverse; // the mic stays in its place; a camera button (Sign mode) sits above it
+  gap: 6px;
 
   > button {
     display: grid;
@@ -207,6 +211,9 @@
 
 // Live conversation: the mic breathes while the session is open.
 .extra > button[data-live] { animation: liveRing 1.6s ease-in-out infinite; }
+// Sign mode: a small red dot says the camera is on, even while its preview is hidden.
+.extra > button[data-camera] { position: relative; }
+.extra > button[data-camera]::after { content: ''; position: absolute; top: 1px; right: 1px; width: 7px; height: 7px; border-radius: 50%; background: #ff4d5e; box-shadow: 0 0 6px #ff4d5e; }
 @keyframes liveRing {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--orb-primary) 55%, transparent); }
   50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--orb-primary) 0%, transparent); }

@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 11:41 PM by Claude Code · last changed 11:55 PM
+// Time log (9 Oct 2026): created 11:41 PM by Claude Code · last changed 1:24 AM, 10 Oct
 // Sign mode in the side panel: owns the camera, sends frames to the sign worker one at a time (never a backlog),
 // draws the tracked skeleton, and hands each confident sign to the panel. Turning it off frees the camera and the worker.
 import { useEffect, useRef, useState } from 'react';
@@ -86,19 +86,21 @@ export function useSign(enabled: boolean, options: { threshold: number; stillMs:
     }
 
     // One frame in flight at a time: if the worker is still busy, this camera frame is simply skipped.
+    let lastSent = 0, watchdog = 0;
+    function grab(video: HTMLVideoElement) {
+      if (busy || settings.current.paused || !video.videoWidth) return;
+      busy = true; lastSent = performance.now();
+      const height = Math.round((FRAME_WIDTH * video.videoHeight) / video.videoWidth);
+      createImageBitmap(video, { resizeWidth: FRAME_WIDTH, resizeHeight: height, resizeQuality: 'low' })
+        .then(bitmap => stopped ? bitmap.close() : send({ type: 'frame', bitmap, t: performance.now() }, [bitmap]))
+        .catch(() => { busy = false; });
+    }
     function pump() {
       const video = videoRef.current;
       if (stopped || !video) return;
-      videoCallback = video.requestVideoFrameCallback(() => {
-        if (!busy && !settings.current.paused && video.videoWidth) {
-          busy = true;
-          const height = Math.round((FRAME_WIDTH * video.videoHeight) / video.videoWidth);
-          createImageBitmap(video, { resizeWidth: FRAME_WIDTH, resizeHeight: height, resizeQuality: 'low' })
-            .then(bitmap => stopped ? bitmap.close() : send({ type: 'frame', bitmap, t: performance.now() }, [bitmap]))
-            .catch(() => { busy = false; });
-        }
-        pump();
-      });
+      videoCallback = video.requestVideoFrameCallback(() => { grab(video); pump(); });
+      // Frame callbacks can stop when the preview is hidden; then a timer keeps frames coming (~15 fps).
+      watchdog ||= window.setInterval(() => { if (performance.now() - lastSent > 120) grab(video); }, 66);
     }
 
     void (async () => {
@@ -120,6 +122,7 @@ export function useSign(enabled: boolean, options: { threshold: number; stillMs:
     return () => {
       stopped = true;
       videoRef.current?.cancelVideoFrameCallback(videoCallback);
+      clearInterval(watchdog);
       stream?.getTracks().forEach(track => track.stop());
       sign.terminate(); // frees MediaPipe, the model and their memory
       if (worker.current === sign) worker.current = null;

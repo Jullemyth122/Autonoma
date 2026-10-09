@@ -341,6 +341,8 @@ Command Autonoma with **your own signs**: real movements of the shoulders, arms 
 | SUBMIT | Asks first; it submits only after a **YES** sign within 15 s (**NO** cancels) |
 | `_none` | Never acted on |
 
+**The camera is hidden by default.** It keeps running, and the **orb** is your feedback: *Reading your sign…* while your hands are up, then *Signed “FILL THIS PAGE” · 92%* or *Not sure… sign it again*. A small camera button above the orb's 🎤 (a red dot means the camera is on) shows or hides the preview.
+
 **Rules that keep it safe and smooth:**
 - A sign is acted on only when the model is at least **60% sure** (adjustable in Workspace → Signs). Below that, the chip shows the guess greyed out and nothing happens.
 - The same sign caught twice within 1.5 s counts once. While one sign's fill runs, other signs wait; **STOP** always goes through.
