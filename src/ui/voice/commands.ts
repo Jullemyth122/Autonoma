@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 9:37 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 10:30 PM (several fields per command by Claude Code)
 // Spoken commands in English and simple Tagalog, matched by plain rules. Sentences the rules don't
 // recognise go to the local model (PARSE_COMMAND) to work out the intent.
 import type { Profile, VoiceCommand, VoiceIntent } from '../../types/index.ts';
@@ -62,7 +62,12 @@ function findProfile(spoken: string, profiles: Profile[]): Profile | undefined {
 
 // Whisper tiny often hears "fill" as "feel" or "phil", especially in short commands.
 // The same for Tagalog "punan", which comes out as "panan", "punnan", "panun"...
+const ORDINALS: Record<string, string> = { '1st': 'first', '2nd': 'second', '3rd': 'third', '4th': 'fourth', '5th': 'fifth' };
 const forgive = (said: string) => said
+  // Whisper writes "1st name"; the form says "First name".
+  .replace(/\b(1st|2nd|3rd|4th|5th)\b/g, ordinal => ORDINALS[ordinal])
+  // A sentence that starts with "feel", "phil"… is a fill command ("feel first name and last name").
+  .replace(/^((?:please |can you |could you )?)(feel|phil|fil|feels|fills|filled|field)\b/, '$1fill')
   .replace(/\b(feel|phil|fil|feels|fills|filled)\b(?= (this|the|form|in|out|all|it|my|every|pages?)\b)/g, 'fill')
   .replace(/\bp[aou]n{1,2}[aou]n\b/g, 'punan');
 

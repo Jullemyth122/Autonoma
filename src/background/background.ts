@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 10:25 PM (several fields per command by Claude Code)
 import type { AdvanceResult, AIResult, FillContext, FillReport, FillTarget, JobStatus, Request } from '../types/index.ts';
 import { PAGE_TIMEOUT_MS } from '../types/defaults.ts';
 import { checkRuntime, parseCommand, resolveQuestions, setModelResidency } from '../services/aiService.ts';
@@ -196,7 +196,7 @@ async function handle(request: Request, sender: chrome.runtime.MessageSender): P
       const data = await getData();
       const command = await parseCommand(request.text, data.profiles.map(profile => profile.name), data.settings.model, AbortSignal.timeout(20_000));
       const profileId = command.profile ? data.profiles.find(profile => profile.name === command.profile)?.id : undefined;
-      return { intent: command.intent, ...(profileId ? { profileId } : {}), ...(command.target ? { target: command.target } : {}) };
+      return { intent: command.intent, ...(profileId ? { profileId } : {}), ...(command.target ? { target: command.target } : {}), ...(command.targets?.length ? { targets: command.targets } : {}) };
     }
   }
 }
