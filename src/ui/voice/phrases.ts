@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:40 PM by Claude Code · last changed 9:22 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 6:40 PM by Claude Code · last changed 11:43 PM (sign mode by Claude Code)
 // What the agent says, in English and simple Tagalog.
 import type { AdvanceResult, FillReport, VoiceLanguage } from '../../types/index.ts';
 
@@ -45,6 +45,11 @@ export const say = {
   busy: (language: VoiceLanguage) => pick(language, "I'm still filling. Say stop to cancel.", 'Nagpupuno pa ako. Sabihin ang itigil para huminto.'),
   micBlocked: (language: VoiceLanguage) => pick(language, 'I need permission to use the microphone. I opened a tab where you can allow it.', 'Kailangan ko ng pahintulot sa mikropono. Nagbukas ako ng tab para payagan mo ito.'),
   voiceError: (language: VoiceLanguage) => pick(language, 'Something went wrong with the voice model.', 'May problema sa voice model.'),
+
+  // Sign mode.
+  signConfirmSubmit: (language: VoiceLanguage) => pick(language, 'Submit this form? Sign yes to submit, or no to cancel.', 'Ipapasa ko na ba? I-sign ang oo para ipasa, o hindi para huwag.'),
+  signCancelled: (language: VoiceLanguage) => pick(language, "Okay, I won't submit.", 'Sige, hindi ko ipapasa.'),
+  cameraBlocked: (language: VoiceLanguage) => pick(language, 'I need permission to use the camera. I opened a tab where you can allow it.', 'Kailangan ko ng pahintulot sa camera. Nagbukas ako ng tab para payagan mo ito.'),
   advance(result: AdvanceResult, language: VoiceLanguage): string {
     switch (result.action) {
       case 'next': return pick(language, 'Next page.', 'Lipat na sa susunod na pahina.');

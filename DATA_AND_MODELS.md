@@ -1,7 +1,10 @@
-<!-- Time log (9 Oct 2026): created 7:58 PM by Claude Code -->
+<!-- Time log (9 Oct 2026): created 7:58 PM by Claude Code · last changed 12:14 AM, 10 Oct (Sign mode) -->
 # Data and models: what Autonoma uses
 
-**Short version: nothing was trained.** Autonoma uses two ready-made (pretrained) AI models as they are, plus rules written by hand. No model learned from anyone's voice, profile or forms. Samples were used only to **test** that the code works.
+**Short version: Autonoma trains nothing.**
+- It uses ready-made (pretrained) models as they are: Whisper, qwen, and MediaPipe's hand and pose trackers. It also uses rules written by hand.
+- **The one trained model is your sign model.** *You* train it in Expresso, on your own recordings, on your own computer. It is not in the repository.
+- No model learned from anyone's voice, profile or forms. Samples were used only to **test** that the code works.
 
 ---
 
@@ -30,6 +33,26 @@
 - `onnxruntime-web` 1.22 (pulled in by transformers.js). Its WebAssembly runtime is copied into the extension at build time, so no code is loaded from the internet.
 - Ollama 0.40.2.
 
+### Sign mode models
+
+| | Hand and pose tracking | Your sign classifier |
+| --- | --- | --- |
+| **Model** | MediaPipe `hand_landmarker.task` (21 points per hand) and `pose_landmarker_lite.task` (body points) | A small 1D CNN: 3 convolution layers over 32 resampled frames × 142 numbers → one score per sign (`fsl.onnx`, about 0.9 MB) |
+| **Made by** | Google (MediaPipe) | **You, in Expresso** (`ml/train.py`, PyTorch 2.14 CPU). The design comes from the Kamay FSL project. |
+| **Licence** | Apache 2.0 | Yours |
+| **Trained by us?** | **No.** Used as published. | Trained by you on **your own recordings only**. Expresso does not ship or use any dataset. |
+| **What it learns from** | (pretrained by Google) | The takes you record in Expresso's Record tab, stored as numbers (landmarks, not video) in `Expresso/data/samples/<SIGN>.json`. Every 5th take is held out to measure accuracy. |
+| **Where it runs** | In a worker inside the extension: GPU (WebGL), or the CPU if the GPU fails | Same worker, with ONNX Runtime Web (WebAssembly) |
+| **Size** | 7.5 MB + 5.5 MB models, plus 13 MB of MediaPipe wasm. All ship inside the extension. | About 0.9 MB, copied in by Expresso's Export |
+| **What it sees** | Camera frames, only while Sign mode is on. Frames are never saved or sent anywhere. | 142 numbers per frame for the sign you just made |
+
+**Credit:**
+- The feature pipeline (which points, how they are normalised) and the model design come from **Kamay**, an earlier FSL project.
+- Kamay was built with **FSL-105** (Tupal, I. J. & Cabatuan, M. K., Mendeley Data V2, doi:10.17632/48y2y99mb9.2, CC BY 4.0).
+- FSL-105 is **not** used to train your model.
+
+**Library:** `@mediapipe/tasks-vision` 1.1.0, pinned in both apps. Autonoma's build copies the matching wasm from the package.
+
 ## 2. Rules written by hand (not machine learning)
 
 | What | Where | What it contains |
@@ -39,6 +62,7 @@
 | What the agent says | `src/ui/voice/phrases.ts` | Every spoken reply, in English and simple Tagalog, written by hand. |
 | Form matching | `src/content/matching.ts` | Word lists (filler words like *which, do, you*; synonyms like *surname → last name*), date formats, age-group ranges, option matching. |
 | Agreement boxes | `src/content/content.ts` | The words that mark an agreement box: *agree, consent, terms, conduct, privacy, accept, declare, certify, acknowledge, authorise, waiver, policy*. |
+| Sign commands | `src/ui/Panel.tsx` (`onSign`) | A recognised sign's name is passed to the voice command rules as text (*FILL THIS EMAIL* → "fill this email"). SUBMIT waits for YES or NO; STOP always goes through. "What are missing" was added to the voice rules. |
 | AI instructions | `src/services/aiService.ts` | The instructions sent to qwen with every request, including one made-up worked example (names "Ana Lopez Cruz") showing how to format a name. It also has the checks that reject invented answers. |
 
 ## 3. Test samples (used only to check the code, never to train)
@@ -87,6 +111,9 @@ A computer voice reading Tagalog with an American accent is harder to understand
 
 **Other:**
 
+- **Sign mode tests:**
+  - **Fake camera.** One FSL-105 clip (`clips/0/0.MOV`, read from Kamay's folder without changing it) was converted to MJPEG and played as a fake camera in Chromium. It was used only to see that tracking, sign cutting and recognition run end to end, never for training. Screenshots that show the signer stay in the temporary test folder, not in the repository.
+  - **Synthetic model.** 60 made-up recordings (5 signs × 12, random hand paths) were used to smoke-test Expresso's API, trainer and export, and to give the extension a model to load. They were deleted afterwards. Neither Expresso nor Autonoma holds a real model until you train one.
 - Screenshots of test runs were kept in the temporary test folder.
 - The test browser profile (about 300 MB, holding the cached Whisper model) is in that same folder.
 - These test files can be deleted at any time; the app doesn't need them.
@@ -98,8 +125,11 @@ A computer voice reading Tagalog with an American accent is harder to understand
 | Setup, once | `qwen3:1.7b` (about 1.4 GB) | Ollama's model library |
 | First 🎤 use, once | Whisper tiny model files (about 40–50 MB) | Hugging Face (`huggingface.co`) |
 | `npm install` | JavaScript libraries | npm |
+| Expresso `npm run setup:ml`, once | PyTorch 2.14 (CPU), NumPy, ONNX (about 1 GB) | PyPI and download.pytorch.org |
 
-**Never sent anywhere:** your profile, memories, files, form answers, or voice. Everything runs on your computer.
+Sign mode itself downloads nothing: its tracking models and runtime ship inside the extension.
+
+**Never sent anywhere:** your profile, memories, files, form answers, voice, camera video, or sign recordings. Everything runs on your computer.
 
 ## 5. When each piece was added (9 October 2026)
 
@@ -120,3 +150,5 @@ A computer voice reading Tagalog with an American accent is harder to understand
 | 9:57 PM | Interrupt and quiet live mode; `chatter.wav` |
 | 10:15 PM | "Fill this" for any question; quiz-question test |
 | 10:25–10:30 PM | Several fields per command; `firstlast-en.wav`; the local-model fallback now returns several fields |
+| 11:23–11:37 PM | Expresso: recording, trainer and export; synthetic-recordings smoke test; FSL-105 clip as fake camera |
+| 11:38–11:59 PM | Sign mode in Autonoma: MediaPipe 1.1.0 + your ONNX model in a worker; self-test and fill-by-sign tests |

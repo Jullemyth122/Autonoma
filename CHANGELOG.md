@@ -1,7 +1,7 @@
-<!-- Time log (9 Oct 2026): created 10:37 PM by Claude Code -->
+<!-- Time log (9 Oct 2026): created 10:37 PM by Claude Code · last changed 12:12 AM, 10 Oct (Sign mode) -->
 # Changelog
 
-Everything added since the last version on GitHub (pull request #1, *"Added Voice AI and 3D Visualizer"*). All of it was built on 9 October 2026, between 7:58 PM and 10:38 PM. Every item was tested in a real Chromium browser with the extension loaded. [DATA_AND_MODELS.md](DATA_AND_MODELS.md) has the recordings and results.
+Everything added since the last version on GitHub (pull request #1, *"Added Voice AI and 3D Visualizer"*). All of it was built on 9 October 2026, between 7:58 PM and just after midnight. Every item was tested in a real Chromium browser with the extension loaded. [DATA_AND_MODELS.md](DATA_AND_MODELS.md) has the recordings and results.
 
 ## At a glance
 
@@ -16,6 +16,7 @@ Everything added since the last version on GitHub (pull request #1, *"Added Voic
 | 7 | [Smarter voice understanding](#7-smarter-voice-understanding) | Several fields per sentence; mishearings like "feel", "1st", "panan" are forgiven. |
 | 8 | [Performance](#8-performance) | Fills 2–3× faster; side panel idle CPU halved; fix for plain-HTTP pages. |
 | 9 | [Notes and disclosure](#9-notes-and-disclosure) | DATA_AND_MODELS.md, refreshed TIMELOG, this changelog, a full README update. |
+| 10 | [Sign mode, with Expresso](#10-sign-mode-with-expresso) | Command Autonoma with your own signs. You train them in Expresso, a new companion app, and Autonoma only recognises them, in a background worker. |
 
 ---
 
@@ -165,6 +166,54 @@ Measured in Chromium with Chrome's performance counters:
 
 ---
 
+## 10. Sign mode, with Expresso
+
+**What it is.** Sign a command to the camera: *FILL THIS PAGE*, *FILL THIS PHONE NUMBER*, *WHAT IS MISSING*, *NEXT*, *STOP*. These are real movements of the shoulders, arms and hands (like FSL), and they are **your** signs: you record and train them yourself.
+
+**Two parts, so the extension doesn't lag:**
+- **Expresso** (`C:\Hackathon\Expresso`, new). A local web app with four tabs:
+  - **Record:** webcam, live skeleton, 15 takes per sign, plus `_none` for random movement.
+  - **Train:** PyTorch on your CPU, with per-sign accuracy and the mix-ups.
+  - **Test:** live, showing what Autonoma will hear.
+  - **Export:** copies the model into Autonoma and rebuilds it.
+  - You can add, remove and rename signs at any time.
+- **Autonoma** only recognises. A **Sign mode** switch in the system card turns on a small camera view with your skeleton and the last sign read. Tracking (MediaPipe hand + pose) and the model run in a **worker**, one frame at a time, and frames are skipped rather than queued.
+
+**Signs are commands by name.** A sign's name goes through the same rules as a spoken sentence, so *FILL THIS EMAIL* fills the email with no extra code. "What are missing" was added to the voice rules too.
+
+**Safety:**
+- A sign counts only when the model is at least 60% sure.
+- **SUBMIT needs a YES sign** within 15 seconds; **NO** cancels.
+- **STOP** always goes through, and repeats within 1.5 s are ignored.
+- The camera pauses while Whisper works.
+- Turning Sign mode off ends the camera and the worker.
+
+**Workspace → Signs (new page):**
+- **Allow camera:** the side panel can't show Chrome's prompt, so you allow it here.
+- **Your model:** the signs it knows, when it was trained, and its held-out accuracy.
+- **Run self-test:** the extension must give the same answers as the Python trainer.
+- **Settings:** confidence and hold-still time.
+- **Credits:** FSL-105 and Kamay.
+
+**Tested** in Chromium with the real extension and a real FSL-105 clip as a fake camera:
+- the self-test matched the trainer 5/5;
+- a sign filled the demo form;
+- the form page's frame timing didn't change (p95 17.2 ms);
+- the panel had one 92 ms long task, at start-up.
+
+Not tested: a person signing live, and your real trained model.
+
+**Fixed along the way:**
+- **MediaPipe in a module worker.** MediaPipe clears its loader after creating each task, and a module worker can't run the loader again, so the second task failed. The worker now keeps the loader and puts it back before each task.
+- **Matching MediaPipe versions.** Expresso had MediaPipe's 1.0.1 wasm under the 1.1.0 library. Both apps now pin 1.1.0, and Autonoma's build copies the wasm from the installed package so they can't drift.
+
+**Size:**
+- **+26 MB** in the extension: MediaPipe wasm and two tracking models.
+- **No second ONNX runtime:** Sign mode reuses the speech model's runtime.
+- **Your model stays out of git:** `public/sign/` is ignored, because it's learnt from your body movements.
+
+---
+
 ## How to apply this update
 
 **On this computer** (where it was built):
@@ -186,10 +235,12 @@ git push
 
 **On another computer** (or for a judge):
 1. Follow the README's [Setup](README.md#setup): Ollama, `qwen3:1.7b`, `OLLAMA_ORIGINS`, then `npm install`, `npm run build`, and load `dist`.
-2. `npm install` is needed: this update adds `@huggingface/transformers` 3.8.1 for the speech model.
+2. `npm install` is needed: this update adds `@huggingface/transformers` 3.8.1 for the speech model and `@mediapipe/tasks-vision` 1.1.0 for Sign mode.
+3. For Sign mode: set up Expresso (`npm install`, `npm run setup:ml`, `npm run dev`), train your signs, and export. Your model isn't in the repo.
 
 **Settings worth checking after updating:**
 - **Live conversation:** off by default. Turn it on for hands-free use.
+- **Sign mode:** off by default. It needs a model from Expresso and the camera allowed in Workspace → Signs.
 - **Agree** and **Submit** chips: off by default. Keep them off for real applications.
 - **Typing speed** (Workspace → Local AI): *Instant* is fastest.
 - **Memory:** keep about 2 GB of RAM free. Close Docker, Discord and extra tabs.
@@ -202,7 +253,8 @@ Ideas that fit on top of this update:
 
 | Idea | Why it fits |
 | --- | --- |
-| **Sign-language commands** (webcam) | A local hand-tracking model could map a few signs to the same commands that voice uses (fill, next, submit, stop). The command system is already separate from voice, so it would plug into the same place. |
+| **Fingerspelling answers** | Sign mode already tracks both hands; spelling a short answer letter by letter could fill a field you can't fill from your profile. |
+| **More signers** | Expresso stores who recorded each take, so friends can add recordings and the model learns more than one person. |
 | **Answer missing questions by voice** | The agent already names the questions it couldn't answer. It could ask them aloud, take your spoken answer, fill it, and offer to save it to your profile. |
 | **Wake word** ("Hey Autonoma") | The always-open microphone from live mode is already there; it would just wait for a phrase. |
 | **Saved answers from the page** | After you finish a form by hand, offer to save the answers you typed as new profile fields. |

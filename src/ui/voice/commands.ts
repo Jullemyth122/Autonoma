@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 10:30 PM (several fields per command by Claude Code)
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 11:43 PM (sign mode by Claude Code)
 // Spoken commands in English and simple Tagalog, matched by plain rules. Sentences the rules don't
 // recognise go to the local model (PARSE_COMMAND) to work out the intent.
 import type { Profile, VoiceCommand, VoiceIntent } from '../../types/index.ts';
@@ -8,7 +8,7 @@ const clean = (text: string) => text.toLowerCase().normalize('NFKD').replace(/[\
 
 // Checked in order: the first rule that matches wins.
 const RULES: [VoiceIntent, RegExp][] = [
-  ['left', /\b(what'?s|what is) (left|missing|remaining)\b|what do you need|anything (left|missing)|\bano pa\b|\b(anong|ano ang) kulang\b|\bkulang\b|ano pa ang kailangan/],
+  ['left', /\b(what'?s|what is|what are|what'?re) (left|missing|remaining)\b|what do you need|anything (left|missing)|\bano pa\b|\b(anong|ano ang) kulang\b|\bkulang\b|ano pa ang kailangan/],
   ['help', /\bhelp\b|what can you do|\bcommands?\b|\btulong\b|\b(ano|anong) (ang )?kaya mo\b/],
   ['tagalog', /\b(tagalog|filipino|pilipino)\b/],
   ['english', /\b(english|ingles|inggles)\b/],

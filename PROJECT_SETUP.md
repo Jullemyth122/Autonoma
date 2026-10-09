@@ -1,4 +1,4 @@
-<!-- Time log (9 Oct 2026): created 2:36 PM by Codex (before this session) · last changed 5:52 PM -->
+<!-- Time log (9 Oct 2026): created 2:36 PM by Codex (before this session) · last changed 12:15 AM, 10 Oct (Sign mode row) -->
 # Autonoma — Hackathon demo setup
 
 Updated: 9 October 2026. Scope: a 24-hour hackathon product demo using React + SCSS and local AI only. This document began as a migration plan for the original Aullevo code. The extension is now built in this workspace; see section 0 for what exists, how to run it, and what was verified.
@@ -11,6 +11,7 @@ Updated: 9 October 2026. Scope: a 24-hour hackathon product demo using React + S
 | --- | --- |
 | Side panel: AI status and preload, model picker, Fill/Stop, Pagination, Multi-Link, report | `src/ui/Panel.tsx` |
 | Workspace (options page): profiles, memory, files, Local AI settings, import/export, demo profile | `src/ui/Workspace.tsx` |
+| Sign mode (added 11:38 PM): camera recognition in a worker, Workspace → Signs. The model is trained in the companion app **Expresso** (`C:\Hackathon\Expresso`). | `src/ui/sign/`, `src/ui/SignSetup.tsx` |
 | Fill flow (read → match → AI → write, repair, badges) | `src/content/` |
 | Ollama transport, prompt, answer validation | `src/services/aiService.ts` |
 | Demo form and server | `demo/index.html`, `npm run demo` → http://127.0.0.1:5500 |

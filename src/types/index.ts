@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 11:41 PM (sign mode by Claude Code)
 export interface CM {
   id: string;
   label: string;
@@ -12,7 +12,7 @@ export interface Memory { id: string; title: string; content: string; enabled: b
 export interface SavedFile { id: string; name: string; type: string; context: string; data: string }
 export interface Profile { id: string; name: string; fields: CM[]; files: SavedFile[] }
 export type VoiceLanguage = 'en' | 'tl';
-export interface Settings { model: string; useAI: boolean; typingDelay: number; autoSubmit: boolean; autoConsent: boolean; voiceReplies: boolean; voiceLanguage: VoiceLanguage; voiceLive: boolean }
+export interface Settings { model: string; useAI: boolean; typingDelay: number; autoSubmit: boolean; autoConsent: boolean; voiceReplies: boolean; voiceLanguage: VoiceLanguage; voiceLive: boolean; signMode: boolean; signThreshold: number; signStillMs: number }
 export interface VaultData { profiles: Profile[]; activeProfileId: string; memories: Memory[]; settings: Settings }
 export type FieldKind = 'text' | 'select' | 'radio' | 'checkbox' | 'file';
 export interface Question { id: string; question: string; kind: FieldKind; options: string[]; format?: string; previousAnswer?: string; rejectedBecause?: string }

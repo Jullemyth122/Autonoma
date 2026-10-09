@@ -1,6 +1,6 @@
-// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 9:57 PM (interrupt + quiet live mode by Claude Code)
+// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 11:44 PM (sign mode by Claude Code)
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AudioLines, ChevronsRight, Cpu, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
+import { AudioLines, ChevronsRight, Cpu, Hand, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
 import type { AdvanceResult, AppState, FillReport, FillTarget, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
 import { AI_LABELS, errorText, send, useAppState, useLocalAI, type AIPhase } from './api.ts';
 import { Orb } from './orb/Orb.tsx';
@@ -11,6 +11,7 @@ import { speak, stopSpeaking, useSpeech, waitUntilQuiet } from './voice/speak.ts
 import { matchCommands } from './voice/commands.ts';
 import { MicrophoneBlockedError, openMicrophone, recordCommand } from './voice/listen.ts';
 import { loadSpeechModel, transcribe, useModelStatus } from './voice/recognizer.ts';
+import { useSign } from './sign/useSign.ts';
 import ui from './ui.module.scss';
 import styles from './Panel.module.scss';
 
@@ -110,7 +111,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
     setVoicePhase('understanding');
     try {
       const text = await transcribe(audio, language);
-      setHeard(text);
+      setHeard(text); setSigned('');
       const commands = await understand(text);
       setVoicePhase('idle');
       await runAll(commands.length ? commands : [{ intent: 'none' }]);
@@ -174,7 +175,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
         const text = await transcribe(audio, latest.current.language);
         setVoicePhase('idle');
         if (/^\W*$|^\W*(thank you|thanks for watching|you|bye|okay|uh+|um+|hmm+)\W*$/i.test(text)) continue; // silence and noise phantoms
-        setHeard(text);
+        setHeard(text); setSigned('');
         const commands = await understand(text);
         // Background talk or noise that isn't a command is ignored silently (it still shows under "You said").
         if (!commands.length) continue;
@@ -227,6 +228,50 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   }
   const performRef = useRef(perform);
   performRef.current = perform;
+
+  // Sign mode: your own signs, trained in Expresso, are read like spoken commands ("FILL THIS EMAIL" → fill the email).
+  const signOn = data.settings.signMode;
+  const [signed, setSigned] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const pendingSubmit = useRef(0);
+  const lastSign = useRef({ label: '', at: 0 });
+  const signBusy = useRef(false);
+  // Pause the camera while Whisper turns speech into text, so the two models never fight for the CPU.
+  const sign = useSign(signOn, { threshold: data.settings.signThreshold, stillMs: data.settings.signStillMs, paused: voicePhase === 'understanding' }, label => void onSign(label));
+  async function onSign(label: string) {
+    const { language: lang, data: current } = latest.current;
+    const now = Date.now();
+    if (label === lastSign.current.label && now - lastSign.current.at < 1500) return; // the same sign caught twice
+    lastSign.current = { label, at: now };
+    setSigned(label); setHeard('');
+    const text = label.toLowerCase();
+    // SUBMIT never happens from one sign: it waits for YES (or NO) within 15 seconds.
+    if (pendingSubmit.current && now - pendingSubmit.current < 15000 && /^(yes|oo)$/.test(text)) { pendingSubmit.current = 0; setConfirming(false); return runAll([{ intent: 'submit' }]); }
+    if (pendingSubmit.current && /^(no|hindi)$/.test(text)) { pendingSubmit.current = 0; setConfirming(false); return void speak(say.signCancelled(lang), lang); }
+    const commands = matchCommands(text, current.profiles);
+    if (!commands.length) return;
+    if (commands.some(command => command.intent === 'stop' || command.intent === 'end_live')) { stopSpeaking(); return performRef.current({ intent: 'stop' }); }
+    if (signBusy.current) return; // still doing the last sign
+    if (commands.some(command => command.intent === 'submit')) { pendingSubmit.current = now; setConfirming(true); return void speak(say.signConfirmSubmit(lang), lang); }
+    signBusy.current = true;
+    try { await runAll(commands); } finally { signBusy.current = false; }
+  }
+  useEffect(() => {
+    if (!confirming) return;
+    const timer = setTimeout(() => { pendingSubmit.current = 0; setConfirming(false); }, 15000);
+    return () => clearTimeout(timer);
+  }, [confirming]);
+  // The side panel can't ask for the camera itself: open the Workspace page that can, and switch Sign mode off.
+  useEffect(() => {
+    if (sign.state !== 'blocked') return;
+    void speak(say.cameraBlocked(language), language);
+    void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#signs') });
+    void setSettings({ signMode: false });
+  }, [sign.state]);
+  const signStatus = sign.state === 'starting' ? 'Starting the camera and your sign model…'
+    : sign.state === 'error' ? sign.error
+    : confirming ? 'Sign YES to submit, or NO to cancel'
+    : `Raise your hands to sign · ${sign.labels.filter(label => label !== '_none').length} signs · ${sign.live.fps} fps${sign.live.delegate ? ` · ${sign.live.delegate}` : ''}`;
   const micActive = voicePhase === 'listening' || liveOn;
   const micLabel = liveOn ? 'End live conversation' : voicePhase === 'listening' ? 'Stop listening' : data.settings.voiceLive ? 'Start live conversation' : 'Speak a command';
   const micButton = (
@@ -289,6 +334,23 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
         {error && <p className={ui.error} role="alert">{error}</p>}
       </section>
 
+      {signOn && (
+        <section className={styles.signCam} aria-label="Sign mode camera" data-state={sign.state}>
+          <div className={styles.signVideo} data-active={sign.live.active || undefined} data-capturing={sign.live.capturing || undefined}>
+            <video ref={sign.videoRef} playsInline muted />
+            <canvas ref={sign.canvasRef} />
+            {sign.guess && (
+              <span key={sign.guess.at} className={styles.gloss} data-accepted={sign.guess.accepted || undefined}>
+                {sign.guess.label === '_none' ? 'not a sign' : sign.guess.label} · {Math.round(sign.guess.prob * 100)}%
+              </span>
+            )}
+          </div>
+          <p className={sign.state === 'error' ? ui.error : styles.sysHint}>
+            {signStatus}{sign.state === 'error' && <> · <button className={styles.textButton} onClick={() => void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#signs') })}>Sign settings</button></>}
+          </p>
+        </section>
+      )}
+
       {report && <Report report={report} />}
 
       <section className={styles.system} aria-label="Local AI and voice">
@@ -327,8 +389,13 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
           <span>Live conversation <em className={styles.liveHint}>keeps listening</em></span>
           <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.voiceLive} disabled={liveOn} onChange={event => void setSettings({ voiceLive: event.target.checked })} />
         </label>
+        <label className={styles.switchRow} title="Recognise your own signs with the camera. Train them in Expresso first.">
+          <span><Hand size={12} aria-hidden="true" /> Sign mode <em className={styles.liveHint}>camera · your signs</em></span>
+          <input type="checkbox" role="switch" className={styles.switch} checked={signOn} onChange={event => void setSettings({ signMode: event.target.checked })} />
+        </label>
         <p className={styles.sysHint}>
           {speech.speaking ? 'Tap the orb or the mic, or press Esc, to stop it talking'
+            : signed && signOn ? <>You signed <q>{signed}</q></>
             : heard ? <>You said <q>{heard}</q></> : liveNote ? liveNote : <><Mic size={11} aria-hidden="true" /> {liveOn ? 'Live: say a command, or “stop listening”' : `Tap the mic on the orb${data.settings.voiceLive ? ' to start a live conversation' : ''}`} · {modelHint}</>}
         </p>
       </section>
