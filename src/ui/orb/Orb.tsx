@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 9:00 PM (premium compact redesign by Claude Code)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 1:34 AM, 10 Oct (GPU-failure guard by Claude Code)
 import { Suspense, lazy, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { Palette, Volume2, VolumeX } from 'lucide-react';
 import type { OrbPointer, OrbState, OrbTone } from './parts.tsx';
@@ -6,6 +6,7 @@ import { isOrbSoundMuted, setOrbSoundMuted } from './sfx.ts';
 import { stopSpeaking } from '../voice/speak.ts';
 import { useAppTheme } from '../theme.ts';
 import { ThemePicker } from '../ThemePicker.tsx';
+import { ErrorBoundary } from '../ErrorBoundary.tsx';
 import styles from './Orb.module.scss';
 
 const OrbCanvas = lazy(() => import('./OrbCanvas.tsx'));
@@ -50,9 +51,12 @@ export function Orb({ state, tone = 'cyan', caption, disabled, onActivate, extra
       {paletteOpen && <div className={styles.palette}><ThemePicker compact /></div>}
       <button className={styles.orb} disabled={disabled} title={disabled ? caption : 'Autofill this page'} aria-label="Autofill this page"
         onClick={onActivate} onPointerMove={track} onPointerLeave={() => { pointerRef.current = { x: 0, y: 0, hover: 0 }; }}>
-        <Suspense fallback={<span className={styles.backup} />}>
-          <OrbCanvas state={state} theme={theme} levelRef={levelRef} pointerRef={pointerRef} />
-        </Suspense>
+        {/* If the GPU drops the 3D view, show the flat orb and try again in 10 s instead of blanking the panel. */}
+        <ErrorBoundary fallback={() => <span className={styles.backup} />} retryAfterMs={10000}>
+          <Suspense fallback={<span className={styles.backup} />}>
+            <OrbCanvas state={state} theme={theme} levelRef={levelRef} pointerRef={pointerRef} />
+          </Suspense>
+        </ErrorBoundary>
       </button>
       <div className={styles.status}>
         <p className={styles.caption} aria-live="polite">{caption}</p>

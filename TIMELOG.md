@@ -27,6 +27,7 @@ Autonoma, built on 9 October 2026, finishing just after midnight. Times are loca
   - your model is git-ignored.
 - **12:00–12:15 AM (10 Oct):** README, CHANGELOG, DATA_AND_MODELS and this time log updated for Sign mode.
 - **About 1:25 AM (10 Oct):** your first real sign model exported from Expresso (12 signs, self-test 12/12). The camera is now hidden by default: it keeps running, and the orb shows what it reads. A camera button by the mic (red dot = on) shows or hides the preview.
+- **About 1:40 AM (10 Oct):** low-memory fixes. The speech model now falls back to the CPU when the GPU can't load it ("createBuffer failed"), and a crash in the 3D orb shows the flat orb instead of a blank panel.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
 
@@ -57,7 +58,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/api.ts` | 3:20 PM | 3:50 PM | Claude Code | Messages to the background; app and AI state hooks |
 | `src/ui/Panel.tsx` | 3:21 PM | 1:24 AM (10 Oct) | Claude Code | Side panel (Sign mode switch and camera view added at 11:44 PM) |
 | `src/ui/Report.tsx` | 3:21 PM | 9:02 PM | Claude Code | Fill report card |
-| `src/main.tsx` | 3:22 PM | — | Claude Code | Starts the panel or the workspace |
+| `src/main.tsx` | 3:22 PM | 1:34 AM (10 Oct) | Claude Code | Starts the panel or the workspace |
 | `src/ui/Workspace.tsx` | 3:22 PM | 11:43 PM | Claude Code | Workspace: profile, memory, files, AI, signs, import/export |
 | `src/ui/sample.ts` | 3:22 PM | — | Claude Code | Demo profile with a sample résumé |
 | `scripts/match-cases.json` | 3:23 PM | 5:39 PM | Claude Code | Test cases for match-check |
@@ -72,7 +73,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/build.d.ts` | 5:32 PM | — | Claude Code | Type for the build stamp |
 | `public/sounds/orb-startup.mp3` | 6:12 PM | — | Orb UI | Orb startup sound |
 | `src/ui/orb/Orb.module.scss` | 6:12 PM | 1:24 AM (10 Oct) | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
-| `src/ui/orb/Orb.tsx` | 6:12 PM | 9:00 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
+| `src/ui/orb/Orb.tsx` | 6:12 PM | 1:34 AM (10 Oct) | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
 | `src/ui/orb/OrbCanvas.tsx` | 6:12 PM | 9:49 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/hud.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
@@ -82,7 +83,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/voice/phrases.ts` | 6:40 PM | 11:43 PM | Claude Code | What the agent says, in English and Tagalog |
 | `src/ui/voice/commands.ts` | 6:55 PM | 11:43 PM | Claude Code | Spoken commands (EN + TL) matched by rules, forgiving mishearings |
 | `src/ui/voice/listen.ts` | 6:55 PM | 9:57 PM | Claude Code | Records one command from the mic; stops on a pause |
-| `src/ui/voice/recognizer.ts` | 6:55 PM | 7:41 PM | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
+| `src/ui/voice/recognizer.ts` | 6:55 PM | 1:33 AM (10 Oct) | Claude Code | Runs the Whisper worker; falls back from GPU to CPU |
 | `src/ui/voice/whisper.worker.ts` | 6:55 PM | 7:41 PM | Claude Code | Whisper tiny speech-to-text, on this computer |
 | `DATA_AND_MODELS.md` | 7:58 PM | 12:14 AM (10 Oct) | Claude Code | Disclosure: models used (only your sign model is trained, by you), hand-written rules, test samples, network use |
 | `TIMELOG.md` | 6:15 PM | 12:15 AM (10 Oct) | Claude Code | This time log |
@@ -103,3 +104,4 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/ui/sign/useSign.ts` | 11:41 PM | 1:24 AM (10 Oct) | Claude Code | Camera in the side panel, one frame at a time to the worker, skeleton drawing, confident signs to the panel |
 | `src/ui/sign/onnxruntime.d.ts` | 11:43 PM | — | Claude Code | Type shim for onnxruntime-web 1.22 |
 | `src/ui/SignSetup.tsx` | 11:43 PM | 11:57 PM | Claude Code | Workspace → Signs: allow camera, model info, self-test, recognition settings, credits |
+| `src/ui/ErrorBoundary.tsx` | 1:34 AM (10 Oct) | — | Claude Code | Keeps a crash (e.g. the GPU dropping the 3D orb) from blanking the panel |
