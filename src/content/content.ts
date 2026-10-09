@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:49 PM (performance fixes by Claude Code)
 import type { AIResult, FillContext, FillReport, FillSource, Question, Reply } from '../types/index.ts';
 import { AI_TIMEOUT_MS } from '../types/defaults.ts';
 import { harvestAllControls, controlValue, isVisible, pageRoots, rejectionReason, resolveChoiceText } from './read.ts';
@@ -164,8 +164,11 @@ async function fillPage(context: FillContext): Promise<FillReport> {
   const unanswered = inScope(harvestAllControls()).filter(control => !filled.has(control.question.id) && !(target ? false : controlValue(control)));
   const skipped = unanswered.filter(control => !failed.has(control.question.id)).length;
   const left = unanswered.map(control => cleanLabel(control.question.question));
-  return { id: crypto.randomUUID(), url: location.href, rules: sources.filter(source => source === 'rules').length, ai: sources.filter(source => source === 'ai').length, fixed: sources.filter(source => source === 'fixed').length, failed: failed.size, skipped, tokens, elapsedMs: Date.now() - startedAt, createdAt: Date.now(), ...(notice ? { notice } : {}) , ...(left.length ? { left } : {}), ...(labels.size ? { filled: [...labels.values()] } : {}), ...(target ? { matched } : {}) };
+  return { id: reportId(), url: location.href, rules: sources.filter(source => source === 'rules').length, ai: sources.filter(source => source === 'ai').length, fixed: sources.filter(source => source === 'fixed').length, failed: failed.size, skipped, tokens, elapsedMs: Date.now() - startedAt, createdAt: Date.now(), ...(notice ? { notice } : {}) , ...(left.length ? { left } : {}), ...(labels.size ? { filled: [...labels.values()] } : {}), ...(target ? { matched } : {}) };
 }
+
+// crypto.randomUUID exists only on HTTPS (and localhost) pages; plain-HTTP forms need a fallback.
+const reportId = () => typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
 function pageSignature(): string {
   return `${location.href}|${harvestAllControls().map(control => control.question.question).join('|')}`;

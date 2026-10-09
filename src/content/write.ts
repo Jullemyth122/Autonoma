@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:24 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:49 PM (performance fixes by Claude Code)
 import type { FillSource, SavedFile } from '../types/index.ts';
 import type { Control } from './read.ts';
 import { controlValue, pageRoots, resolveChoiceText } from './read.ts';
@@ -73,13 +73,13 @@ export async function applyValueToControl(control: Control, value: string, delay
     if (!iso) return false;
     value = iso;
   }
-  element.focus();
+  element.focus({ preventScroll: true }); // don't jump the page (and re-lay it out) for every field
   if (delay) {
     setNativeInputValue(element, '');
     for (let index = 1; index <= value.length; index++) { signal.throwIfAborted(); setNativeInputValue(element, value.slice(0, index)); await pause(delay, signal); }
   } else setNativeInputValue(element, value);
   element.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
-  await pause(30, signal);
+  await pause(4, signal); // a moment for frameworks such as React to apply the value before it's checked
   return element.value === value;
 }
 export function attachFile(control: Control, file: SavedFile): boolean {

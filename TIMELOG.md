@@ -9,6 +9,7 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **6:40–7:50 PM:** voice: the agent talks back in English/Tagalog, plus push-to-talk voice commands (Whisper tiny, local).
 - **7:58 PM:** DATA_AND_MODELS.md: every model, rule list and test sample used. Nothing was trained.
 - **8:50 PM:** ChatGPT UI work: app themes, theme picker, restyled panel and workspace (outside this session).
+- **9:45–9:55 PM:** performance pass, measured in Chromium: fills 2–3× faster (no per-field page scroll, 4 ms instead of 30 ms settle per field), fill report fixed on plain-HTTP pages (`crypto.randomUUID` fallback), orb redraws at 30 fps when idle (idle CPU 13.7% → 6.4%).
 - **9:15–9:45 PM:** live conversation (optional): one tap keeps the mic listening for command after command; several fields per sentence ("fill this name, this email"); "stop listening" / "tama na" ends it.
 - **9:00–9:12 PM:** premium compact redesign on the `premium-ui` branch: slim header, bigger orb, palette popover, command dock with option chips, stat-bar report, one dense System card with switches; spreadsheet-style Workspace rows. `main` keeps the previous UI.
 - **8:20–8:40 PM:** targeted fills: “fill the email / the name / this”, by voice in English and Tagalog. Only the named or clicked question is filled, and it glows.
@@ -27,10 +28,10 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `public/manifest.json` | 3:04 PM | 6:59 PM | Codex (before this session) | Chrome extension manifest |
 | `scripts/build.mjs` | 3:04 PM | 7:40 PM | Codex (before this session) | Builds the pages, content script and service worker; stamps the build time |
 | `src/background/background.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Fill jobs, Pagination, Multi-Link, AI requests |
-| `src/content/content.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Fill flow on the page: rules, AI, repair, agreement boxes |
+| `src/content/content.ts` | 3:04 PM | 9:49 PM | Codex (before this session) | Fill flow on the page: rules, AI, repair, agreement boxes |
 | `src/content/matching.ts` | 3:04 PM | 8:24 PM | Codex (before this session) | Keyword matching, options, dates, age |
 | `src/content/read.ts` | 3:04 PM | 5:14 PM | Codex (before this session) | Reads questions, labels and options from the page |
-| `src/content/write.ts` | 3:04 PM | 8:24 PM | Codex (before this session) | Types values, picks options, attaches files, badges |
+| `src/content/write.ts` | 3:04 PM | 9:49 PM | Codex (before this session) | Types values, picks options, attaches files, badges |
 | `src/services/aiService.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
 | `src/services/repository.ts` | 3:04 PM | 3:50 PM | Codex (before this session) | Saves data in chrome.storage.local |
 | `src/services/vault.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Validates saved/imported data |
@@ -58,7 +59,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `public/sounds/orb-startup.mp3` | 6:12 PM | — | Orb UI | Orb startup sound |
 | `src/ui/orb/Orb.module.scss` | 6:12 PM | 9:23 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
 | `src/ui/orb/Orb.tsx` | 6:12 PM | 9:00 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
-| `src/ui/orb/OrbCanvas.tsx` | 6:12 PM | 8:28 PM | Orb UI | Animated orb in the side panel |
+| `src/ui/orb/OrbCanvas.tsx` | 6:12 PM | 9:49 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/hud.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/sfx.ts` | 6:12 PM | — | Orb UI | Animated orb in the side panel |
