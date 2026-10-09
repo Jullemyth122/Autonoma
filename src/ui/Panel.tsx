@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 9:04 PM (premium compact redesign by Claude Code)
+// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 9:37 PM (live conversation by Claude Code)
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AudioLines, ChevronsRight, Cpu, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
 import type { AdvanceResult, AppState, FillReport, FillTarget, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
@@ -7,9 +7,9 @@ import { Orb } from './orb/Orb.tsx';
 import type { OrbState } from './orb/parts.tsx';
 import { Report } from './Report.tsx';
 import { say } from './voice/phrases.ts';
-import { speak, stopSpeaking, useSpeech } from './voice/speak.ts';
-import { matchCommand } from './voice/commands.ts';
-import { MicrophoneBlockedError, recordCommand } from './voice/listen.ts';
+import { speak, stopSpeaking, useSpeech, waitUntilQuiet } from './voice/speak.ts';
+import { matchCommands } from './voice/commands.ts';
+import { MicrophoneBlockedError, openMicrophone, recordCommand } from './voice/listen.ts';
 import { loadSpeechModel, transcribe, useModelStatus } from './voice/recognizer.ts';
 import ui from './ui.module.scss';
 import styles from './Panel.module.scss';
@@ -63,7 +63,13 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
   const [heard, setHeard] = useState('');
   const recording = useRef<{ stop: () => void } | null>(null);
-  const agent = useAgent(running, job?.report, ai.phase, speech, voicePhase === 'listening' ? { state: 'listening', caption: say.listening(language) }
+  // Live conversation: keep listening for one command after another until you say "stop listening".
+  const live = useRef(false);
+  const [liveOn, setLiveOn] = useState(false);
+  // The live loop outlives a render; read the latest settings and actions through these.
+  const latest = useRef({ language, data, ai, running });
+  latest.current = { language, data, ai, running };
+  const agent = useAgent(running, job?.report, ai.phase, speech, voicePhase === 'listening' ? { state: 'listening', caption: liveOn ? say.liveListening(language) : say.listening(language) }
     : voicePhase === 'understanding' ? { state: 'transcribing', caption: model.state === 'loading' && model.percent < 100 ? say.downloading(model.percent, language) : say.understanding(language) } : null);
 
   // Replies to something you said are always spoken (unless the orb is muted).
@@ -93,20 +99,97 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
     try {
       const text = await transcribe(audio, language);
       setHeard(text);
-      let command = matchCommand(text, data.profiles);
-      if (!command && text && ai.phase === 'ready') command = await send<VoiceCommand>({ type: 'PARSE_COMMAND', text }).catch(() => null);
+      const commands = await understand(text);
       setVoicePhase('idle');
-      await perform(command ?? { intent: 'none' });
+      await runAll(commands.length ? commands : [{ intent: 'none' }]);
     } catch (caught) {
       setVoicePhase('idle'); setError(errorText(caught)); reply(say.voiceError(language));
     }
+  }
+
+  /** Text → commands: plain rules first, the local model for anything they don't recognise. */
+  async function understand(text: string): Promise<VoiceCommand[]> {
+    const { data: current, ai: model } = latest.current;
+    const commands = matchCommands(text, current.profiles);
+    if (commands.length || !text.trim() || model.phase !== 'ready') return commands;
+    const parsed = await send<VoiceCommand>({ type: 'PARSE_COMMAND', text }).catch(() => null);
+    return parsed && parsed.intent !== 'none' ? [parsed] : [];
+  }
+  /** Runs commands in order; a fill finishes (and the agent stops talking) before the next one starts. */
+  async function runAll(commands: VoiceCommand[]) {
+    for (const command of commands) {
+      // In a live conversation, a plain "stop" with nothing filling can only mean "stop listening".
+      if (command.intent === 'end_live' || (command.intent === 'stop' && live.current && !latest.current.running)) { endLive(); return; }
+      await performRef.current(command);
+      if (command.intent.startsWith('fill')) await waitForFill();
+      await waitUntilQuiet();
+    }
+  }
+  async function waitForFill() {
+    for (let tick = 0; tick < 800; tick++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const { job: current } = await chrome.storage.session.get('job') as { job?: JobStatus };
+      if (!current?.running && tick > 1) return;
+    }
+  }
+  function endLive() {
+    live.current = false;
+    recording.current?.stop();
+  }
+
+  /** Live conversation: listen → understand → act → listen again, until "stop listening", a tap on the mic, or 2 quiet minutes. */
+  async function liveSession() {
+    if (live.current) return endLive();
+    live.current = true;
+    setLiveOn(true); stopSpeaking(); setError(''); setHeard('');
+    void loadSpeechModel().catch(() => undefined);
+    void speak(say.liveOn(latest.current.language), latest.current.language);
+    await waitUntilQuiet();
+    let quietRounds = 0, ended = 'off';
+    let mic: Awaited<ReturnType<typeof openMicrophone>> | null = null;
+    try {
+      // One microphone for the whole session; sound is only collected while it's your turn.
+      mic = await openMicrophone();
+      while (live.current) {
+        recording.current = { stop: mic.stop };
+        setVoicePhase('listening');
+        const audio = await mic.next({ waitMs: 12000, maxMs: 12000, pauseMs: 900 });
+        recording.current = null;
+        if (!live.current) break;
+        if (!audio) { if (++quietRounds >= 10) { ended = 'timeout'; break; } continue; }
+        quietRounds = 0;
+        setVoicePhase('understanding');
+        const text = await transcribe(audio, latest.current.language);
+        setVoicePhase('idle');
+        if (/^\W*$|^\W*(thank you|thanks for watching|you|bye|okay|uh+|um+|hmm+)\W*$/i.test(text)) continue; // silence and noise phantoms
+        setHeard(text);
+        const commands = await understand(text);
+        if (!commands.length) {
+          if (text.trim().split(/\s+/).length >= 2) { void speak(say.sorryShort(latest.current.language), latest.current.language); await waitUntilQuiet(); }
+          continue;
+        }
+        await runAll(commands);
+      }
+    } catch (caught) {
+      ended = 'error';
+      if (caught instanceof MicrophoneBlockedError) {
+        void speak(say.micBlocked(latest.current.language), latest.current.language);
+        void chrome.tabs.create({ url: chrome.runtime.getURL('options.html#voice') });
+      } else setError(errorText(caught));
+    } finally {
+      mic?.close();
+      live.current = false; recording.current = null;
+      setLiveOn(false); setVoicePhase('idle');
+    }
+    if (ended !== 'error') void speak(ended === 'timeout' ? say.liveTimeout(latest.current.language) : say.liveOff(latest.current.language), latest.current.language);
   }
 
   async function perform(command: VoiceCommand) {
     switch (command.intent) {
       case 'fill': return running ? reply(say.busy(language)) : start();
       case 'fill_all': setPaginate(true); return running ? reply(say.busy(language)) : start(undefined, true);
-      case 'fill_field': return running ? reply(say.busy(language)) : start(undefined, false, { text: command.target ?? '' });
+      case 'fill_field': return running ? reply(say.busy(language)) : start(undefined, false, { text: command.target ?? '', texts: command.targets });
+      case 'end_live': return running ? run(() => send({ type: 'STOP' })) : reply(say.stopped(language));
       case 'fill_focused': return running ? reply(say.busy(language)) : start(undefined, false, { focused: true });
       case 'stop':
         if (!running) return reply(say.stopped(language));
@@ -131,9 +214,13 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
       default: return reply(say.notUnderstood(language));
     }
   }
+  const performRef = useRef(perform);
+  performRef.current = perform;
+  const micActive = voicePhase === 'listening' || liveOn;
+  const micLabel = liveOn ? 'End live conversation' : voicePhase === 'listening' ? 'Stop listening' : data.settings.voiceLive ? 'Start live conversation' : 'Speak a command';
   const micButton = (
-    <button title={voicePhase === 'listening' ? 'Stop listening' : 'Speak a command'} aria-label={voicePhase === 'listening' ? 'Stop listening' : 'Speak a command'}
-      aria-pressed={voicePhase === 'listening'} disabled={voicePhase === 'understanding'} onClick={() => void listen()}><Mic size={14} /></button>
+    <button title={micLabel} aria-label={micLabel} aria-pressed={micActive} data-live={liveOn || undefined}
+      disabled={voicePhase === 'understanding' && !liveOn} onClick={() => void (data.settings.voiceLive || liveOn ? liveSession() : listen())}><Mic size={14} /></button>
   );
 
   // When a fill ends, say what happened: how much was filled and which questions need you.
@@ -225,8 +312,12 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
             <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.voiceReplies} onChange={event => void setSettings({ voiceReplies: event.target.checked })} />
           </label>
         </div>
+        <label className={styles.switchRow} title="Keep listening: say one command after another until you say “stop listening”">
+          <span>Live conversation <em className={styles.liveHint}>keeps listening</em></span>
+          <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.voiceLive} disabled={liveOn} onChange={event => void setSettings({ voiceLive: event.target.checked })} />
+        </label>
         <p className={styles.sysHint}>
-          {heard ? <>You said <q>{heard}</q></> : <><Mic size={11} aria-hidden="true" /> Tap the mic on the orb · {modelHint}</>}
+          {heard ? <>You said <q>{heard}</q></> : <><Mic size={11} aria-hidden="true" /> {liveOn ? 'Live: say a command, or “stop listening”' : `Tap the mic on the orb${data.settings.voiceLive ? ' to start a live conversation' : ''}`} · {modelHint}</>}
         </p>
       </section>
     </>

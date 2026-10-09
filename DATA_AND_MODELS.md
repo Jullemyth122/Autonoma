@@ -56,6 +56,8 @@ None of these are in the repository unless marked; they were kept in a temporary
 
 Two more recordings tested targeted fills: `email-en.wav` ("Fill the email.") was heard correctly and filled only the email. `name-tl.wav` ("Punan ang pangalan.") was heard as "Panan ng Ping Ellen": the American computer voice can't pronounce *pangalan* clearly enough for Whisper tiny, so that one wasn't understood.
 
+**Live conversation test** (`live-en.wav`, 58 s): "Fill this name, this email." … "Fill the birthday." … "Stop listening." with 14-second gaps. One tap on the mic filled First name, Last name and Email, then Date of birth, then ended the session.
+
 A computer voice reading Tagalog with an American accent is harder to understand than a real Filipino speaker, so these are a tough test. No real person's voice was recorded.
 
 **Profiles used in tests:**

@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:25 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
 import type { AIResult, FillContext, FillReport, FillSource, Question, Reply } from '../types/index.ts';
 import { AI_TIMEOUT_MS } from '../types/defaults.ts';
 import { harvestAllControls, controlValue, isVisible, pageRoots, rejectionReason, resolveChoiceText } from './read.ts';
@@ -78,7 +78,8 @@ async function fillPage(context: FillContext): Promise<FillReport> {
   const inScope = (controls: Control[]): Control[] => {
     if (!target) return controls;
     if (target.focused) return focused ? controls.filter(control => control.elements.some(element => element === focused || element.contains(focused))) : [];
-    const picked = new Set(selectTargets(target.text ?? '', controls.map(control => control.question.question)));
+    const questions = controls.map(control => control.question.question);
+    const picked = new Set((target.texts?.length ? target.texts : [target.text ?? '']).flatMap(text => selectTargets(text, questions)));
     return controls.filter((_, index) => picked.has(index));
   };
   const labels = new Map<string, string>();

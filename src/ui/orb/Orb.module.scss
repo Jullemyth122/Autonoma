@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 9:00 PM (premium compact redesign by Claude Code)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 9:23 PM (live conversation by Claude Code)
 // The orb glows additively, so it always sits on its own dark "screen", in light and dark themes alike.
 .stage {
   --orb-primary: var(--theme-primary);
@@ -204,3 +204,11 @@
 @media (prefers-reduced-motion: reduce) {
   .orb { transition: none; }
 }
+
+// Live conversation: the mic breathes while the session is open.
+.extra > button[data-live] { animation: liveRing 1.6s ease-in-out infinite; }
+@keyframes liveRing {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--orb-primary) 55%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--orb-primary) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) { .extra > button[data-live] { animation: none; } }

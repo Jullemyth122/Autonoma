@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:40 PM by Claude Code · last changed 8:26 PM
+// Time log (9 Oct 2026): created 6:40 PM by Claude Code · last changed 9:22 PM (live conversation by Claude Code)
 // What the agent says, in English and simple Tagalog.
 import type { AdvanceResult, FillReport, VoiceLanguage } from '../../types/index.ts';
 
@@ -25,6 +25,11 @@ export const say = {
 
   // Voice commands.
   listening: (language: VoiceLanguage) => pick(language, 'Listening…', 'Nakikinig…'),
+  liveListening: (language: VoiceLanguage) => pick(language, 'Live · listening… say "stop listening" to end', 'Live · nakikinig… sabihin ang "tama na" para tumigil'),
+  liveOn: (language: VoiceLanguage) => pick(language, "I'm listening. Tell me what to fill, one after another. Say stop listening when you're done.", 'Nakikinig ako. Sabihin mo kung ano ang pupunan, isa-isa. Sabihin ang tama na kapag tapos ka na.'),
+  liveOff: (language: VoiceLanguage) => pick(language, 'Okay, I stopped listening.', 'Sige, hindi na ako makikinig.'),
+  liveTimeout: (language: VoiceLanguage) => pick(language, "It's been quiet for a while, so I stopped listening.", 'Matagal nang tahimik, kaya tumigil na ako sa pakikinig.'),
+  sorryShort: (language: VoiceLanguage) => pick(language, 'Sorry, say that again?', 'Ano ulit yun?'),
   understanding: (language: VoiceLanguage) => pick(language, 'Understanding…', 'Iniintindi…'),
   downloading: (percent: number, language: VoiceLanguage) => pick(language, `Getting the voice model ready… ${percent}%`, `Inihahanda ang voice model… ${percent}%`),
   heardNothing: (language: VoiceLanguage) => pick(language, "I didn't hear anything.", 'Wala akong narinig.'),

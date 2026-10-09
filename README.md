@@ -195,6 +195,8 @@ The repo includes a two-page registration form with every kind of question Auton
 | fill this form / autofill | punan mo ang form / sagutan | Fills the page |
 | fill the email / fill my first name / fill the birthday | punan ang email / punan ang pangalan / punan mo ang kaarawan ko | Fills **only** that question. Synonyms count: birthday ↔ date of birth, phone ↔ mobile, pangalan → name, apelyido → last name. The field glows while it's filled. |
 | fill this / fill that one | punan mo ito | Fills the field you last clicked on the page |
+| fill this name, this email and the phone · fill the name then the email | punan ang pangalan at email · punan mo ang email, tapos ang kaarawan | Several fields in one breath |
+| stop listening / that's all | tama na / tapos na / salamat | Ends a live conversation |
 | fill all pages | punan lahat | Fills and clicks Next through the form |
 | next | susunod / tuloy | Clicks Next |
 | submit | ipasa / isumite | Clicks Submit, then checks it went through |
@@ -203,6 +205,8 @@ The repo includes a two-page registration form with every kind of question Auton
 | use *profile name* | gamitin ang *profile name* | Switches profile |
 | speak Tagalog / speak English | | Switches the voice language |
 | help | tulong | Lists the commands |
+
+**Live conversation** (Voice row → *Live conversation*): one tap on the 🎤 starts a session that keeps listening. Say one thing after another ("fill the name, the email" … "fill the birthday" … "next page"), and say **"stop listening"** or **"tama na"**, or tap the mic again, to end it. The microphone stays open for the whole session, but sound is only collected while it's your turn, never while the agent is talking or filling, so it can't hear itself. After about 2 minutes of silence it stops on its own.
 
 How it works: your voice is recorded only while the mic is on. **Whisper tiny** (multilingual) turns it into text inside the extension, on the GPU when it works and otherwise on the CPU, in about 1–8 seconds. Plain rules match the text to a command, and they forgive common mishearings ("feel this form" → fill, "panan" → punan). Anything the rules don't recognise goes to qwen to work out what you meant.
 

@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 8:26 PM
+// Time log (9 Oct 2026): created 6:55 PM by Claude Code · last changed 9:37 PM (live conversation by Claude Code)
 // Spoken commands in English and simple Tagalog, matched by plain rules. Sentences the rules don't
 // recognise go to the local model (PARSE_COMMAND) to work out the intent.
 import type { Profile, VoiceCommand, VoiceIntent } from '../../types/index.ts';
@@ -12,7 +12,8 @@ const RULES: [VoiceIntent, RegExp][] = [
   ['help', /\bhelp\b|what can you do|\bcommands?\b|\btulong\b|\b(ano|anong) (ang )?kaya mo\b/],
   ['tagalog', /\b(tagalog|filipino|pilipino)\b/],
   ['english', /\b(english|ingles|inggles)\b/],
-  ['stop', /\b(stop|cancel|abort|halt|tigil|itigil|hinto|ihinto|tama na|teka)\b/],
+  ['end_live', /\b(stop (?:listening|listen|listing|lis\w*)|that'?s all|that is all|i'?m done|we'?re done|goodbye|tama na|tapos na|wala na|salamat)\b/],
+  ['stop', /\b(stop|cancel|abort|halt|tigil|itigil|hinto|ihinto|teka)\b/],
   ['submit', /\b(submit|send (it|the form)|ipasa|isumite|i ?submit|ipadala)\b/],
   ['fill_all', /\b(fill|punan|punuin|sagutan|answer|complete)\b.*\b(all|every|whole|entire|lahat|buong)\b/],
   ['fill', /\b(fill|autofill|auto fill|punan|punuin|pakipunan|sagutan|pakisagutan|answer|complete)\b|\bi ?fill\b/],
@@ -40,7 +41,11 @@ function fillWhat(said: string): VoiceCommand | null {
   // Anything mentioning the form or page means the whole form, even when misheard ("mmo inform").
   if (!what || WHOLE_FORM.test(what) || /\b(?:in)?forms?\b|\bpages?\b/.test(what)) return null;
   if (THIS_FIELD.test(what)) return { intent: 'fill_focused' };
-  return { intent: 'fill_field', target: englishTarget(what) };
+  // "this name this email and the phone" names several questions: split on the little words between them.
+  const targets = what.split(/\s*\b(?:and|at|also|plus|saka|pati|this|that|the|yung|ang|my|then)\b\s*/)
+    .map(piece => englishTarget(piece)).filter(Boolean);
+  if (!targets.length) return { intent: 'fill_focused' };
+  return { intent: 'fill_field', target: targets.join(', '), targets };
 }
 
 const PROFILE = /\b(?:use|switch to|change to|gamitin(?: mo)?(?: ang)?|lumipat sa|lipat sa)\s+(?:my\s+|the\s+)?(.+?)(?:\s+profile)?$/;
@@ -75,4 +80,26 @@ export function matchCommand(text: string, profiles: Profile[]): VoiceCommand | 
     if (pattern.test(said)) return { intent };
   }
   return null;
+}
+
+/**
+ * Everything said in one breath, in order: "fill the name, then the email" or "fill this name, this email".
+ * A part without its own verb continues the fill before it; neighbouring field fills merge into one fill.
+ */
+export function matchCommands(text: string, profiles: Profile[]): VoiceCommand[] {
+  const clauses = text.split(/\s*(?:[,;]|\band then\b|\bthen\b|\band also\b|\bpagkatapos\b|\btapos\b(?! na))\s*/i).filter(part => part.trim());
+  const commands: VoiceCommand[] = [];
+  for (const clause of clauses) {
+    let command = matchCommand(clause, profiles);
+    const previous = commands.at(-1);
+    if ((!command || command.intent === 'none') && previous && (previous.intent === 'fill_field' || previous.intent === 'fill_focused')) command = matchCommand(`fill ${clause}`, profiles);
+    if (!command) continue;
+    if (command.intent === 'fill_field' && previous?.intent === 'fill_field') {
+      previous.targets = [...(previous.targets ?? []), ...(command.targets ?? [])];
+      previous.target = previous.targets.join(', ');
+      continue;
+    }
+    commands.push(command);
+  }
+  return commands;
 }

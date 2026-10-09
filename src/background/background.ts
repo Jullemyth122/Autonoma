@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:26 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
 import type { AdvanceResult, AIResult, FillContext, FillReport, FillTarget, JobStatus, Request } from '../types/index.ts';
 import { PAGE_TIMEOUT_MS } from '../types/defaults.ts';
 import { checkRuntime, parseCommand, resolveQuestions, setModelResidency } from '../services/aiService.ts';
@@ -111,7 +111,7 @@ async function startJob(paginate: boolean, urls?: string[], fillTarget?: FillTar
   if (!links.length && !active?.id) throw new Error('Open a form in a browser tab first.');
   const controller = new AbortController(); jobController = controller;
   const total = links.length || 1, started = Date.now(), combined = emptyReport(links.length ? `${total} linked forms` : active?.url ?? 'Current page');
-  if (fillTarget) combined.target = fillTarget.text ?? 'this field';
+  if (fillTarget) combined.target = fillTarget.texts?.length ? fillTarget.texts.join(', ') : fillTarget.text ?? 'this field';
   await storeJob({ running: true, completed: 0, total, message: 'Reading the form…' });
   void keepWorkerAlive(async () => {
     let completed = 0;

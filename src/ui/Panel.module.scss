@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:23 PM by Claude Code · last changed 9:02 PM (premium compact redesign by Claude Code)
+// Time log (9 Oct 2026): created 3:23 PM by Claude Code · last changed 9:23 PM (live conversation by Claude Code)
 // Premium compact side panel: the orb is the hero; everything else is dense, quiet and themed.
 .panel {
   --glass: color-mix(in srgb, var(--surface) 82%, transparent);
@@ -316,3 +316,4 @@
 
 .build { font: 9.5px/1.5 var(--mono); letter-spacing: 0.5px; color: var(--muted); text-align: center; opacity: 0.55; }
 @media (prefers-reduced-motion: reduce) { .dot { animation: none !important; } .cta, .cta::after { transition: none; } }
+.liveHint { margin-left: 6px; font-style: normal; font-size: 10px; color: var(--accent); opacity: 0.8; }
