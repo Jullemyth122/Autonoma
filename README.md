@@ -35,6 +35,10 @@ Everything runs on your machine: no account, no API key, no subscription, and no
 
 ![Sign mode: the camera reads FILL THIS PHONE NUMBER and the mobile number is filled](docs/screenshots/sign-mode-fill.png)
 
+**Training your signs in Expresso.** Expresso's Test tab tracks your hand and body live (22 fps) and shows what Autonoma would hear: FILL THIS PHONE NUMBER at 99%. You record, train and test your own signs here, then export them to Autonoma.
+
+![Expresso Test tab recognising signs live with hand and body tracking](docs/screenshots/expresso-test-live.png)
+
 **Workspace: Local AI.** qwen3:1.7b through Ollama on this computer, voice commands with Whisper tiny, and the one-time setup.
 
 ![Workspace Local AI page: model, voice commands and Ollama setup](docs/screenshots/workspace-local-ai.png)
