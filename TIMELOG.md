@@ -9,6 +9,7 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **6:40–7:50 PM:** voice: the agent talks back in English/Tagalog, plus push-to-talk voice commands (Whisper tiny, local).
 - **7:58 PM:** DATA_AND_MODELS.md: every model, rule list and test sample used. Nothing was trained.
 - **8:50 PM:** ChatGPT UI work: app themes, theme picker, restyled panel and workspace (outside this session).
+- **10:15 PM:** "fill this" works for any question, including radio and checkbox questions on Google Forms: it uses the question you last clicked (text, card, option or box), or the one mid-screen if you've scrolled since. Quiz options count as backed by saved answers when most of their words match.
 - **9:57 PM:** interrupting and quiet live mode: tap the orb or mic, or press Esc, to stop the agent talking; live mode no longer answers background noise or announces its 2-minute timeout; sounds shorter than ~0.4 s don't count as speech.
 - **9:45–9:55 PM:** performance pass, measured in Chromium: fills 2–3× faster (no per-field page scroll, 4 ms instead of 30 ms settle per field), fill report fixed on plain-HTTP pages (`crypto.randomUUID` fallback), orb redraws at 30 fps when idle (idle CPU 13.7% → 6.4%).
 - **9:15–9:45 PM:** live conversation (optional): one tap keeps the mic listening for command after command; several fields per sentence ("fill this name, this email"); "stop listening" / "tama na" ends it.
@@ -29,11 +30,11 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `public/manifest.json` | 3:04 PM | 6:59 PM | Codex (before this session) | Chrome extension manifest |
 | `scripts/build.mjs` | 3:04 PM | 7:40 PM | Codex (before this session) | Builds the pages, content script and service worker; stamps the build time |
 | `src/background/background.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Fill jobs, Pagination, Multi-Link, AI requests |
-| `src/content/content.ts` | 3:04 PM | 9:49 PM | Codex (before this session) | Fill flow on the page: rules, AI, repair, agreement boxes |
+| `src/content/content.ts` | 3:04 PM | 10:15 PM | Codex (before this session) | Fill flow on the page: rules, AI, repair, agreement boxes |
 | `src/content/matching.ts` | 3:04 PM | 8:24 PM | Codex (before this session) | Keyword matching, options, dates, age |
 | `src/content/read.ts` | 3:04 PM | 5:14 PM | Codex (before this session) | Reads questions, labels and options from the page |
 | `src/content/write.ts` | 3:04 PM | 9:49 PM | Codex (before this session) | Types values, picks options, attaches files, badges |
-| `src/services/aiService.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
+| `src/services/aiService.ts` | 3:04 PM | 10:15 PM | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
 | `src/services/repository.ts` | 3:04 PM | 3:50 PM | Codex (before this session) | Saves data in chrome.storage.local |
 | `src/services/vault.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Validates saved/imported data |
 | `src/types/defaults.ts` | 3:04 PM | 9:22 PM | Codex (before this session) | Default data and model |

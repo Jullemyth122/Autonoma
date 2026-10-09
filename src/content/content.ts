@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:49 PM (performance fixes by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 10:15 PM ("fill this" for any question by Claude Code)
 import type { AIResult, FillContext, FillReport, FillSource, Question, Reply } from '../types/index.ts';
 import { AI_TIMEOUT_MS } from '../types/defaults.ts';
 import { harvestAllControls, controlValue, isVisible, pageRoots, rejectionReason, resolveChoiceText } from './read.ts';
@@ -12,11 +12,52 @@ document.addEventListener('change', event => { if (event.isTrusted && event.comp
 let currentFill: AbortController | null = null;
 // The last form field you clicked or typed in, for "fill this" / "punan mo ito".
 const FIELD = 'input, textarea, select, [role="combobox"], [role="radio"], [role="checkbox"]';
-let lastFocused: HTMLElement | null = null;
+// What "fill this" means: the question you last clicked or typed in, or, if you've scrolled since, the one in the
+// middle of the screen. Clicking a question's text or card counts too, so radio and checkbox questions (Google Forms)
+// work, not just text boxes.
+let lastFocused: HTMLElement | null = null, lastFocusedAt = 0;
+let lastPointer: Element | null = null, lastPointerAt = 0, lastScrollAt = 0;
 document.addEventListener('focusin', event => {
   const element = event.composedPath()[0];
-  if (element instanceof HTMLElement && element.matches(FIELD)) lastFocused = element;
+  if (element instanceof HTMLElement && element.matches(FIELD)) { lastFocused = element; lastFocusedAt = performance.now(); }
 }, true);
+document.addEventListener('pointerdown', event => {
+  const element = event.composedPath()[0];
+  if (element instanceof Element) { lastPointer = element; lastPointerAt = performance.now(); }
+}, true);
+addEventListener('scroll', () => { lastScrollAt = performance.now(); }, { capture: true, passive: true });
+
+/** The question containing `start`: the closest ancestor that holds exactly one question. */
+function questionAround(start: Element, controls: Control[]): Control[] {
+  for (let node: Element | null = start, depth = 0; node && depth < 12; node = node.parentElement, depth++) {
+    const inside = controls.filter(control => control.elements.some(element => node!.contains(element)));
+    if (inside.length === 1) return inside;
+    if (inside.length > 1) return [];
+  }
+  return [];
+}
+/** The visible question nearest the middle of the screen. */
+function questionInView(controls: Control[]): Control[] {
+  let best: Control | null = null, distance = Infinity;
+  for (const control of controls) {
+    const box = control.primary.getBoundingClientRect();
+    if (box.bottom < 0 || box.top > innerHeight || (!box.width && !box.height)) continue;
+    const gap = Math.abs((box.top + box.bottom) / 2 - innerHeight / 2);
+    if (gap < distance) { best = control; distance = gap; }
+  }
+  return best ? [best] : [];
+}
+function questionMeant(controls: Control[]): Control[] {
+  const active = document.activeElement instanceof HTMLElement && document.activeElement.matches(FIELD) ? document.activeElement : null;
+  const focused = active ?? lastFocused;
+  const clickedAt = Math.max(active ? performance.now() : lastFocusedAt, lastPointerAt);
+  if (lastScrollAt > clickedAt + 300) return questionInView(controls); // scrolled since the last click
+  const byFocus = focused ? controls.filter(control => control.elements.some(element => element === focused || element.contains(focused))) : [];
+  const byClick = lastPointer ? questionAround(lastPointer, controls) : [];
+  if (byFocus.length && (active || lastFocusedAt >= lastPointerAt || !byClick.length)) return byFocus;
+  if (byClick.length) return byClick;
+  return questionInView(controls);
+}
 
 async function askAI(questions: Question[], context: FillContext, signal: AbortSignal): Promise<AIResult> {
   if (!questions.length) return { answers: [], tokens: 0 };
@@ -74,10 +115,9 @@ async function fillPage(context: FillContext): Promise<FillReport> {
   let tokens = 0, notice = '';
   // A targeted fill ("fill the email", "fill this") only touches the questions you pointed at, and may replace what's there.
   const target = context.target;
-  const focused = target?.focused ? (document.activeElement instanceof HTMLElement && document.activeElement.matches(FIELD) ? document.activeElement : lastFocused) : null;
   const inScope = (controls: Control[]): Control[] => {
     if (!target) return controls;
-    if (target.focused) return focused ? controls.filter(control => control.elements.some(element => element === focused || element.contains(focused))) : [];
+    if (target.focused) return questionMeant(controls);
     const questions = controls.map(control => control.question.question);
     const picked = new Set((target.texts?.length ? target.texts : [target.text ?? '']).flatMap(text => selectTargets(text, questions)));
     return controls.filter((_, index) => picked.has(index));

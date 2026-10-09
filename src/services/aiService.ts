@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:22 PM (live conversation by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 10:15 PM ("fill this" for any question by Claude Code)
 import type { AIAnswer, AIResult, Memory, Profile, Question, RuntimeStatus, VoiceIntent } from '../types/index.ts';
 import { ageOn, isAgeQuestion, matchOption, normalize, optionFitsAge, splitChoices, toIsoDate } from '../content/matching.ts';
 
@@ -123,7 +123,12 @@ const QUESTION_NOISE = new Set(['currently', 'would', 'could', 'should', 'have',
 function choiceGrounded(question: Question, chosen: string[], facts: string): boolean {
   const text = ` ${normalize(facts)} `;
   const subject = normalize(question.question).split(' ').filter(word => word.length >= 4 && !QUESTION_NOISE.has(word));
-  return chosen.every(option => YES_NO.test(option.trim()) ? subject.some(word => text.includes(` ${word}`)) : text.includes(` ${normalize(option)} `));
+  const known = new Set(text.split(' '));
+  const mostlyKnown = (option: string) => {
+    const words = normalize(option).split(' ').filter(word => word.length >= 3);
+    return words.length > 0 && words.filter(word => known.has(word)).length / words.length >= 0.75;
+  };
+  return chosen.every(option => YES_NO.test(option.trim()) ? subject.some(word => text.includes(` ${word}`)) : text.includes(` ${normalize(option)} `) || mostlyKnown(option));
 }
 const MONTH_WORDS = 'january february march april may june july august september october november december jan feb mar apr jun jul aug sep sept oct nov dec';
 const CONNECTORS = 'and or of the in at to on for a an';
