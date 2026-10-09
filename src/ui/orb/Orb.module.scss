@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 8:30 PM (mic button added by Claude Code)
+// Time log (9 Oct 2026): created 6:12 PM (orb UI) · last changed 9:00 PM (premium compact redesign by Claude Code)
 // The orb glows additively, so it always sits on its own dark "screen", in light and dark themes alike.
 .stage {
   --orb-primary: var(--theme-primary);
@@ -9,8 +9,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 14px 14px 12px;
+  gap: 0;
+  padding: 12px 12px 10px;
   border: 1px solid color-mix(in srgb, var(--orb-secondary) 24%, #152035);
   border-radius: var(--radius);
   overflow: hidden;
@@ -60,7 +60,21 @@
   gap: 10px;
 }
 
-.eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 1.8px; color: var(--orb-primary); }
+.eyebrow { font: 600 9px/1 var(--mono); letter-spacing: 2px; color: var(--orb-primary); opacity: 0.9; }
+.topRight { display: inline-flex; align-items: center; gap: 8px; }
+.paletteButton {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--orb-secondary) 24%, transparent);
+  border-radius: 8px;
+  background: #ffffff06;
+  color: #b9cbe3;
+  cursor: pointer;
+  &:hover, &[aria-expanded='true'] { color: var(--orb-primary); border-color: color-mix(in srgb, var(--orb-primary) 50%, transparent); }
+}
 
 .presence {
   display: inline-flex;
@@ -79,7 +93,8 @@
 
 .orb {
   position: relative;
-  width: min(100%, 252px);
+  width: min(100%, 300px);
+  margin: -4px 0 -6px;
   aspect-ratio: 1;
   padding: 0;
   border: 0;
@@ -170,12 +185,21 @@
   }
 }
 
+// Floating swatch strip under the top bar.
 .palette {
-  align-self: stretch;
-  margin-top: 10px;
-  padding-top: 12px;
-  border-top: 1px solid #b9cbe318;
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  z-index: 2;
+  padding: 5px 6px;
+  border: 1px solid #ffffff14;
+  border-radius: 99px;
+  background: color-mix(in srgb, #080f1d 82%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px #00000055;
+  animation: drop 160ms ease-out;
 }
+@keyframes drop { from { opacity: 0; transform: translateY(-4px); } }
 
 @media (prefers-reduced-motion: reduce) {
   .orb { transition: none; }

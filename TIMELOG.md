@@ -8,6 +8,8 @@ Autonoma, built on 9 October 2026. Times are local (UTC+8).
 - **6:22 PM:** README.md (setup guide, demo walkthrough, project structure) for the judges.
 - **6:40–7:50 PM:** voice: the agent talks back in English/Tagalog, plus push-to-talk voice commands (Whisper tiny, local).
 - **7:58 PM:** DATA_AND_MODELS.md: every model, rule list and test sample used. Nothing was trained.
+- **8:50 PM:** ChatGPT UI work: app themes, theme picker, restyled panel and workspace (outside this session).
+- **9:00–9:12 PM:** premium compact redesign on the `premium-ui` branch: slim header, bigger orb, palette popover, command dock with option chips, stat-bar report, one dense System card with switches; spreadsheet-style Workspace rows. `main` keeps the previous UI.
 - **8:20–8:40 PM:** targeted fills: “fill the email / the name / this”, by voice in English and Tagalog. Only the named or clicked question is filled, and it glows.
 
 Each code file also starts with its own time-log comment. JSON and audio files can't hold comments, so they're listed only here.
@@ -37,24 +39,24 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `vite.config.ts` | 3:04 PM | 6:59 PM | Codex (before this session) | Vite build for the panel and workspace pages |
 | `package-lock.json` | 3:17 PM | 7:39 PM | Claude Code | Exact dependency versions |
 | `src/ui/api.ts` | 3:20 PM | 3:50 PM | Claude Code | Messages to the background; app and AI state hooks |
-| `src/ui/Panel.tsx` | 3:21 PM | 8:26 PM | Claude Code | Side panel |
-| `src/ui/Report.tsx` | 3:21 PM | — | Claude Code | Fill report card |
+| `src/ui/Panel.tsx` | 3:21 PM | 9:04 PM | Claude Code | Side panel |
+| `src/ui/Report.tsx` | 3:21 PM | 9:02 PM | Claude Code | Fill report card |
 | `src/main.tsx` | 3:22 PM | — | Claude Code | Starts the panel or the workspace |
 | `src/ui/Workspace.tsx` | 3:22 PM | 6:59 PM | Claude Code | Workspace: profile, memory, files, AI, import/export |
 | `src/ui/sample.ts` | 3:22 PM | — | Claude Code | Demo profile with a sample résumé |
 | `scripts/match-cases.json` | 3:23 PM | 5:39 PM | Claude Code | Test cases for match-check |
 | `scripts/match-check.mjs` | 3:23 PM | 5:39 PM | Claude Code | Keyword-matching regression check |
-| `src/ui/Panel.module.scss` | 3:23 PM | 5:32 PM | Claude Code | Panel styles |
-| `src/ui/Report.module.scss` | 3:23 PM | — | Claude Code | Report styles |
-| `src/ui/Workspace.module.scss` | 3:23 PM | 5:40 PM | Claude Code | Workspace styles |
+| `src/ui/Panel.module.scss` | 3:23 PM | 9:02 PM | Claude Code | Panel styles |
+| `src/ui/Report.module.scss` | 3:23 PM | 9:02 PM | Claude Code | Report styles |
+| `src/ui/Workspace.module.scss` | 3:23 PM | 9:04 PM | Claude Code | Workspace styles |
 | `src/ui/styles/global.scss` | 3:23 PM | — | Claude Code | Colours, dark mode, base styles |
 | `src/ui/ui.module.scss` | 3:23 PM | — | Claude Code | Shared cards, buttons, fields |
 | `demo/index.html` | 3:24 PM | 6:11 PM | Claude Code | Two-step demo form, every question required |
 | `scripts/serve-demo.mjs` | 3:24 PM | — | Claude Code | Serves the demo form on 127.0.0.1:5500 |
 | `src/ui/build.d.ts` | 5:32 PM | — | Claude Code | Type for the build stamp |
 | `public/sounds/orb-startup.mp3` | 6:12 PM | — | Orb UI | Orb startup sound |
-| `src/ui/orb/Orb.module.scss` | 6:12 PM | 8:30 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
-| `src/ui/orb/Orb.tsx` | 6:12 PM | 8:28 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
+| `src/ui/orb/Orb.module.scss` | 6:12 PM | 9:00 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
+| `src/ui/orb/Orb.tsx` | 6:12 PM | 9:00 PM | Orb UI | Animated orb in the side panel; microphone button slot added at 6:59 PM (Claude Code) |
 | `src/ui/orb/OrbCanvas.tsx` | 6:12 PM | 8:28 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/hud.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
 | `src/ui/orb/parts.tsx` | 6:12 PM | 8:29 PM | Orb UI | Animated orb in the side panel |
@@ -70,3 +72,7 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `TIMELOG.md` | 6:15 PM | 8:31 PM | Claude Code | This time log |
 | `demo/index2.html` | 6:41 PM | 6:41 PM | Added outside this Claude Code session | Demo form: Application for Senior Product Engineer — Acme Labs |
 | `demo/index3.html` | 6:45 PM | 6:45 PM | Added outside this Claude Code session | Demo form: PSA Birth Certificate Online Request |
+| `src/ui/theme.ts` | 8:39 PM | — | Added outside this Claude Code session (ChatGPT UI work) | App theme state shared by all extension pages |
+| `src/ui/orb/themes.ts` | 8:28 PM | — | Added outside this Claude Code session (ChatGPT UI work) | The 8 colour themes (Solar, Aurora, Mint, Sunset, Nebula, Glacier, Voltage, Ember) |
+| `src/ui/ThemePicker.tsx` | 8:39 PM | 9:00 PM | Added outside this Claude Code session (ChatGPT UI work); compact mode by Claude Code | Theme picker (compact dots on the orb; full list in Workspace → Appearance) |
+| `src/ui/ThemePicker.module.scss` | 8:39 PM | 9:00 PM | Added outside this Claude Code session (ChatGPT UI work); compact mode by Claude Code | Theme picker styles |

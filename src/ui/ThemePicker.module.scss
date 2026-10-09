@@ -1,3 +1,4 @@
+// Time log (9 Oct 2026): created outside this Claude Code session · last changed 9:00 PM (premium compact redesign by Claude Code)
 .picker { width: 100%; }
 
 .heading {
@@ -61,5 +62,14 @@
   .swatch { width: 36px; height: 36px; }
   @media (max-width: 480px) { .options { grid-template-columns: 1fr; } }
 }
+
+// Compact: one row of small dots, used in the orb's floating palette.
+.picker[data-compact='true'] {
+  .options { display: flex; gap: 2px; }
+  .option { min-height: 26px; min-width: 26px; padding: 0; border-radius: 99px; background: transparent; }
+  .option[aria-pressed='true'] { padding: 0 8px 0 4px; gap: 6px; }
+  .swatch { width: 14px; height: 14px; }
+}
+.compactName { font-size: 10px; font-weight: 600; color: var(--swatch-primary); white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) { .option { transition: none; } }

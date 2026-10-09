@@ -1,6 +1,6 @@
-// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 8:26 PM
-import { useEffect, useRef, useState } from 'react';
-import { Cpu, Link, Mic, Play, Power, RefreshCw, Settings as SettingsIcon, Sparkles, Square, Volume2 } from 'lucide-react';
+// Time log (9 Oct 2026): created 3:21 PM by Claude Code · last changed 9:04 PM (premium compact redesign by Claude Code)
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { AudioLines, ChevronsRight, Cpu, Link, Mic, Play, Power, RefreshCw, Send, Settings as SettingsIcon, ShieldCheck, Sparkles, Square, UserRound } from 'lucide-react';
 import type { AdvanceResult, AppState, FillReport, FillTarget, JobStatus, Settings, VaultData, VoiceCommand, VoiceLanguage } from '../types/index.ts';
 import { AI_LABELS, errorText, send, useAppState, useLocalAI, type AIPhase } from './api.ts';
 import { Orb } from './orb/Orb.tsx';
@@ -21,10 +21,11 @@ export function Panel() {
     <main className={styles.panel}>
       <header className={styles.header}>
         <div className={styles.brand}>
-          <span className={styles.brandMark}><Sparkles size={18} /></span>
-          <div><span className={styles.logo}>Autonoma</span><span className={styles.tagline}>Your local assistant</span></div>
+          <span className={styles.brandMark}><Sparkles size={13} /></span>
+          <span className={styles.logo}>Autonoma</span>
+          <span className={styles.localTag}>Local</span>
         </div>
-        <button className={styles.workspaceLink} title="Edit profile, memory, and files" aria-label="Open workspace" onClick={() => chrome.runtime.openOptionsPage()}><SettingsIcon size={14} />Workspace</button>
+        <button className={styles.headerButton} title="Workspace: profile, memory, files" aria-label="Open workspace" onClick={() => chrome.runtime.openOptionsPage()}><SettingsIcon size={15} /></button>
       </header>
       {!state ? <p className={ui.muted}>{error || 'Loading…'}</p>
         : <Controls data={state.data} job={state.job} report={state.report} onState={setState} />}
@@ -39,6 +40,7 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
   const ai = useLocalAI(data.settings, true);
   const [paginate, setPaginate] = useState(false);
   const [links, setLinks] = useState('');
+  const [linksOpen, setLinksOpen] = useState(false);
   const [error, setError] = useState('');
   const running = Boolean(job?.running);
 
@@ -141,114 +143,91 @@ function Controls({ data, job, report, onState }: { data: VaultData; job: JobSta
     wasRunning.current = running;
   });
 
+  const option = (pressed: boolean, label: string, title: string, icon: ReactNode, onClick: () => void) => (
+    <button type="button" className={styles.chip} aria-pressed={pressed} title={title} disabled={running} onClick={onClick}>{icon}{label}</button>
+  );
+  const modelHint = model.state === 'ready' ? `Speech on ${model.device === 'webgpu' ? 'GPU' : 'CPU'}`
+    : model.state === 'loading' ? say.downloading(model.percent, language)
+    : model.state === 'error' ? 'Speech model failed to load'
+    : 'First use downloads ~40 MB once';
+
   return (
     <>
       <Orb state={agent.state} tone={ai.phase === 'error' ? 'ember' : 'cyan'} disabled={running} onActivate={() => void start()} extra={micButton}
         caption={running ? job!.message : agent.caption}
       />
-      <section className={`${ui.card} ${styles.fillCard}`}>
-        <div className={styles.cardHeader}>
-          <h2 className={ui.cardTitle}><Play size={15} />Autofill</h2>
-          <span className={styles.eyebrow}>Rules first · AI when needed</span>
+
+      <section className={styles.dock} aria-label="Autofill">
+        <div className={styles.dockHead}>
+          <span className={styles.kicker}>Autofill</span>
+          <label className={styles.profile} title="Active profile">
+            <UserRound size={12} aria-hidden="true" />
+            <select aria-label="Active profile" value={data.activeProfileId} disabled={running} onChange={event => void save({ ...data, activeProfileId: event.target.value })}>
+              {data.profiles.map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}
+            </select>
+          </label>
         </div>
-        <label className={ui.field}>
-          <span>Active profile</span>
-          <select value={data.activeProfileId} disabled={running} onChange={event => void save({ ...data, activeProfileId: event.target.value })}>
-            {data.profiles.map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}
-          </select>
-        </label>
         {running ? (
           <div className={styles.progress}>
+            <div className={styles.progressTop}><span>{job!.message}</span><span>{job!.completed}/{job!.total}</span></div>
             <progress aria-label="Fill progress" max={job!.total} value={job!.completed} />
-            <p>{job!.message}</p>
-            <button className={ui.danger} onClick={() => void run(() => send({ type: 'STOP' }))}><Square size={14} />Stop filling</button>
+            <button className={styles.stop} onClick={() => void run(() => send({ type: 'STOP' }))}><Square size={12} />Stop</button>
           </div>
         ) : (
-          <button className={ui.primary} onClick={() => void start()}><Play size={16} />Autofill this page</button>
+          <button className={styles.cta} onClick={() => void start()}><Play size={15} />Autofill this page</button>
         )}
-        <details className={ui.disclosure}>
-          <summary>Fill options & multiple links</summary>
-          <div className={ui.disclosureBody}>
-            <label className={ui.toggle}>
-              <input type="checkbox" checked={paginate} disabled={running} onChange={event => setPaginate(event.target.checked)} />
-              Continue through Next pages
-            </label>
-            <label className={ui.toggle}>
-              <input type="checkbox" checked={data.settings.autoSubmit} disabled={running} onChange={event => void setSettings({ autoSubmit: event.target.checked })} />
-              Auto-submit on the last page
-            </label>
-            <label className={ui.toggle} title="Terms, consent, privacy and code-of-conduct boxes on any form">
-              <input type="checkbox" checked={data.settings.autoConsent} disabled={running} onChange={event => void setSettings({ autoConsent: event.target.checked })} />
-              Tick agreement boxes (terms, consent, code of conduct)
-            </label>
-            <details className={styles.links}>
-              <summary><Link size={14} />Fill several forms</summary>
-              <textarea aria-label="Form links" rows={3} placeholder="One form link per line" value={links} disabled={running} onChange={event => setLinks(event.target.value)} />
-              <button className={ui.secondary} disabled={running || !urls.length} onClick={() => void start(urls)}>Fill {urls.length || ''} link{urls.length === 1 ? '' : 's'} in background tabs</button>
-            </details>
+        <div className={styles.chips} role="group" aria-label="Fill options">
+          {option(paginate, 'Pages', 'Continue through Next pages', <ChevronsRight size={13} />, () => setPaginate(!paginate))}
+          {option(data.settings.autoSubmit, 'Submit', 'Auto-submit on the last page', <Send size={12} />, () => void setSettings({ autoSubmit: !data.settings.autoSubmit }))}
+          {option(data.settings.autoConsent, 'Agree', 'Tick agreement boxes (terms, consent, code of conduct)', <ShieldCheck size={13} />, () => void setSettings({ autoConsent: !data.settings.autoConsent }))}
+          {option(linksOpen, 'Links', 'Fill several forms in background tabs', <Link size={12} />, () => setLinksOpen(!linksOpen))}
+        </div>
+        {linksOpen && (
+          <div className={styles.links}>
+            <textarea aria-label="Form links" rows={3} placeholder="One form link per line" value={links} disabled={running} onChange={event => setLinks(event.target.value)} />
+            <button className={styles.ghost} disabled={running || !urls.length} onClick={() => void start(urls)}>Fill {urls.length || ''} link{urls.length === 1 ? '' : 's'} in background tabs</button>
           </div>
-        </details>
+        )}
         {error && <p className={ui.error} role="alert">{error}</p>}
       </section>
 
       {report && <Report report={report} />}
 
-      <section className={ui.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={ui.cardTitle}><Cpu size={16} />Local intelligence</h2>
-          <p className={styles.aiStatus} data-phase={ai.phase} title={AI_LABELS[ai.phase]}>
-            <span className={styles.dot} />{ai.phase === 'ready' ? 'Ready' : AI_LABELS[ai.phase]}
-          </p>
-        </div>
-        {ai.phase === 'error' && ai.status.reason && <p className={ui.notice}>{ai.status.reason}</p>}
-        <div className={ui.row}>
-          <select aria-label="Model" value={data.settings.model} disabled={running} onChange={event => void setSettings({ model: event.target.value })}>
+      <section className={styles.system} aria-label="Local AI and voice">
+        <div className={styles.sysRow}>
+          <span className={styles.sysIcon}><Cpu size={13} /></span>
+          <select className={styles.model} aria-label="Model" value={data.settings.model} disabled={running} onChange={event => void setSettings({ model: event.target.value })}>
             {models.map(model => <option key={model} value={model}>{model}{ai.status.models.length && !ai.status.models.includes(model) ? ' (not installed)' : ''}</option>)}
           </select>
-          <button className={ui.icon} title="Check again" aria-label="Check Ollama again" onClick={ai.recheck}><RefreshCw size={16} /></button>
-          <button className={ui.icon} title="Release model memory" aria-label="Release model memory" disabled={ai.phase !== 'ready' || running} onClick={() => void run(ai.release)}><Power size={16} /></button>
+          <span className={styles.aiStatus} data-phase={ai.phase} title={AI_LABELS[ai.phase]}><span className={styles.dot} />{ai.phase === 'ready' ? 'Ready' : ai.phase === 'error' ? 'Offline' : ai.phase === 'off' ? 'Off' : '…'}</span>
+          <button className={styles.iconButton} title="Check again" aria-label="Check Ollama again" onClick={ai.recheck}><RefreshCw size={13} /></button>
+          <button className={styles.iconButton} title="Release model memory" aria-label="Release model memory" disabled={ai.phase !== 'ready' || running} onClick={() => void run(ai.release)}><Power size={13} /></button>
         </div>
-        <label className={ui.toggle}>
-          <input type="checkbox" checked={data.settings.useAI} disabled={running} onChange={event => void setSettings({ useAI: event.target.checked })} />
-          Use local AI for questions rules can't answer
+        {ai.phase === 'error' && ai.status.reason && <p className={styles.sysNotice}>{ai.status.reason}</p>}
+        <label className={styles.switchRow}>
+          <span>Local AI for questions rules can't answer</span>
+          <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.useAI} disabled={running} onChange={event => void setSettings({ useAI: event.target.checked })} />
         </label>
-      </section>
-
-      <section className={ui.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={ui.cardTitle}><Volume2 size={16} />Voice control</h2>
-          <span className={styles.eyebrow}>On device</span>
-        </div>
-        <button className={ui.secondary} onClick={() => void listen()} disabled={voicePhase === 'understanding'} aria-pressed={voicePhase === 'listening'}>
-          <Mic size={14} />{voicePhase === 'listening' ? 'Listening… click to stop' : voicePhase === 'understanding' ? 'Understanding…' : 'Speak a command'}
-        </button>
-        {heard && <p className={ui.muted}>You said: “{heard}”</p>}
-        <p className={styles.voiceHint}>
-          {model.state === 'ready' ? `Speech model ready (${model.device === 'webgpu' ? 'GPU' : 'CPU'}). Try “fill this form” or “punan mo ang form”.`
-            : model.state === 'loading' ? say.downloading(model.percent, language)
-            : model.state === 'error' ? `Speech model failed to load: ${model.error}`
-            : 'Speak naturally in English or Tagalog. First use downloads a ~40 MB model, then works offline.'}
-        </p>
-        <details className={ui.disclosure}>
-          <summary>Voice preferences</summary>
-          <div className={ui.disclosureBody}>
-            <label className={ui.toggle}>
-              <input type="checkbox" checked={data.settings.voiceReplies} onChange={event => void setSettings({ voiceReplies: event.target.checked })} />
-              Talk back: the agent says what it did
-            </label>
-            <label className={ui.field}>
-              <span>Language</span>
-              <select value={language} onChange={event => {
-                const next = event.target.value as VoiceLanguage;
-                void setSettings({ voiceLanguage: next });
-                if (data.settings.voiceReplies) void speak(next === 'tl' ? 'Sige, Tagalog na tayo.' : "Okay, I'll speak English.", next);
-              }}>
-                <option value="en">English</option>
-                <option value="tl">Tagalog</option>
-              </select>
-            </label>
+        <div className={styles.divider} />
+        <div className={styles.sysRow}>
+          <span className={styles.sysIcon}><AudioLines size={13} /></span>
+          <div className={styles.segmented} role="radiogroup" aria-label="Voice language">
+            {(['en', 'tl'] as const).map(code => (
+              <button key={code} type="button" role="radio" aria-checked={language === code} onClick={() => {
+                if (code === language) return;
+                void setSettings({ voiceLanguage: code });
+                if (data.settings.voiceReplies) void speak(code === 'tl' ? 'Sige, Tagalog na tayo.' : "Okay, I'll speak English.", code);
+              }}>{code === 'en' ? 'English' : 'Tagalog'}</button>
+            ))}
           </div>
-        </details>
+          <label className={styles.inlineSwitch} title="The agent says what it did">
+            Talk back
+            <input type="checkbox" role="switch" className={styles.switch} checked={data.settings.voiceReplies} onChange={event => void setSettings({ voiceReplies: event.target.checked })} />
+          </label>
+        </div>
+        <p className={styles.sysHint}>
+          {heard ? <>You said <q>{heard}</q></> : <><Mic size={11} aria-hidden="true" /> Tap the mic on the orb · {modelHint}</>}
+        </p>
       </section>
     </>
   );

@@ -1,25 +1,61 @@
-// Time log (9 Oct 2026): created 3:23 PM by Claude Code
-.headline { font-size: 26px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.3; }
+// Time log (9 Oct 2026): created 3:23 PM by Claude Code · last changed 9:02 PM (premium compact redesign by Claude Code)
+// Slim stat card: big number, a proportion bar in the badge colours, a legend, and chips for questions left.
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 9%, #ffffff14);
+  border-radius: 14px;
+  background: linear-gradient(160deg, #ffffff05, transparent 40%), color-mix(in srgb, var(--surface) 82%, transparent);
+  box-shadow: 0 1px 0 #ffffff06 inset, 0 12px 32px #00000026;
+}
+.head { display: flex; align-items: baseline; gap: 7px; }
+.big { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.label { font-size: 12px; color: var(--muted); em { color: var(--accent); font-style: normal; font-weight: 600; } }
+.time { margin-left: auto; font: 600 11px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.sources {
+.bar {
+  display: flex;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #ffffff0d;
+  i { display: block; height: 100%; transition: width 400ms ease; }
+}
+// The same three colours as the badges written next to fields on the page.
+.rules { background: var(--rules-ink); }
+.ai { background: var(--ai-ink); }
+.fixed { background: var(--fixed-ink); }
+
+.legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-
-  > span:not(:last-child) { padding: 4px 9px; border: 1px solid currentColor; border-radius: 6px; font-size: 10px; font-weight: 500; }
-}
-
-// The same three colors as the badges written next to fields on the page.
-.rules { background: var(--rules-bg); color: var(--rules-ink); }
-.ai { background: var(--ai-bg); color: var(--ai-ink); }
-.fixed { background: var(--fixed-bg); color: var(--fixed-ink); }
-
-.meta {
-  overflow: hidden;
-  font-size: 10px;
+  gap: 4px 10px;
+  font-size: 10.5px;
   color: var(--muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  span[data-kind]::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; vertical-align: 1px; }
+  [data-kind='rules']::before { background: var(--rules-ink); }
+  [data-kind='ai']::before { background: var(--ai-ink); }
+  [data-kind='fixed']::before { background: var(--fixed-ink); }
+  [data-kind='failed'] { color: var(--danger); }
+  [data-kind='failed']::before { background: var(--danger); }
 }
+.meta { margin-left: auto; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); font-size: 9.5px; opacity: 0.8; }
+
+.left { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.leftLabel { font: 600 9px/1 var(--mono); letter-spacing: 1.4px; text-transform: uppercase; color: var(--accent); margin-right: 2px; }
+.leftChip {
+  max-width: 100%;
+  padding: 3px 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  font-size: 10.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.leftMore { font-size: 10.5px; color: var(--muted); }
+.notice { padding: 7px 9px; border-radius: 8px; background: #ffffff06; font-size: 11px; line-height: 1.5; color: var(--muted); }
