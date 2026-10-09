@@ -1,4 +1,4 @@
-<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 3:02 AM, 10 Oct (real screenshots) -->
+<!-- Time log (9 Oct 2026): created 6:22 PM by Claude Code · last changed 4:15 AM, 10 Oct (sign guide) -->
 # Autonoma
 
 **A Chrome extension that fills web forms for you, by click, by voice or by sign language, using small AI models that run entirely on your own computer.**
@@ -338,6 +338,9 @@ Sentences the rules don't recognise go to qwen, which can also return several fi
 
 Command Autonoma with **your own signs**: real movements of the shoulders, arms and hands, like Filipino Sign Language, not just hand shapes. The work is split in two so the extension stays light:
 
+> 📖 **[Sign guide: what each of our 12 signs looks like](https://github.com/Jullemyth122/Expresso/blob/main/docs/SIGNS.md)**: an animated stick figure and a six-step strip for every sign, drawn from our own recordings in Expresso. Start there to see what to do in front of the camera.
+
+
 | | **[Expresso](https://github.com/Jullemyth122/Expresso)** (a local web app; clone it next to this folder) | **Autonoma** (this extension) |
 | --- | --- | --- |
 | Does | Records your signs with the webcam, **trains** a small model on your CPU, lets you test it live, exports it | Only **recognises** signs and runs the matching command |
@@ -348,7 +351,7 @@ Command Autonoma with **your own signs**: real movements of the shoulders, arms 
 1. In Expresso, **Record** each sign about 15 times: raise your hands, sign, drop your hands. Also record `_none` (random movements such as scratching or reaching for the mouse) so ordinary movement isn't mistaken for a command.
 2. **Train**, check the per-sign accuracy, then **Test** it live.
 3. **Export → Copy and rebuild Autonoma**, then reload the extension in `chrome://extensions`.
-4. In Autonoma's Workspace → **Signs**, click **Allow camera** once (the side panel can't show Chrome's prompt). **Run self-test** checks that the extension gives the same answers as the trainer.
+4. In Autonoma's Workspace → **Signs** (its **How to sign** card links to the [sign guide](https://github.com/Jullemyth122/Expresso/blob/main/docs/SIGNS.md)), click **Allow camera** once (the side panel can't show Chrome's prompt). **Run self-test** checks that the extension gives the same answers as the trainer.
 5. Switch on **Sign mode** in the side panel's system card.
 
 **Signs are commands by name.** A sign's name is read as if you'd said it and goes through the same rules as voice. That's why *FILL THIS EMAIL* fills the email, and why you can add, remove or rename signs in Expresso without changing any code:

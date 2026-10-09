@@ -1,7 +1,7 @@
-// Time log (9 Oct 2026): created 11:43 PM by Claude Code · last changed 11:57 PM
+// Time log (9 Oct 2026): created 11:43 PM by Claude Code · last changed 4:14 AM, 10 Oct (How to sign card, sign guide link)
 // Workspace → Signs: camera permission, the sign model Expresso exported, recognition settings, and a self-test.
 import { useEffect, useState } from 'react';
-import { Camera, FlaskConical } from 'lucide-react';
+import { BookOpen, Camera, FlaskConical, Hand } from 'lucide-react';
 import type { Settings } from '../types/index.ts';
 import type { SignOut } from './sign/sign.worker.ts';
 import { newSignWorker, requestCamera } from './sign/useSign.ts';
@@ -12,6 +12,8 @@ interface Report { trained_at: string; accuracy: number; has_none: boolean; sign
 type SelfTest = { label: string; python: string; x: number[] }[];
 const asset = (name: string) => fetch(chrome.runtime.getURL(`sign/${name}`)).then(response => response.ok ? response.json() : null).catch(() => null);
 const pct = (value: number | null | undefined) => value == null ? '–' : `${Math.round(value * 100)}%`;
+const EXPRESSO = 'https://github.com/Jullemyth122/Expresso';
+const SIGN_GUIDE = `${EXPRESSO}/blob/main/docs/SIGNS.md`;
 
 export function SignSetup({ settings, setSettings }: { settings: Settings; setSettings: (patch: Partial<Settings>) => void }) {
   const [camera, setCamera] = useState<'unknown' | 'allowed' | 'blocked'>('unknown');
@@ -67,9 +69,18 @@ export function SignSetup({ settings, setSettings }: { settings: Settings; setSe
       </section>
 
       <section className={ui.card}>
+        <h2 className={ui.cardTitle}>How to sign</h2>
+        <p className={ui.muted}>Start with your hands down. Raise them, make the sign, then drop your hands (or hold still for a moment). One sign at a time. The orb shows <i>Reading your sign…</i>, then what it read.</p>
+        <div className={ui.row}>
+          <a className={ui.secondary} href={SIGN_GUIDE} target="_blank" rel="noreferrer"><BookOpen size={14} />Sign guide: what each sign looks like</a>
+          <a className={ui.secondary} href={EXPRESSO} target="_blank" rel="noreferrer"><Hand size={14} />Expresso: record and train your signs</a>
+        </div>
+      </section>
+
+      <section className={ui.card}>
         <h2 className={ui.cardTitle}>Your sign model</h2>
         {labels === undefined ? <p className={ui.muted}>Checking…</p> : !labels ? (
-          <p className={ui.notice}>No sign model yet. Open Expresso (<code>C:\Hackathon\Expresso</code>, <code>npm run dev</code>), record and train your signs, then press <b>Export</b> and reload Autonoma.</p>
+          <p className={ui.notice}>No sign model yet. Open <a href={EXPRESSO} target="_blank" rel="noreferrer">Expresso</a> (clone it next to Autonoma, then <code>npm run dev</code>), record and train your signs, then press <b>Export</b> and reload Autonoma.</p>
         ) : (
           <>
             <p className={ui.muted}>

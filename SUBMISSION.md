@@ -1,4 +1,4 @@
-<!-- Time log (10 Oct 2026): created 2:05 AM by Claude Code · last changed 3:02 AM, 10 Oct (screenshots) -->
+<!-- Time log (10 Oct 2026): created 2:05 AM by Claude Code · last changed 4:15 AM, 10 Oct (sign guide) -->
 # Submission: Autonoma (+ Expresso)
 
 One page for the judges. Each answer links to the details.
@@ -14,7 +14,7 @@ One page for the judges. Each answer links to the details.
 | **Project name** | **Autonoma**, with its companion app **Expresso** |
 | **Short description** | A Chrome extension that fills any web form for you (Google Forms, job applications, government forms) **by click, by voice in English or Tagalog, or by your own sign language**, using AI that runs entirely on your laptop. Clear matches are filled instantly by rules. Harder questions go to a local language model (qwen3 1.7B via Ollama). Speech is understood by Whisper inside the extension. Signs are recognised from the camera with a model you train yourself in Expresso. |
 | **Team name and members** | ✏️ *Exactly as on the participant list.* GitHub: [Jullemyth122](https://github.com/Jullemyth122) (Xenex Ashura), co-author `xenexashura125`. |
-| **GitHub repositories** | **[github.com/Jullemyth122/Autonoma](https://github.com/Jullemyth122/Autonoma)**: the extension (start here). **[github.com/Jullemyth122/Expresso](https://github.com/Jullemyth122/Expresso)**: record and train your signs. Clone both side by side. |
+| **GitHub repositories** | **[github.com/Jullemyth122/Autonoma](https://github.com/Jullemyth122/Autonoma)**: the extension (start here). **[github.com/Jullemyth122/Expresso](https://github.com/Jullemyth122/Expresso)**: record and train your signs. Clone both side by side. **Sign guide** (what each sign looks like): [Expresso/docs/SIGNS.md](https://github.com/Jullemyth122/Expresso/blob/main/docs/SIGNS.md). |
 | **Hardware tested on** | ASUS TUF Gaming A15 (FA506IC) laptop: AMD Ryzen 7 4800H (8 cores / 16 threads), **7.4 GB RAM**, NVIDIA GeForce RTX 3050 Laptop GPU **4 GB** + AMD Radeon integrated graphics, Windows 11 Home (build 26200). Browsers: Chromium (automated tests) and Brave 1.97. Ollama 0.40.2, Node 24, Python 3.11. |
 
 ## The proof
@@ -22,7 +22,7 @@ One page for the judges. Each answer links to the details.
 | | |
 | --- | --- |
 | **Demo video (~1 min)** | ✏️ *link* |
-| **Screenshots** | Autonoma: [Google Form filled](docs/screenshots/google-form-filled.png), [voice: one field](docs/screenshots/voice-targeted-fill.png), [Sign mode filling a phone number](docs/screenshots/sign-mode-fill.png), [Local AI settings](docs/screenshots/workspace-local-ai.png), [Expresso live sign recognition](docs/screenshots/expresso-test-live.png), [Workspace + side panel](docs/screenshots/workspace-profile.png), [themes](docs/screenshots/workspace-appearance.png). Expresso: [Record tab](https://github.com/Jullemyth122/Expresso/blob/main/docs/screenshots/expresso-record.jpg), [live recognition](https://github.com/Jullemyth122/Expresso/blob/main/docs/screenshots/expresso-test-live.png). |
+| **Screenshots** | Autonoma: [Google Form filled](docs/screenshots/google-form-filled.png), [voice: one field](docs/screenshots/voice-targeted-fill.png), [Sign mode filling a phone number](docs/screenshots/sign-mode-fill.png), [Local AI settings](docs/screenshots/workspace-local-ai.png), [Expresso live sign recognition](docs/screenshots/expresso-test-live.png), [Workspace + side panel](docs/screenshots/workspace-profile.png), [themes](docs/screenshots/workspace-appearance.png). Signs: [animated sign guide](https://github.com/Jullemyth122/Expresso/blob/main/docs/SIGNS.md). Expresso: [Record tab](https://github.com/Jullemyth122/Expresso/blob/main/docs/screenshots/expresso-record.jpg), [live recognition](https://github.com/Jullemyth122/Expresso/blob/main/docs/screenshots/expresso-test-live.png). |
 | **X / LinkedIn video URL** | ✏️ *link* (tag Devin / Cognition, include #AppBuildersPH) |
 | **What runs locally** | **Everything that touches your data.** Form reading and filling, matching rules, qwen3 1.7B (Ollama on `127.0.0.1`), Whisper tiny speech-to-text (in the extension, on the GPU or CPU), the voice replies (Windows' built-in voices), hand and pose tracking (MediaPipe, in the extension), your sign model (ONNX, in the extension), and sign training (PyTorch on your CPU, in Expresso). Your profile, files, voice, camera video and sign recordings never leave the computer. |
 | **What requires internet** | Only one-time setup downloads: `npm install`, `ollama pull qwen3:1.7b` (~1.4 GB), the Whisper model on first 🎤 use (~40 MB from Hugging Face, then cached), and for Expresso `npm run setup:ml` (PyTorch, ~1 GB). After that it works **offline**, except for the web forms you choose to fill. |
@@ -92,4 +92,4 @@ No live deployment is needed. Follow **[README → Setup](README.md#setup)**:
 2. Run `npm install` and `npm run build`, then load `dist` as an unpacked extension.
 3. Run `npm run demo` for the demo form.
 
-Voice works out of the box. For Sign mode, set up Expresso ([its README](https://github.com/Jullemyth122/Expresso#setup-once)), record and train a few signs, then press Export.
+Voice works out of the box. For Sign mode, look at the [sign guide](https://github.com/Jullemyth122/Expresso/blob/main/docs/SIGNS.md), then set up Expresso ([its README](https://github.com/Jullemyth122/Expresso#setup-once)), record and train a few signs, then press Export.
