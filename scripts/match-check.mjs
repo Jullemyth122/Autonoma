@@ -1,7 +1,7 @@
-// Time log (9 Oct 2026): created 3:23 PM by Claude Code · last changed 5:39 PM
+// Time log (9 Oct 2026): created 3:23 PM by Claude Code · last changed 8:33 AM, 10 Oct
 // Keyword-matching regression check. Runs the real matching.ts through Node's built-in type stripping.
 import { readFile } from 'node:fs/promises';
-import { ageOn, matchFile, matchOption, matchQuestion, optionFitsAge, splitChoices, toIsoDate } from '../src/content/matching.ts';
+import { ageOn, matchFile, matchOption, matchOptions, matchQuestion, optionFitsAge, toIsoDate } from '../src/content/matching.ts';
 
 const cases = JSON.parse(await readFile(new URL('./match-cases.json', import.meta.url), 'utf8'));
 const fields = Object.entries(cases.fields).map(([label, value], index) => ({ id: `f${index}`, label, value, context: '', enabled: true, isSensitive: false }));
@@ -55,7 +55,7 @@ for (const item of cases.separateProfile.questions) {
   console.log(`${ok ? 'pass' : 'FAIL'}  filler words: ${item.question} -> ${label ?? 'no match'}${match ? (match.strong ? ' (strong)' : ` (weak ${match.score.toFixed(2)})`) : ''}`);
 }
 for (const item of cases.choices) {
-  const picked = splitChoices(item.value).map(part => matchOption(part, item.options)).filter(Boolean);
+  const picked = matchOptions(item.value, item.options);
   const ok = JSON.stringify(picked) === JSON.stringify(item.expect);
   if (!ok) failures++;
   console.log(`${ok ? 'pass' : 'FAIL'}  choices: ${item.value} -> ${picked.join(', ')}`);

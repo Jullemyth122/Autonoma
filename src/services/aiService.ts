@@ -1,6 +1,6 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 10:26 PM (several fields per command by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:33 AM, 10 Oct (checkbox answers by Claude Code)
 import type { AIAnswer, AIResult, Memory, Profile, Question, RuntimeStatus, VoiceIntent } from '../types/index.ts';
-import { ageOn, isAgeQuestion, matchOption, normalize, optionFitsAge, splitChoices, toIsoDate } from '../content/matching.ts';
+import { ageOn, isAgeQuestion, matchOption, matchOptions, normalize, optionFitsAge, toIsoDate } from '../content/matching.ts';
 
 const ORIGIN = 'http://127.0.0.1:11434';
 const KEEP_ALIVE = '2m';
@@ -276,8 +276,7 @@ export async function resolveQuestions(questions: Question[], profile: Profile, 
     // A choice answer must name the question's options; otherwise it goes to the targeted retry.
     const question = questions.find(item => item.id === answer.id)!;
     if (value && question.kind !== 'text' && question.options.length) {
-      const parts = question.kind === 'checkbox' ? splitChoices(value) : [value.trim()];
-      const chosen = parts.map(part => matchOption(part, question.options)).filter((option): option is string => option !== null);
+      const chosen = question.kind === 'checkbox' ? matchOptions(value, question.options) : [matchOption(value.trim(), question.options)].filter((option): option is string => option !== null);
       const grounded = age !== undefined && isAgeQuestion(question.question)
         ? chosen.every(option => fitsAgeQuestion(question.question, option, Number(age)))
         : choiceGrounded(question, chosen, facts);

@@ -50,10 +50,10 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `scripts/build.mjs` | 3:04 PM | 11:41 PM | Codex (before this session) | Builds the pages, content script and service worker; stamps the build time; copies the speech and sign runtimes |
 | `src/background/background.ts` | 3:04 PM | 10:25 PM | Codex (before this session) | Fill jobs, Pagination, Multi-Link, AI requests |
 | `src/content/content.ts` | 3:04 PM | 10:15 PM | Codex (before this session) | Fill flow on the page: rules, AI, repair, agreement boxes |
-| `src/content/matching.ts` | 3:04 PM | 8:24 PM | Codex (before this session) | Keyword matching, options, dates, age |
-| `src/content/read.ts` | 3:04 PM | 5:14 PM | Codex (before this session) | Reads questions, labels and options from the page |
-| `src/content/write.ts` | 3:04 PM | 9:49 PM | Codex (before this session) | Types values, picks options, attaches files, badges |
-| `src/services/aiService.ts` | 3:04 PM | 10:26 PM | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
+| `src/content/matching.ts` | 3:04 PM | 8:33 AM, 10 Oct | Codex (before this session) | Keyword matching, options, dates, age |
+| `src/content/read.ts` | 3:04 PM | 8:33 AM, 10 Oct | Codex (before this session) | Reads questions, labels and options from the page |
+| `src/content/write.ts` | 3:04 PM | 8:33 AM, 10 Oct | Codex (before this session) | Types values, picks options, attaches files, badges |
+| `src/services/aiService.ts` | 3:04 PM | 8:33 AM, 10 Oct | Codex (before this session) | Ollama requests, prompt, answer checks, calculated facts |
 | `src/services/repository.ts` | 3:04 PM | 3:50 PM | Codex (before this session) | Saves data in chrome.storage.local |
 | `src/services/vault.ts` | 3:04 PM | 1:24 AM (10 Oct) | Codex (before this session) | Validates saved/imported data |
 | `src/types/defaults.ts` | 3:04 PM | 1:24 AM (10 Oct) | Codex (before this session) | Default data and model |
@@ -67,8 +67,8 @@ Each code file also starts with its own time-log comment. JSON and audio files c
 | `src/main.tsx` | 3:22 PM | 1:34 AM (10 Oct) | Claude Code | Starts the panel or the workspace |
 | `src/ui/Workspace.tsx` | 3:22 PM | 11:43 PM | Claude Code | Workspace: profile, memory, files, AI, signs, import/export |
 | `src/ui/sample.ts` | 3:22 PM | — | Claude Code | Demo profile with a sample résumé |
-| `scripts/match-cases.json` | 3:23 PM | 5:39 PM | Claude Code | Test cases for match-check |
-| `scripts/match-check.mjs` | 3:23 PM | 5:39 PM | Claude Code | Keyword-matching regression check |
+| `scripts/match-cases.json` | 3:23 PM | 8:33 AM, 10 Oct | Claude Code | Test cases for match-check |
+| `scripts/match-check.mjs` | 3:23 PM | 8:33 AM, 10 Oct | Claude Code | Keyword-matching regression check |
 | `src/ui/Panel.module.scss` | 3:23 PM | 1:24 AM (10 Oct) | Claude Code | Panel styles |
 | `src/ui/Report.module.scss` | 3:23 PM | 9:02 PM | Claude Code | Report styles |
 | `src/ui/Workspace.module.scss` | 3:23 PM | 11:57 PM | Claude Code | Workspace styles |

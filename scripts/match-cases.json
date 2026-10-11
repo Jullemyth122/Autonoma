@@ -274,6 +274,35 @@
         "React",
         "Python"
       ]
+    },
+    {
+      "value": "Rust / Node.js / PostgreSQL / Python",
+      "options": [
+        "Node.js / Express",
+        "PostgreSQL",
+        "Python",
+        "REST / GraphQL APIs",
+        "Docker"
+      ],
+      "expect": [
+        "Node.js / Express",
+        "PostgreSQL",
+        "Python"
+      ]
+    },
+    {
+      "value": "REST / GraphQL APIs, Docker",
+      "options": [
+        "Node.js / Express",
+        "PostgreSQL",
+        "Python",
+        "REST / GraphQL APIs",
+        "Docker"
+      ],
+      "expect": [
+        "REST / GraphQL APIs",
+        "Docker"
+      ]
     }
   ]
 }

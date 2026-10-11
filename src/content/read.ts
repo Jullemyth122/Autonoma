@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 5:14 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:33 AM, 10 Oct (Google Forms checkbox questions by Claude Code)
 import type { Question } from '../types/index.ts';
 
 export interface Control { question: Question; elements: HTMLElement[]; primary: HTMLElement; required: boolean }
@@ -53,7 +53,16 @@ function questionLabel(element: HTMLElement): string {
   }
   return '';
 }
-function choiceGroup(element: HTMLElement): HTMLElement | null { return element.closest('fieldset, [role="radiogroup"], [role="group"], [role="listitem"]'); }
+const CHOICE_GROUP = 'fieldset, [role="radiogroup"], [role="group"], [role="listitem"]';
+const CHOICES = 'input[type="checkbox"], input[type="radio"], [role="checkbox"], [role="radio"]';
+// Google Forms wraps each checkbox option in its own listitem inside the question's listitem. A container holding only
+// this one choice is just its wrapper when the next container out holds the other options.
+function choiceGroup(element: HTMLElement): HTMLElement | null {
+  const own = element.closest<HTMLElement>(CHOICE_GROUP);
+  if (!own || own.querySelectorAll(CHOICES).length > 1) return own;
+  const outer = own.parentElement?.closest<HTMLElement>(CHOICE_GROUP);
+  return outer && outer.querySelectorAll(CHOICES).length > 1 ? outer : own;
+}
 
 export function harvestAllControls(): Control[] {
   const controls: Control[] = [], consumed = new Set<HTMLElement>();

@@ -1,4 +1,4 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:24 PM
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:33 AM, 10 Oct (checkbox answers split on / by Claude Code)
 import type { CM, Question, SavedFile } from '../types/index.ts';
 
 export function normalize(value: string): string {
@@ -37,7 +37,8 @@ export function matchQuestion(question: Question, fields: CM[]): Match | null {
   // The input type alone ("Input type: email") is not a formatting instruction; placeholders and patterns can be.
   const hint = (question.format ?? '').replace(/(^|; )Input type: \w+/g, '');
   const formatRequested = /\(|surname.*first|last.*first|format|combine|initial|separate|order|\b(dd|mm|yyyy)\b/i.test(`${question.question} ${hint}`);
-  const questionWords = words(label), labelWords = new Set(words(best.field.label));
+  // The context hint counts too: "Core Backend" with hint "Backend Technologies" covers "Core Backend Technologies".
+  const questionWords = words(label), labelWords = new Set(words(`${best.field.label} ${best.field.context}`));
   const coverage = questionWords.length ? questionWords.filter(word => labelWords.has(word)).length / questionWords.length : Number(sameWording(best.field));
   return { ...best, strong: best.score >= 0.8 && coverage >= 0.8 && !formatRequested && !competing };
 }
@@ -85,6 +86,19 @@ export function matchOption(value: string, options: string[]): string | null {
   const contained = options.filter(option => normalize(option).length >= 4 && padded.includes(` ${normalize(option)} `));
   const outermost = contained.filter(option => !contained.some(other => other !== option && normalize(other).includes(normalize(option))));
   return outermost.length === 1 ? outermost[0] : null;
+}
+
+/**
+ * The checkbox options a saved answer names. Parts that match no option whole are split on "/" too, so
+ * "Rust / Node.js / PostgreSQL" ticks "Node.js / Express" and "PostgreSQL" while "REST / GraphQL APIs" still matches whole.
+ */
+export function matchOptions(value: string, options: string[]): string[] {
+  const picked = splitChoices(value).flatMap(part => {
+    const whole = matchOption(part, options);
+    if (whole || !part.includes('/')) return whole ? [whole] : [];
+    return part.split(/\s*\/\s*/).map(piece => matchOption(piece, options)).filter((option): option is string => option !== null);
+  });
+  return [...new Set(picked)];
 }
 
 /** Whole years between a YYYY-MM-DD birth date and `today`. */

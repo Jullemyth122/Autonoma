@@ -1,8 +1,8 @@
-// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 9:49 PM (performance fixes by Claude Code)
+// Time log (9 Oct 2026): created 3:04 PM by Codex (before this session) · last changed 8:33 AM, 10 Oct (checkbox answers by Claude Code)
 import type { FillSource, SavedFile } from '../types/index.ts';
 import type { Control } from './read.ts';
 import { controlValue, pageRoots, resolveChoiceText } from './read.ts';
-import { matchOption, normalize, splitChoices, toIsoDate } from './matching.ts';
+import { matchOption, matchOptions, normalize, toIsoDate } from './matching.ts';
 import { fromBase64 } from '../services/vault.ts';
 
 export async function pause(ms: number, signal?: AbortSignal): Promise<void> {
@@ -44,10 +44,9 @@ export async function applyValueToControl(control: Control, value: string, delay
       if (!/^(yes|no|true|false|1|0|agree|disagree)$/i.test(value.trim())) return false;
       return toggleChoiceControl(element, /^(yes|true|1|agree)$/i.test(value.trim()));
     }
-    const requested = control.question.kind === 'checkbox' ? splitChoices(value) : [value.trim()];
     const options = control.elements.map(resolveChoiceText);
     // Saved answers may name things this form doesn't offer (e.g. "Javascript"); tick the ones it does offer.
-    const selected = requested.map(part => matchOption(part, options)).filter((option): option is string => option !== null);
+    const selected = control.question.kind === 'checkbox' ? matchOptions(value, options) : [matchOption(value.trim(), options)].filter((option): option is string => option !== null);
     if (!selected.length) return false;
     return control.elements.reduce((success, item) => {
       const choose = selected.includes(resolveChoiceText(item));
